@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Michael Plank">
+
+<title>Topic 6. Branching processes</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="Topic06_Branching_processes_files/libs/clipboard/clipboard.min.js"></script>
+<script src="Topic06_Branching_processes_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="Topic06_Branching_processes_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="Topic06_Branching_processes_files/libs/quarto-html/popper.min.js"></script>
+<script src="Topic06_Branching_processes_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="Topic06_Branching_processes_files/libs/quarto-html/anchor.min.js"></script>
+<link href="Topic06_Branching_processes_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="Topic06_Branching_processes_files/libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="Topic06_Branching_processes_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="Topic06_Branching_processes_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="Topic06_Branching_processes_files/libs/bootstrap/bootstrap-67270d1595a62d14f123c043d4fb2f18.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction"><span class="header-section-number">1</span> Introduction</a></li>
+  <li><a href="#galton-watson-branching-process" id="toc-galton-watson-branching-process" class="nav-link" data-scroll-target="#galton-watson-branching-process"><span class="header-section-number">2</span> Galton-Watson branching process</a></li>
+  <li><a href="#fundamental-theorem-of-branching-processes" id="toc-fundamental-theorem-of-branching-processes" class="nav-link" data-scroll-target="#fundamental-theorem-of-branching-processes"><span class="header-section-number">3</span> Fundamental theorem of branching processes</a></li>
+  <li><a href="#probability-of-extinction" id="toc-probability-of-extinction" class="nav-link" data-scroll-target="#probability-of-extinction"><span class="header-section-number">4</span> Probability of extinction</a>
+  <ul class="collapse">
+  <li><a href="#probability-of-ultimate-extinction" id="toc-probability-of-ultimate-extinction" class="nav-link" data-scroll-target="#probability-of-ultimate-extinction"><span class="header-section-number">4.1</span> Probability of ultimate extinction</a></li>
+  <li><a href="#probability-of-extinction-with-more-than-one-initial-infective" id="toc-probability-of-extinction-with-more-than-one-initial-infective" class="nav-link" data-scroll-target="#probability-of-extinction-with-more-than-one-initial-infective"><span class="header-section-number">4.2</span> Probability of extinction with more than one initial infective</a></li>
+  <li><a href="#geometric-offspring-distribution" id="toc-geometric-offspring-distribution" class="nav-link" data-scroll-target="#geometric-offspring-distribution"><span class="header-section-number">4.3</span> Geometric offspring distribution</a></li>
+  <li><a href="#poisson-offspring-distribution" id="toc-poisson-offspring-distribution" class="nav-link" data-scroll-target="#poisson-offspring-distribution"><span class="header-section-number">4.4</span> Poisson offspring distribution</a></li>
+  <li><a href="#negative-binomial-offspring-distribution" id="toc-negative-binomial-offspring-distribution" class="nav-link" data-scroll-target="#negative-binomial-offspring-distribution"><span class="header-section-number">4.5</span> Negative binomial offspring distribution</a></li>
+  </ul></li>
+  <li><a href="#mean-and-variance-in-outbreak-size" id="toc-mean-and-variance-in-outbreak-size" class="nav-link" data-scroll-target="#mean-and-variance-in-outbreak-size"><span class="header-section-number">5</span> Mean and variance in outbreak size</a>
+  <ul class="collapse">
+  <li><a href="#mean-number-of-infections" id="toc-mean-number-of-infections" class="nav-link" data-scroll-target="#mean-number-of-infections"><span class="header-section-number">5.1</span> Mean number of infections</a></li>
+  <li><a href="#mean-number-of-infections-conditional-on-non-extinction" id="toc-mean-number-of-infections-conditional-on-non-extinction" class="nav-link" data-scroll-target="#mean-number-of-infections-conditional-on-non-extinction"><span class="header-section-number">5.2</span> Mean number of infections conditional on non-extinction</a></li>
+  <li><a href="#mean-cumulative-number-of-infections" id="toc-mean-cumulative-number-of-infections" class="nav-link" data-scroll-target="#mean-cumulative-number-of-infections"><span class="header-section-number">5.3</span> Mean cumulative number of infections</a></li>
+  <li><a href="#variance-in-outbreak-size" id="toc-variance-in-outbreak-size" class="nav-link" data-scroll-target="#variance-in-outbreak-size"><span class="header-section-number">5.4</span> Variance in outbreak size</a></li>
+  </ul></li>
+  <li><a href="#time-to-extinction" id="toc-time-to-extinction" class="nav-link" data-scroll-target="#time-to-extinction"><span class="header-section-number">6</span> Time to extinction</a></li>
+  <li><a href="#survival-probability-for-a-more-general-model" id="toc-survival-probability-for-a-more-general-model" class="nav-link" data-scroll-target="#survival-probability-for-a-more-general-model"><span class="header-section-number">7</span> Survival probability for a more general model</a>
+  <ul class="collapse">
+  <li><a href="#offpsring-distribution-and-probaility-of-extinction-for-a-single-seed" id="toc-offpsring-distribution-and-probaility-of-extinction-for-a-single-seed" class="nav-link" data-scroll-target="#offpsring-distribution-and-probaility-of-extinction-for-a-single-seed"><span class="header-section-number">7.1</span> Offpsring distribution and probaility of extinction for a single seed</a></li>
+  <li><a href="#probability-of-extinction-after-some-number-of-infections" id="toc-probability-of-extinction-after-some-number-of-infections" class="nav-link" data-scroll-target="#probability-of-extinction-after-some-number-of-infections"><span class="header-section-number">7.2</span> Probability of extinction after some number of infections</a></li>
+  </ul></li>
+  <li><a href="#branching-process-with-susceptible-depletion" id="toc-branching-process-with-susceptible-depletion" class="nav-link" data-scroll-target="#branching-process-with-susceptible-depletion"><span class="header-section-number">8</span> Branching process with susceptible depletion</a></li>
+  </ul>
+</nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Topic 6. Branching processes</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Michael Plank </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="hidden">
+<p><span class="math display">\[
+\newcommand{\vect}[1]{\boldsymbol{\mathbf{#1}}}
+\newcommand{\R}{\mathcal{R}}
+\newcommand{\Reff}{\mathcal{R}_\mathrm{eff}}
+\newcommand{\inc}{\mathrm{inc}}
+\]</span></p>
+</div>
+<section id="introduction" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> Introduction</h1>
+<p>So far we have focused mainly on deterministic compartment-based models. Stochastic models are another class of model that capture random variability in the transmission process. There are two main situations where deterministic models are inappropriate and stochastic models are required:</p>
+<ol type="1">
+<li>When the population within which the disease is spreading is small.</li>
+<li>When the number of infectives is small, which may occur at the beginning or end of an outbreak even in a large population.</li>
+</ol>
+<p>In these situations, random fluctuations in the number of cases infected per person can make a big difference. This can cause significant uncertainty in key epidemic properties, such as the final epidemic size. Although deterministic models predict that an epidemic will always occur if <span class="math inline">\(\R_0&gt;1\)</span>, it is possible that if an outbreak starts with only a handful of infectives, the epidemic will fail to take by chance. As we shall see, stochastic models provide a way to account for and quantify this possibility.</p>
+<p>Stochastic models may be used in other situations too. For example, if it is necessary to include a lot of individual-level heterogeneity in the model, a stochastic agent-based model may be preferred because the number of compartments may be too large for a compartment-based model to be practical. Complex stochastic individual-based models do have drawbacks: they tend to be more computationally intensive and can more difficult to calibrate to data.</p>
+<p>Here, we begin with one of the simplest stochastic models of infectious disease transmission. As we saw in Part 1, a branching process is a natural way to model the spread of an infectious disease. We will study a highly simplified branching process model where transmission events from one generation to the next occur at discrete points in time. This means that the branching process consists of a series of <em>non-overlapping generations</em>, which simplifies the analysis.</p>
+<p>This model is important because it provides some key insights into the effects of stochasticity in infectious disease dynamics, most notably about the probability an outbreak will go extinct without infecting a significant fraction of the population.</p>
+</section>
+<section id="galton-watson-branching-process" class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> Galton-Watson branching process</h1>
+<p>The Galton-Watson branching process makes the following assumptions.</p>
+<ol type="1">
+<li>The process begins with at generation <span class="math inline">\(0\)</span> with some positive integer valued number of infected individuals <span class="math inline">\(Z_0\)</span>.</li>
+<li>Each infected individual transmits the disease to <span class="math inline">\(X_i\)</span> individuals, where the <span class="math inline">\(X_i\)</span>’s are <em>independent, identically distributed</em> (IID) random variables from some non-negative integer valued distribution.</li>
+<li>All transmissions from generation <span class="math inline">\(t\)</span> individuals occur simultaneously and the generation <span class="math inline">\(t\)</span> individuals are no longer infectious after that time.</li>
+</ol>
+<div id="fig-branching-process" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-branching-process-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figures/branching_process2.png" class="img-fluid figure-img" width="300">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-branching-process-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: An example realisation of a Galton-Watson branching process with <span class="math inline">\(Z_0=1\)</span>, <span class="math inline">\(Z_1=2\)</span> and <span class="math inline">\(Z_2=4\)</span>.
+</figcaption>
+</figure>
+</div>
+<p>Notes:</p>
+<ul>
+<li>The individuals that a given infective transmits the disease to are often referred to as the <em>offspring</em> of that infective, and the distribution of the <span class="math inline">\(X_i\)</span>’s is called the <em>offspring distribution</em>.</li>
+<li>Because each individual has the same offspring distribution, no account is taken of the effect of depletion of the susceptible population Hence, the Galton-Watson branching process effectively assumes the outbreak is taking place in an <em>infinitely large</em> population. This means it is a suitable model for a small outbreak in a large population, but not for a large epidemic that infects a non-negligible fraction of the population. Later on we will see a related model that does account for susceptible depletion.</li>
+</ul>
+<p>The assumptions above lead to the following stochastic process definition.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Galton-Watson branching process
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>A Galton-Watson branching process is a sequence of random variables <span class="math inline">\(Z_t\)</span>, representing the number of new infections in generation <span class="math inline">\(t\)</span> (<span class="math inline">\(t=0,1,2\ldots\)</span>), defined by <span class="math display">\[
+Z_t = \sum_{i=1}^{Z_{t-1}} X_i
+\]</span> where the <span class="math inline">\(X_i\)</span>’s are non-negative integer valued IID random variables.</p>
+</div>
+</div>
+<p>Note throughout this part of the course, the variable <span class="math inline">\(t\)</span> representing time is a discrete variable taking values <span class="math inline">\(t=0,1,2,\ldots\)</span>.</p>
+<p>The process requires an initial condition for <span class="math inline">\(Z_0\)</span>, which could simply be a fixed number, or more generally could be a random variable from a specified non-negative integer valued distribution.</p>
+<p>The basic reprodcution number for the branching process is simply the mean of the offspring distribution:</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Basic reproduction number for a Galton-Watson branching process
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><span class="math display">\[
+\R_0 = E(X)
+\]</span></p>
+</div>
+</div>
+<p>If the process ever reaches a state where <span class="math inline">\(Z_t=0\)</span> for some <span class="math inline">\(t\)</span>, then <span class="math inline">\(Z_t\)</span> will remain zero for all future generations. In this situation, we say that the branching process has gone <em>extinct</em>. We will calculate the probability of this happening in the next two sections.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Markov property
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The Galton-Watson branching process is a Markov process with respect to <span class="math inline">\(Z_t\)</span>.</p>
+<p>This means that, for a given value of <span class="math inline">\(Z_t\)</span>, the future of the process is independent of the past. In other words, if you know the current number of infections, then it doesn’t matter how the branching process got there.</p>
+<p>In mathematical terms <span class="math display">\[
+P(Z_t=n \ | Z_0, Z_1, \ldots, Z_s) = P(Z_t=n \ | \ Z_s)
+\]</span> for all values of <span class="math inline">\(t&gt;s\)</span> and all values of <span class="math inline">\(n\)</span>.</p>
+</div>
+</div>
+</section>
+<section id="fundamental-theorem-of-branching-processes" class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> Fundamental theorem of branching processes</h1>
+<p>Probability generating functions, or simply <em>generating functions</em>, are a key tool in the analysis of stochastic processes. Recall the following definition.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Generating function
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Let <span class="math inline">\(X\)</span> be a non-negative integer valued random variable whose probability mass function (PMF) is given by <span class="math inline">\(P(X=n)=p_n\)</span> (<span class="math inline">\(n=0,1,2,\ldots\)</span>). The generating function <span class="math inline">\(G:[0,1]\to[0,1]\)</span> for <span class="math inline">\(X\)</span> is defined to be: <span class="math display">\[
+G_X(s) = E(s^X) = \sum_{n=0}^\infty p_n s^n, \qquad s\in[0,1]
+\]</span></p>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Properties of probability generating functions
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Generating functions have the following properties:</p>
+<ul>
+<li><span class="math inline">\(G_X(0) = P(X=0)\)</span>.</li>
+<li><span class="math inline">\(G_X(1)=1\)</span>.</li>
+<li><span class="math inline">\(G_X(s)\)</span> is monotonically increasing in <span class="math inline">\(s\)</span> (except in the trivial case where <span class="math inline">\(P(X=1)=1\)</span> when <span class="math inline">\(G_X(s)\)</span> is constant).</li>
+<li><span class="math inline">\(G_X'(1) = E(X)\)</span>.</li>
+</ul>
+</div>
+</div>
+<p>If a random variable <span class="math inline">\(Y\)</span> is defined to be <span class="math inline">\(Y=X_1+\ldots + X_m\)</span> where the <span class="math inline">\(X_i\)</span>’s are IID non-negative integer valued random variables, then the generating function for <span class="math inline">\(Y\)</span> is <span class="math display">\[
+G_Y(s) = G_X(s)^m
+\]</span></p>
+<p>If a random variable <span class="math inline">\(Y\)</span> is defined to be <span class="math inline">\(Y=X_1+\ldots + X_N\)</span> where the <span class="math inline">\(X_i\)</span>’s are IID non-negative integer valued random variables, and <span class="math inline">\(N\)</span> is a non-negative integera valued random variable that is independent of the <span class="math inline">\(X_i\)</span>’s, then the generating function for <span class="math inline">\(Y\)</span> is <span class="math display">\[
+G_Y(s) = G_N\left(G_X(s)\right)
+\]</span></p>
+<p>This last results leads to the following important theorem.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Fundamental theorem of branching processes
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Let <span class="math inline">\(Z_t\)</span> denote the number of infections in generation <span class="math inline">\(t\)</span> of a Galton-Watson branching process starting with <span class="math inline">\(Z_0=1\)</span> and let <span class="math inline">\(G_X(s)\)</span> denote the generating function for the offspring distribution. Then the generating function <span class="math inline">\(G_t(s)\)</span> for <span class="math inline">\(Z_t\)</span> satisfies <span class="math display">\[
+G_{t+1}(s) = G_X\left( G_t(s) \right), \qquad t=0,1,2\ldots
+\]</span></p>
+</div>
+</div>
+<p>Since by definition the generating function for <span class="math inline">\(Z_1\)</span> is just <span class="math inline">\(G_X(s)\)</span>. It follows that <span class="math display">\[
+G_t(s) = G_X^{(t)}(s), \qquad t=1,2,\ldots
+\]</span> where we use the notation <span class="math inline">\(G_X^{(t)}\)</span> to denote the function <span class="math inline">\(G_X\)</span> composed with itself <span class="math inline">\(t\)</span> times.</p>
+</section>
+<section id="probability-of-extinction" class="level1" data-number="4">
+<h1 data-number="4"><span class="header-section-number">4</span> Probability of extinction</h1>
+<p>Consider a Galton-Watson branching process starting with a single infective <span class="math inline">\(Z_0=1\)</span> and let <span class="math inline">\(G_t(s)\)</span> denote the generating function for the number of infections <span class="math inline">\(Z_t\)</span> in generation <span class="math inline">\(t\)</span> (<span class="math inline">\(t=0,1,2\ldots\)</span>). From the above properties of generating functions and the fundamental theorem of branching processes, the probability the process is extinct in generation <span class="math inline">\(t\)</span> is: <span class="math display">\[
+P(Z_t = 0 \ | \ Z_0=1) = G_t(0) = G_X^{(t)}(0)
+\]</span></p>
+<p>Note, this probability can be calculated numerically without deriving an expression for the full generating function <span class="math inline">\(G_t(s)\)</span> (which would usually be very tedious if <span class="math inline">\(t\)</span> is more than <span class="math inline">\(2\)</span> or <span class="math inline">\(3\)</span>), because we only require the value of <span class="math inline">\(G_t(s)\)</span> at <span class="math inline">\(s=0\)</span>. This may be calculated iteratively, as shown in the following example.</p>
+<p><strong>Example</strong></p>
+<p>Suppose the offspring distribution has PMF defined by <span class="math inline">\(p_0=0.2\)</span>, <span class="math inline">\(p_1=0.2\)</span>, <span class="math inline">\(p_2=0.6\)</span>. Calculate <span class="math inline">\(P(Z_t = 0 \ | \ Z_0=1)\)</span> for <span class="math inline">\(t=1,2,3,4\)</span>.</p>
+<p>The generating function for the offspring distribution is <span class="math display">\[
+G_X(s) = 0.2 + 0.2s + 0.6s^2
+\]</span> So the extinction probabilities at each generation are:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th><span class="math inline">\(t\)</span></th>
+<th><span class="math inline">\(P(Z_t = 0 \ | \ Z_0=1)\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td><span class="math inline">\(G_X(0)=0.2\)</span></td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td><span class="math inline">\(G_X(0.2)=0.2640\)</span></td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td><span class="math inline">\(G_X(0.2640)=0.2946\)</span></td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td><span class="math inline">\(G_X(0.2946)=0.3110\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>Note that these probabilities increase from one generation to the next. The probabilities can never get smaller because if the process is extinct in generation <span class="math inline">\(t\)</span> it must remain extinct at generation <span class="math inline">\(t+1\)</span>.</p>
+<section id="probability-of-ultimate-extinction" class="level2" data-number="4.1">
+<h2 data-number="4.1" class="anchored" data-anchor-id="probability-of-ultimate-extinction"><span class="header-section-number">4.1</span> Probability of ultimate extinction</h2>
+<p>What if we want to know the probability that the branching process <em>ever</em> goes extinct? This is called the <em>probability of ultimate extinction</em> (PUE), which we denote <span class="math inline">\(q\)</span>, and is given by <span class="math display">\[
+q = \lim_{t\to\infty} P(Z_t=0 \ | Z_0 = 1) = \lim_{t\to \infty} G_X^{(t)}(0)
+\]</span></p>
+<p>This is the limiting value of the sequence of probabilities calculated in the previous example. However, we can also calculate <span class="math inline">\(q\)</span> as the solution of the equation <span class="math display">\[
+q=G_X(q)
+\]</span></p>
+<p>In other words, <span class="math inline">\(q\)</span> is a <em>fixed point</em> of the generating function <span class="math inline">\(G_X(s)\)</span>.</p>
+<p>To see this: <span class="math display">\[
+\begin{align*}
+q &amp;=  \lim_{t\to \infty} G_X^{(t)}(0) \\
+&amp;= \lim_{t\to \infty} G_X^{(t+1)}(0) \\
+&amp; = \lim_{t\to \infty} G_X\left(G_X^{(t)}(0)\right) \\
+&amp;= G_X\left( \lim_{t\to \infty} G_X^{(t)}(0)\right) \qquad (\textrm{by continuity of } G_X) \\
+&amp; =G_X(q)
+\end{align*}
+\]</span></p>
+<p>Moreover, it can be shown that <span class="math inline">\(q\)</span> is the <em>smallest</em> fixed point of <span class="math inline">\(G_X(s)\)</span>. There are two important cases to consider depending on whether the mean of the offspring distribution (<span class="math inline">\(\R_0\)</span>) is less than <span class="math inline">\(1\)</span> (which we call the <em>subcritical</em> case) or greater than <span class="math inline">\(1\)</span> (which we call the <em>supercritical</em> case). Recall that generating functions are monotonically increasing and convex (see <a href="#fig-generating-functions" class="quarto-xref">Figure&nbsp;2</a>). This leads to the following result</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Probability of ultimate extinction
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The PUE <span class="math inline">\(q\)</span> for a Galton-Watson branching process with a single initial infective and offspring distribution generating function <span class="math inline">\(G_X(s)\)</span> the smallest root in <span class="math inline">\([0,1]\)</span> of the fixed-point equation <span class="math display">\[
+q = G_X(q)
+\]</span> There are two important cases:</p>
+<ol type="1">
+<li><strong>Subcritical (and critical) case.</strong> If <span class="math inline">\(\R_0\le 1\)</span>, <span class="math inline">\(G_X(s)\)</span> has a unique fixed point at <span class="math inline">\(s=1\)</span>. Hence the PUE is <span class="math inline">\(q=1\)</span>: extinction is guaranteed.</li>
+<li><strong>Supercritical case.</strong> If <span class="math inline">\(\R_0&gt;1\)</span>, <span class="math inline">\(G_X(s)\)</span> has two fixed points, one at <span class="math inline">\(s=1\)</span> and one at <span class="math inline">\(s\in[0,1)\)</span>. Hence the PUE satisfies <span class="math inline">\(q&lt;1\)</span>: extinction is not guaranteed.</li>
+</ol>
+</div>
+</div>
+<p>Note in the supercritical case, if <span class="math inline">\(p_0=0\)</span> then <span class="math inline">\(G_X(0)=0\)</span> and so <span class="math inline">\(q=0\)</span>. If <span class="math inline">\(p_0&gt;0\)</span> then <span class="math inline">\(G_X(0)&gt;0\)</span> and so <span class="math inline">\(q\)</span> must be strictly positive. In other words, extinction is possible if and only if there is a positive probability of an individual having no offspring.</p>
+<p>See <a href="https://doi.org/10.1016/j.idm.2018.08.001">Miller (2018)</a> for further applications of probability generating functions to stochastic infectious disease models.</p>
+<div id="fig-generating-functions" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-generating-functions-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figures/staircase.png" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-generating-functions-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: Graphical representation of the calculation of extinction probabilities using generating functions for a geometric offspring distribution with: (a) <span class="math inline">\(R_0=0.9\)</span> (subcritical); and (b) <span class="math inline">\(R_0=2\)</span> (supercritical). The blue curve shows the offspring distribution generating function <span class="math inline">\(G_X(s)\)</span>; the red lines show the staircase plot calculting extinction probabilities at each generation. The three dashed vertical red lines intersect the <span class="math inline">\(s\)</span> axis at the first three extinction probabilities: <span class="math inline">\(P(Z_0=0)\)</span>, <span class="math inline">\(P(Z_1=0)\)</span> and <span class="math inline">\(P(Z_2=0)\)</span>. The dashed vertical green line intersects the <span class="math inline">\(s\)</span> axis at the prrobability of ultimate extinction <span class="math inline">\(q\)</span>, corresponding to the smallest fixed point of <span class="math inline">\(G_X(s)\)</span>.
+</figcaption>
+</figure>
+</div>
+</section>
+<section id="probability-of-extinction-with-more-than-one-initial-infective" class="level2" data-number="4.2">
+<h2 data-number="4.2" class="anchored" data-anchor-id="probability-of-extinction-with-more-than-one-initial-infective"><span class="header-section-number">4.2</span> Probability of extinction with more than one initial infective</h2>
+<p>The results above are for the Galton-Watson branching process with a single initial infective, <span class="math inline">\(Z_0=1\)</span>.</p>
+<p>More generally, if <span class="math inline">\(Z_0=m\ge 1\)</span>, we can still calculate extinction probabilities in the same way because a process starting with <span class="math inline">\(m\)</span> infectives is equivalent to <span class="math inline">\(m\)</span> independent processes each starting with one infective. Therefore, the overall process is extinct if anf only if all of the <span class="math inline">\(m\)</span> sub-processes are extinct. By independence, we obtain <span class="math display">\[
+P(Z_t = 0 \ | Z_0=m) = P(Z_t=0 \ | Z_0=1)^m, \qquad m=1,2,\ldots
+\]</span></p>
+<p>Similarly, PUE is given by <span class="math display">\[
+\lim_{t\to \infty} P(Z_t = 0 \ | Z_0=m) = q^m, \qquad m=1,2,\ldots
+\]</span></p>
+<p>These results can be derived rigorously using generating functions.</p>
+</section>
+<section id="geometric-offspring-distribution" class="level2" data-number="4.3">
+<h2 data-number="4.3" class="anchored" data-anchor-id="geometric-offspring-distribution"><span class="header-section-number">4.3</span> Geometric offspring distribution</h2>
+<p>An important special case is where the offspring distribution is geometric with support on <span class="math inline">\(n=0,1,2\ldots\)</span>, which we will write <span class="math display">\[
+X_i \sim \mathrm{Geom}(\R_0)
+\]</span></p>
+<p>This offspring distribution arises in a continuous-time model when each infective transmits the disease to others as a Poisson process for period of time that is exponentially distributed.</p>
+<p>The PMF for a geometric distribution on <span class="math inline">\(k=0,1,2\ldots\)</span> with mean <span class="math inline">\(\R_0\)</span> is <span class="math display">\[
+p_n = \frac{\R_0^n}{(\R_0+1)^{n+1}}
+\]</span> and its generating function is <span class="math display">\[
+G_X(s) = \frac{1}{1+\R_0(1-s)}
+\]</span></p>
+<p>The fixed points of <span class="math inline">\(G_X(s)\)</span> satisfy <span class="math display">\[
+(s-1)(\R_0s-1)=0
+\]</span> which has roots <span class="math inline">\(s=1\)</span> and <span class="math inline">\(s=1/\R_0\)</span>. Hence we have the following result</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Probability of ultimate extinction for a geometric offspring distribution
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The PUE <span class="math inline">\(q\)</span> for a supercritical Galton-Watson branching process with a single initial infective and geometric offspring distribution is</p>
+<p><span class="math display">\[
+q=\frac{1}{\R_0}
+\]</span></p>
+</div>
+</div>
+<p>We can see that when <span class="math inline">\(\R_0\)</span> is only slightly above <span class="math inline">\(1\)</span>, <span class="math inline">\(q\)</span> is close to <span class="math inline">\(1\)</span> so the process is highly likely to go extinct. As <span class="math inline">\(\R_0\)</span> increases, <span class="math inline">\(q\)</span> decreases as you would expect, but note PUE remains significant even for reasonably high values of <span class="math inline">\(\R_0\)</span>. For example, a disease with <span class="math inline">\(\R_0=5\)</span> would be considered highly transmissible but still has a 20% chance of going extinct.</p>
+</section>
+<section id="poisson-offspring-distribution" class="level2" data-number="4.4">
+<h2 data-number="4.4" class="anchored" data-anchor-id="poisson-offspring-distribution"><span class="header-section-number">4.4</span> Poisson offspring distribution</h2>
+<p>The Poisson distribution is another special case: <span class="math display">\[
+X_i\sim \mathrm{Poiss}(\R_0)
+\]</span></p>
+<p>Similar to the geometric distribution, the Poisson distribution can arise from a continuous-time model where infectives transmit as a Poisson process, but when the infectious period is a constant rather than exponentially distributed. The Poisson distribution with mean <span class="math inline">\(\R_0\)</span> has PMF <span class="math display">\[
+p_n = \frac{\R_0^n e^{-\R_0}}{n!}
+\]</span> and generating function <span class="math display">\[
+G_X(s) = e^{-\R_0(1-s)}
+\]</span> This leads to the following result for PUE.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Probability of ultimate extinction for a Poisson offspring distribution
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The PUE <span class="math inline">\(q\)</span> for a Galton-Watson branching process with a single initial infective and Poisson offspring distribution is the smallest root of the fixed-point equation</p>
+<p><span class="math display">\[
+q = e^{-\R_0(1-q)}
+\]</span></p>
+</div>
+</div>
+<p>Note that the probability of a large epidemic <span class="math inline">\(p=1-q\)</span> satisfies <span class="math inline">\(1-p = e^{-\R_0 p}\)</span>. Looking back to Part 2, notice that this is identical to the final size equation for the fraction <span class="math inline">\(z\)</span> of the population infected in an SIR model!</p>
+<p>It turns out this is not a coincidence. Although a rigorous argument is beyond the scope of what we can cover here, intuitively this may be seen as follows - see <a href="https://doi.org/10.1016/j.idm.2018.08.001">Miller (2018)</a> for further details.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Equivalence of epidemic probability and final epidemic size
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Consider a branching process that is run backwards in time, where an individual <span class="math inline">\(i\)</span>’s “offspring” represent the people who would transmit the disease to <span class="math inline">\(i\)</span> if they themselves became infected. These individuals are called <em>ancestors</em> of <span class="math inline">\(i\)</span>.</p>
+<p>Now, the probability that individual <span class="math inline">\(i\)</span> escapes infection is the probability that this backwards branching process goes extinct, and therefore has negligible probability of forming a transmission chain connecting individual <span class="math inline">\(i\)</span> to the initial seed case in the (infinitely large) population. Thus the extinction probability of the backwards branching process is equivalent to the probability of escaping infection, which in a large population is equivalent to the expected fraction of the population that remains uninfected at the end of the epidemic.</p>
+<p>Under common assumptions, the number of ancestors has a Poisson distribution, so the extinction probability <span class="math inline">\(q\)</span> of the backward branching process satisfies <span class="math inline">\(q = e^{-\R_0(1-q)}\)</span> and the result follows.</p>
+<p>A Poisson ancestor distribution is a reasonable model if individual variability in transmission is caused primarily by biological factors (e.g.&nbsp;some individuals have a higher viral load) or by chance events (e.g.&nbsp;superspreading events where an infectious individual happened to visit a crowded location).</p>
+<p>However, if the heterogeneity is largely due to individual characteristics (i.e.&nbsp;some individuals consistently have higher contact rates than other) then a Poisson ancestor distribution may not be appropriate: those with a high transmission rate are likely to be the same people who have a high risk of getting infected (i.e.&nbsp;have a large number of ancestors). In this case the situation is more complicated, and we would need a network model or a model that accounts for heterogeneity in contact rates. We will see an example of this in Topic 11.</p>
+</div>
+</div>
+</section>
+<section id="negative-binomial-offspring-distribution" class="level2" data-number="4.5">
+<h2 data-number="4.5" class="anchored" data-anchor-id="negative-binomial-offspring-distribution"><span class="header-section-number">4.5</span> Negative binomial offspring distribution</h2>
+<p>The geometric and Poisson distributions are special cases of the <em>negative binomial</em> distribution, which is a two-parameter distribution. There are different ways to parameterise the negative binomial distribution, but one of the more convenient for branching process models is to use the mean <span class="math inline">\(\R_0\)</span> and the so-called <em>dispersion parameter</em> <span class="math inline">\(\kappa\)</span>, and we will write this as <span class="math display">\[
+X_i \sim \mathrm{NegBin}(\R_0,\kappa)
+\]</span></p>
+<p>This distribution has PMF <span class="math display">\[
+p_n = \frac{\Gamma(n+\kappa)}{\Gamma(n+1)\Gamma(\kappa)} \frac{\R_0^n \kappa^\kappa}{(\R_0+\kappa)^{n+\kappa}}
+\]</span> and generating function <span class="math display">\[
+G_X(s) = \left(\frac{\kappa}{\kappa + \R_0(1-s)} \right)^\kappa
+\]</span> The geometric distribution is a special case of the negative binomial distribution with <span class="math inline">\(\kappa=1\)</span>. The Poisson distribtution is a limiting case as <span class="math inline">\(\kappa\to\infty\)</span>. Reducing <span class="math inline">\(\kappa\)</span> while keeping <span class="math inline">\(\R_0\)</span> fixed increases the variance of the distribution. This can often have the effect of increasing the probability of zero offspring, while also increasing the probability of having a lot more offspring than average, i.e.&nbsp;putting more weight in the tail of the distribution.</p>
+<p>One way to obtain the negative binomial distribution is a combination of a Poisson distribution with a gamma-distributed mean. Suppose each individual <span class="math inline">\(i\)</span> has some (latent) expected number of offspring <span class="math inline">\(Y_i\ge 0\)</span>, which is an IID draw from a gamma distribution: <span class="math display">\[
+Y_i \sim \Gamma(\alpha,\beta)
+\]</span> where <span class="math inline">\(\alpha\)</span> is the shape parameter and <span class="math inline">\(\beta\)</span> is the scale parameter, so that <span class="math inline">\(E(Y)=\alpha \beta\)</span>. <span class="math inline">\(Y_i\)</span> may be thought of as an “individual reproduction number”, which captures variation from one person to another in: (i) biological infectiousness (e.g.&nbsp;viral shedding rate); and (ii) number of contacts during the infectious period. Now suppose that, given <span class="math inline">\(Y_i\)</span>, the actual number of offspring produced by infective <span class="math inline">\(i\)</span> is <span class="math display">\[
+X_i \ | \ Y_i \sim\mathrm{Poiss}(Y_i)
+\]</span> Then it can be shown that <span class="math display">\[
+X_i\sim\mathrm{NegBin}(\R_0, \kappa )
+\]</span> where <span class="math inline">\(\R_0=\alpha \beta\)</span> and <span class="math inline">\(\kappa=\alpha\)</span>.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Superspreading
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>As a result of these properties, the negative binomial offspring distribution is often used as a model for <em>superspreading</em>, i.e.&nbsp;diseases where most individuals infect only one or two others, but a small minority (the superspreaders) infect a large number of people – see <a href="https://www.nature.com/articles/nature04153">Lloyd-Smith et al.&nbsp;(2005)</a>.</p>
+</div>
+</div>
+<p>Geometrically, we can see that increasing <span class="math inline">\(p_0\)</span> will tend to shift the smaller fixed point of <span class="math inline">\(G_X(s)\)</span> to the right, and hence increase <span class="math inline">\(q\)</span> (see <a href="#fig-generating-functions" class="quarto-xref">Figure&nbsp;2</a>). Thus, for a given mean <span class="math inline">\(\R_0\)</span>, increasing the variance of the offspring distribution often increases the PUE. So, perhaps counterintuitively, when superspreading is a key feature of the transmission dynamics, outbreaks are more likely to go extinct than when everyone infects close to <span class="math inline">\(\R_0\)</span> other people (see <a href="#fig-PUE" class="quarto-xref">Figure&nbsp;3</a>).</p>
+<div id="fig-PUE" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-PUE-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figures/PUE.png" class="img-fluid figure-img" width="600">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-PUE-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;3: Probability of ultimate extinction against <span class="math inline">\(\R_0\)</span> for a Galton-Watson branching process with one initial infective and a negative binomial ofspring distributoin with different values of <span class="math inline">\(\kappa\)</span>. Smaller values of <span class="math inline">\(\kappa\)</span> mean higher variance in the offspring distribution (i.e.&nbsp;more superspreading) which results in higher extinction probability. Reproduced from <a href="https://www.nature.com/articles/nature04153">Lloyd-Smith et al.&nbsp;(2005)</a>.
+</figcaption>
+</figure>
+</div>
+</section>
+</section>
+<section id="mean-and-variance-in-outbreak-size" class="level1" data-number="5">
+<h1 data-number="5"><span class="header-section-number">5</span> Mean and variance in outbreak size</h1>
+<section id="mean-number-of-infections" class="level2" data-number="5.1">
+<h2 data-number="5.1" class="anchored" data-anchor-id="mean-number-of-infections"><span class="header-section-number">5.1</span> Mean number of infections</h2>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Mean number of infections in generation <span class="math inline">\(t\)</span>
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If the initial number of infectives in a Galton-Watson branching process is <span class="math inline">\(Z_0=m\)</span> then the mean number of infections at generation <span class="math inline">\(t\)</span> is <span class="math display">\[
+E(Z_t) = m\R_0^t, \qquad t=0,1,2\ldots
+\]</span></p>
+</div>
+</div>
+<p>This can be shown using proof by induction. Suppose <span class="math inline">\(E(Z_{t-1})=m\R_0^{t-1}\)</span> for some <span class="math inline">\(t\)</span>. The law of conditional expectation says that <span class="math inline">\(E(Z_t) = E\left( E(Z_t \ | Z_{t-1}) \right)\)</span>. Since <span class="math inline">\(E(Z_t \ | Z_{t-1})\)</span> is the expected value of the sum of <span class="math inline">\(Z_{t-1}\)</span> IID random variables with mean <span class="math inline">\(\R_0\)</span>, it equals <span class="math inline">\(\R_0 E(Z_{t-1})\)</span>. By the induction hypothesis this equal <span class="math inline">\(m\R_0^t\)</span> and the result follows.</p>
+</section>
+<section id="mean-number-of-infections-conditional-on-non-extinction" class="level2" data-number="5.2">
+<h2 data-number="5.2" class="anchored" data-anchor-id="mean-number-of-infections-conditional-on-non-extinction"><span class="header-section-number">5.2</span> Mean number of infections conditional on non-extinction</h2>
+<p>The expression above for <span class="math inline">\(E(Z_t)\)</span> includes all realisation of the process, including any that have gone extinct (i.e.&nbsp;for which <span class="math inline">\(Z_t=0\)</span>).</p>
+<p>We may also obtain an expression for the mean number of infections conditional on the outbreak not having gone extinct by writing <span class="math display">\[
+E(Z_t) = E(Z_t \ | Z_t&gt;0)P(Z_t&gt;0) + E(Z_t \ | Z_t=0)P(Z_t=0)
+\]</span></p>
+<p>The second term is clearly zero and so we have <span class="math display">\[
+E(Z_t \ | Z_t&gt;0) = \frac{m\R_0^t}{P(Z_t&gt;0)}, \qquad t=0,1,2,\ldots
+\]</span></p>
+<p>Hence, if we know the outbreak has not gone extinct, the expected number of infections is larger than <span class="math inline">\(m\R_0^t\)</span> by a factor <span class="math inline">\(1/P(Z_t&gt;0)\)</span>.</p>
+<p><strong>Mean number of infections in the critical case</strong></p>
+<p>In the critical case (i.e.&nbsp;<span class="math inline">\(\R_0=1\)</span>) with <span class="math inline">\(Z_0=1\)</span>, we have <span class="math inline">\(E(Z_t)=1\)</span> for <span class="math inline">\(t=0,1,2,\ldots\)</span>. We also know that PUE for a critical branching process is <span class="math inline">\(1\)</span>. This seems like a paradox: the outbreak is guaranteed to go extinct and yet the mean number of infections in generation <span class="math inline">\(t\)</span> is equal to <span class="math inline">\(1\)</span> for all <span class="math inline">\(t\)</span>.</p>
+<p>From the result above, the mean number of infections conditional on non-extinction is <span class="math inline">\(E(Z_t \ | Z_t&gt;0) = 1/P(Z_t&gt;0)\)</span>. Hence, <span class="math inline">\(E(Z_t \ | Z_t&gt;0)\to\infty\)</span> as <span class="math inline">\(t\to\infty\)</span>. This explains the apparent paradox: the outbreak is certain to go extinct, but the mean size of those outbreaks that have not yet gone extinct increases without bound in such a way that the overall mean number of infections is always <span class="math inline">\(1\)</span>.</p>
+</section>
+<section id="mean-cumulative-number-of-infections" class="level2" data-number="5.3">
+<h2 data-number="5.3" class="anchored" data-anchor-id="mean-cumulative-number-of-infections"><span class="header-section-number">5.3</span> Mean cumulative number of infections</h2>
+<p>The results above are for the mean number of <em>new</em> infections <span class="math inline">\(Z_t\)</span> in generation <span class="math inline">\(t\)</span>. We can also calculate the mean <em>cumulative</em> number of infections <span class="math inline">\(C_t\)</span> up to generation <span class="math inline">\(t\)</span>: <span class="math display">\[
+C_t = \sum_{t'=0}^t Z_{t'}
+\]</span></p>
+<p>Since the mean of a sum of random variables is equal to the sum of their means, we obtain (provided <span class="math inline">\(\R_0\neq 1\)</span>) <span class="math display">\[
+E(C_t) =  \sum_{t'=0}^t E(Z_{t'}) = m \frac{\R_0^{t+1}-1}{\R_0-1}
+\]</span></p>
+<p>In the supercritical case (i.e.&nbsp;<span class="math inline">\(\R_0&gt;1\)</span>), clearly <span class="math inline">\(E(C_t)\)</span> grows geometrically with <span class="math inline">\(t\)</span> as we would expect. However, in the subcritical case the sum converges, giving the following result</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Expected size of subcritical outbreaks
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The expected total number of infections in a subcritical Galton-Watson branching process with <span class="math inline">\(m\)</span> initial infectives is <span class="math display">\[
+\lim_{t\to\infty} E(C_t) = \frac{m}{1-\R_0}
+\]</span></p>
+</div>
+</div>
+<p>It can be seen from this equation that outbreaks where <span class="math inline">\(\R_0\)</span> is only just less than the threshold value of <span class="math inline">\(1\)</span> can produce quite large numbers of cases. For example, if <span class="math inline">\(\R_0=0.95\)</span>, the average outbreaks size starting from a single seed case is <span class="math inline">\(20\)</span>.</p>
+<p>Of course, this is just result is just for the <em>mean</em> outbreak size – if there is significant variance in the offspring distribution (i.e.&nbsp;superspreading – see above) then outbreaks can be several times larger than the mean.</p>
+</section>
+<section id="variance-in-outbreak-size" class="level2" data-number="5.4">
+<h2 data-number="5.4" class="anchored" data-anchor-id="variance-in-outbreak-size"><span class="header-section-number">5.4</span> Variance in outbreak size</h2>
+<p>Consider the variance <span class="math inline">\(\mathrm{Var}(Z_t)\)</span> in outbreak size at generation <span class="math inline">\(t\)</span> for a branching process with <span class="math inline">\(Z_0=m\)</span>.</p>
+<p>Application of the law of total variance gives the following iterative relationship.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Variance in outbreak size
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If the initial number of infectives in a Galton-Watson branching process is <span class="math inline">\(Z_0=m\)</span> then the variance <span class="math inline">\(\sigma_t^2=\mathrm{Var}(Z_t)\)</span> in the number of infections at generation <span class="math inline">\(t\)</span> is</p>
+<p><span class="math display">\[
+\sigma_t^2 = \R_0^2 \sigma_{t-1}^2 + m\R_0^{t-1} \sigma_X^2
+\]</span> where <span class="math inline">\(\R_0=E(X)\)</span> and <span class="math inline">\(\sigma_X^2=\mathrm{Var}(X)\)</span> are the mean and variance respectively of the offspring distribution.</p>
+</div>
+</div>
+<p>In the critical case <span class="math inline">\(\R_0=1\)</span>, this reduces to <span class="math inline">\(\sigma_t^2=mt\sigma_X^2\)</span> so the variance grows linearly in time.</p>
+</section>
+</section>
+<section id="time-to-extinction" class="level1" data-number="6">
+<h1 data-number="6"><span class="header-section-number">6</span> Time to extinction</h1>
+<p>Define <span class="math inline">\(r_t=P(Z_t = 0 \ | Z_0=1)\)</span> to be the survival probability at time <span class="math inline">\(t\)</span> for a Galton-Watson branching process starting with a single infected individual.</p>
+<p>We know that <span class="math inline">\(\lim_{t\to\infty}r_t = 1- q\)</span>, where <span class="math inline">\(q\)</span> is the PUE which can be calculated as above. The next result quantifies how quickly <span class="math inline">\(r_t\)</span> approaches <span class="math inline">\(1-q\)</span> over time.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Survival probability convergence
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The survival probability <span class="math inline">\(r_t\)</span> for a Galton-Watson branching process in generation <span class="math inline">\(t\)</span> has the following asympotitc behaviour for large <span class="math inline">\(t\)</span>:</p>
+<ol type="1">
+<li><strong>Subcritical case: <span class="math inline">\(\R_0&lt;1\)</span>.</strong> <span class="math inline">\(r_t\sim c\R_0^t\)</span> as <span class="math inline">\(t\to\infty\)</span>.</li>
+<li><strong>Supercritical case: <span class="math inline">\(\R_0&gt;1\)</span>.</strong> <span class="math inline">\(r_t\sim c\gamma^t\)</span> as <span class="math inline">\(t\to\infty\)</span> where <span class="math inline">\(\gamma=G_X'(q)&lt;1\)</span>.</li>
+<li><strong>Critical case: <span class="math inline">\(\R_0=1\)</span>.</strong> <span class="math inline">\(r_t \sim 2/(\sigma^2 t)\)</span> as <span class="math inline">\(t\to\infty\)</span> where <span class="math inline">\(\sigma=\mathrm{Var}(X)\)</span> is the variance of the offspring distribution.</li>
+</ol>
+</div>
+</div>
+<p>From this we see that, in the subcritical and supercritical case, <span class="math inline">\(r_t\)</span> converges geometrically to its limit, while in the critical case it converges more slowly (proportional to <span class="math inline">\(1/t\)</span>).</p>
+<p>In the subcritical and critical cases, PUE is <span class="math inline">\(1\)</span> (i.e.&nbsp;extinction is guaranteed). Define the random variable <span class="math inline">\(T\)</span> to the number of generations until the outbreak becomes extinct (i.e.&nbsp;the smallest value of <span class="math inline">\(t\)</span> for which <span class="math inline">\(Z_t=0\)</span>). The above leads to following results about <span class="math inline">\(E(T)\)</span>.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Mean time to extinction
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The mean time to extinction <span class="math inline">\(E(T)\)</span> is finite in the subcritical case (<span class="math inline">\(\R_0&lt;1\)</span>) and infinte in the critical case (<span class="math inline">\(\R_0=1\)</span>) .</p>
+</div>
+</div>
+</section>
+<section id="survival-probability-for-a-more-general-model" class="level1" data-number="7">
+<h1 data-number="7"><span class="header-section-number">7</span> Survival probability for a more general model</h1>
+<p>Consider a more general model in which each invective’s transmission events do not all occur simultaneously but are spread out over time.</p>
+<p>Suppose the number of transmissions from infective <span class="math inline">\(i\)</span> on day <span class="math inline">\(\tau\)</span> after they became infected is <span class="math display">\[
+N_{i,\tau} \sim\mathrm{Poiss}(\R_0 g_\tau)
+\]</span> for <span class="math inline">\(\tau=1,2,\ldots\)</span>, where <span class="math inline">\(\sum_{\tau=1}^\infty g_\tau=1\)</span>. Here, <span class="math inline">\(g_\tau\)</span> represents the proportion of transmission events that occur <span class="math inline">\(\tau\)</span> days (called the generation interval) after infection.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Generation interval
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The time <span class="math inline">\(\tau\)</span> between an individual getting infected and transmitting the disease to someone else is called the <em>generation interval</em>.</p>
+<p>The function <span class="math inline">\(g_\tau\)</span> is the PMF of the generation interval distribution.</p>
+</div>
+</div>
+<p>Let <span class="math inline">\(T_i\)</span> denote the infection time of the <span class="math inline">\(i^\mathrm{th}\)</span> infective and let <span class="math inline">\(\inc_t =\sum_i N_{i,t-T_i}\)</span> denote the number of newly infected individuals on day <span class="math inline">\(t\)</span>. Then since the sum of a number of independent Poisson random variables is Poisson distributed with the sum of the individual means, <span class="math display">\[
+\inc_t \sim \mathrm{Poiss}\left( \sum_i \R_0 g_{t-{T_i}}  \right)
+\]</span></p>
+<p>This model can be simulated computationally, but we can still calculate some properties analytically.</p>
+<section id="offpsring-distribution-and-probaility-of-extinction-for-a-single-seed" class="level2" data-number="7.1">
+<h2 data-number="7.1" class="anchored" data-anchor-id="offpsring-distribution-and-probaility-of-extinction-for-a-single-seed"><span class="header-section-number">7.1</span> Offpsring distribution and probaility of extinction for a single seed</h2>
+<p>The lifetime number of offspring produced by a randomly chosen infective <span class="math inline">\(i\)</span> is<br>
+<span class="math display">\[
+X_i = \sum_{\tau=1}^\infty N_{i,\tau} \sim\mathrm{Poiss}(\R_0)
+\]</span></p>
+<p>Note that we can map this general time-dependent model onto a Galton-Watson branching process by identifying the offspring of each infective and ignoring the times at which they were infected. Hence the PUE for this more general model is equivalent to the PUE <span class="math inline">\(q\)</span> for the Galton-Watson branching process with this offspring distribution (see above).</p>
+</section>
+<section id="probability-of-extinction-after-some-number-of-infections" class="level2" data-number="7.2">
+<h2 data-number="7.2" class="anchored" data-anchor-id="probability-of-extinction-after-some-number-of-infections"><span class="header-section-number">7.2</span> Probability of extinction after some number of infections</h2>
+<p>Suppose we have observed the values of the infection time series <span class="math inline">\(\inc_t\)</span> up to some point in time <span class="math inline">\(t_1\)</span> and we want to know the probability that the outbreak goes extinct after <span class="math inline">\(t_1\)</span>. Note that unlike the Galton-Watson model, because of the distributed time from infection to transmission, it is possible to have <span class="math inline">\(\inc_t=0\)</span> for some <span class="math inline">\(t\)</span> but the outbreak is not extinct (i.e.&nbsp;<span class="math inline">\(\inc_s&gt;0\)</span> for some <span class="math inline">\(s&gt;t\)</span>).</p>
+<p>For the outbreak to go extinct requires that the transmission chains downstream of each of the <span class="math inline">\(\sum_{t=0}^{t_1} \inc_t\)</span> individuals infected up to time <span class="math inline">\(t_1\)</span> all go extinct. Consider a single transmission chain starting from individual <span class="math inline">\(i\)</span>, infected at time <span class="math inline">\(T_i\le t_1\)</span>. Let <span class="math inline">\(P_i\)</span> denote the probability that this transmission chain goes extinct.</p>
+<p>Note that <span class="math inline">\(P_i\)</span> is not the same thing as the single-seed extinction probability <span class="math inline">\(q\)</span>, because in general individual <span class="math inline">\(i\)</span> will already be part way or all of the way through their infectious period by time <span class="math inline">\(t_1\)</span>. So the number of offspring from infective <span class="math inline">\(i\)</span> who are “born” (i.e.&nbsp;get infected) after time <span class="math inline">\(t_1\)</span> has a different distribution to the distribution for the lifetime number of offspring <span class="math inline">\(X_i\)</span>.</p>
+<p>We can calculate <span class="math inline">\(P_i\)</span> by conditioning on the number of future offspring from infective <span class="math inline">\(i\)</span> born after time <span class="math inline">\(t_i\)</span>, which we denote <span class="math inline">\(\tilde{X}_i\)</span>: <span class="math display">\[
+\tilde{X}_i = \sum_{\tau={t_1+1-T_i}}^\infty N_{i,\tau}
+\]</span> and hence <span class="math display">\[
+\tilde{X}_i \sim \mathrm{Poiss}\left(\R_0 (1-F_{t_1-T_i})\right)
+\]</span></p>
+<p>where <span class="math inline">\(F_\tau= \sum_{\tau'=1}^\tau g_{\tau'}\)</span> is the CDF of the generation interval distribution.</p>
+<p>Here we see that the expected future offspring from infective <span class="math inline">\(i\)</span> is discounted by <span class="math inline">\(1-F_{t_1-T_i}\)</span> to account for the portion of the generation interval distribution that has already occurred prior to time <span class="math inline">\(t_1\)</span>.</p>
+<p>Now observe that, in the event <span class="math inline">\(\tilde{X}_i=n\)</span>, the transmission chain downstream from infective <span class="math inline">\(i\)</span> will go extinct if and only if the transmission chains downstream of all <span class="math inline">\(n\)</span> offspring go extinct (<span class="math inline">\(n=0,1,2,\ldots\)</span>). Since these offspring occur after time <span class="math inline">\(t_1\)</span>, their offspring distribution is the full lifetime offspring distribution <span class="math inline">\(X_i\)</span>, and hence each offspring’s downstream chain will go extinct with probability <span class="math inline">\(q\)</span>. By independence, all <span class="math inline">\(n\)</span> downstream chains will go extinct with probability <span class="math inline">\(q^n\)</span>.</p>
+<p>Conditioning on the value of <span class="math inline">\(\tilde{X}_i\)</span>, we may now write <span class="math display">\[
+P_i = \sum_{n=0}^\infty P(\tilde{X}_i=n) q^n
+\]</span> and observe that tthe right-hand side is just the generating function <span class="math inline">\(\tilde{G}_i\)</span> for <span class="math inline">\(\tilde{X}_i\)</span> evaluated at <span class="math inline">\(q\)</span>. Since <span class="math inline">\(\tilde{X}_i\)</span> is Poisson distributed, we have <span class="math display">\[
+P_i = \tilde{G}_i(q) = \exp\left(-\R_0(1-F_{t_1-T_i}) (1-q) \right)
+\]</span></p>
+<p>By independence, the overall outbreak extinction probability is just <span class="math display">\[
+P_\mathrm{ext} = \prod_{i=1}^m P_i = \exp\left(-\R_0 \sum_{i=1}^m (1-F_{t_1-T_i}) (1-q) \right)
+\]</span> where <span class="math inline">\(m=\sum_{t=0}^{t_1} \inc_t\)</span> is the total number of infections up to time <span class="math inline">\(t_1\)</span>.</p>
+<p>Since the value of <span class="math inline">\(1-F_{t_1-T_i}\)</span> is the same for all <span class="math inline">\(\inc_t\)</span> individuals infected on a given day <span class="math inline">\(t\)</span>, we can rewrite the sum over infectives <span class="math inline">\(i\)</span> as an equivalent sum over their infection times <span class="math inline">\(t\)</span>: <span class="math display">\[
+P_\mathrm{ext} = \exp\left(-(1-q)\R_0 \sum_{t=0}^{t_1} \inc_t (1-F_{t_1-t}) \right)
+\]</span></p>
+<p>Note that the quantity <span class="math inline">\(\R_0 \sum_{t=0}^{t_1} \inc_t (1-F_{t_1-t})\)</span> represents the remaining future infection pressure (i.e.&nbsp;total expected number of offspring) from all individuals infected up to time <span class="math inline">\(t_1\)</span>.</p>
+</section>
+</section>
+<section id="branching-process-with-susceptible-depletion" class="level1" data-number="8">
+<h1 data-number="8"><span class="header-section-number">8</span> Branching process with susceptible depletion</h1>
+<p>The Galton-Watson branching process models an outbreak in an infinitely large population such that, no matter how many people have been infected, there is still an unlimited pool of susceptibles. In reality, as we have seen in the SIR model, depletion of the susceptible population due to infections will slow and eventually end the epidemic.</p>
+<p>It is possible to modify the stochastic branching process for a finite population. Suppose that in a population of size <span class="math inline">\(N\)</span>, an infected individual has probability <span class="math inline">\(p\)</span> of transmitting the disease to each susceptible population member, independently of other population members. This is known as the <em>Reed-Frost model</em>.</p>
+<p>The probability of a susceptible individual <em>escaping</em> infection from a single infected individual is <span class="math inline">\(1-p\)</span>. Hence if the number of infected individuals in generation <span class="math inline">\(t\)</span> is <span class="math inline">\(Z_t\)</span>, the probability of a susceptible individual escaping infection from all <span class="math inline">\(Z_t\)</span> individuals is <span class="math inline">\((1-p)^{Z_t}\)</span>. So the total of number of infections in the next generation is a binomial random variable with <span class="math inline">\(S_t\)</span> trials, and probability <span class="math inline">\(1-(1-p)^{Z_t}\)</span> of infection.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Reed-Frost model
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The number of individuals <span class="math inline">\(Z_{t+1}\)</span> infected at generation <span class="math inline">\(t+1\)</span> is <span class="math display">\[
+Z_{t+1} \sim \mathrm{Bin}(S_t, 1-(1-p)^{Z_t})
+\]</span> and the number susceptible <span class="math inline">\(S_{t+1}\)</span> is <span class="math display">\[
+S_{t+1} = S_t-Z_t
+\]</span> for <span class="math inline">\(t=0,1,2,\ldots\)</span>.</p>
+</div>
+</div>
+<p>Since a single infective infects each susceptible with probability <span class="math inline">\(p\)</span>, the basic reproduction number for the Reed-Frost model is <span class="math inline">\(\R_0=pN\)</span>.</p>
+<p>For a sufficiently large population, in the early stages of the outbreak when <span class="math inline">\(S/N\approx 1\)</span> (and so the probability that the same susceptible will be the “target” of more than one transmission attempt is low), the Reed-Frost model behaves like a Galton-Watson branching process with offspring distribution <span class="math inline">\(\mathrm{Bin}(N,p)\)</span>. When <span class="math inline">\(N\)</span> is large, this will be approximately Poisson with mean <span class="math inline">\(\R_0=pN\)</span>.</p>
+<p>If the population is sufficiently large, we may equate the probability of escaping infection from every infective in the whole epidemic with the fraction <span class="math inline">\(1-z\)</span> remaining susceptible at the end of the epidemic. If <span class="math inline">\(zN\)</span> people are infected, the probability of escaping infection by all of them is <span class="math inline">\((1-p)^{zN}\)</span>, and hence <span class="math display">\[
+1-z = \left( 1-\frac{\R_0}{N} \right)^{zN}
+\]</span></p>
+<p>In the large <span class="math inline">\(N\)</span> limit, this is approximately <span class="math display">\[
+1-z = e^{-\R_0 z}
+\]</span> which is the same final size equation we have seen previously for deterministic models. Here <span class="math inline">\(z\)</span> needs to be interpreted as the fraction infected conditional on the outbreak not going extinct by chance in the early stages. Overall, if there are initially <span class="math inline">\(m\)</span> infections, some proportion <span class="math inline">\(q^m\)</span> of outbreak go extinct having infected a negligible fraction of the population, while the remainder of outbreaks infect a fraction close to <span class="math inline">\(z^*\)</span>. As we saw earlier, since the offspring distribution is close to Poisson in the large population cases, we have <span class="math inline">\(q\approx 1-z^*\)</span>.</p>
+<p>Let the random variable <span class="math inline">\(Y\)</span> to denote the total fraction of the population infected in a given realisation of the process, conditional on a large outbreak. Provided <span class="math inline">\(N\)</span> is sufficiently large, <span class="math inline">\(Y\)</span> is approximately normally distributed: <span class="math display">\[
+\sqrt{N}(Y-z^*) \sim N\left(0, \frac{z^*(1-z^*)}{(1-(1-z^*)\R_0)^2}  \right)
+\]</span></p>
+<p>It is beyond the scope of these notes to prove this result - for further details see <a href="https://doi.org/10.48550/arXiv.1808.05350">Britton and Pardoux, 2019</a>.</p>
+<p>These results apply to finite but sufficiently large populations. When <span class="math inline">\(N\)</span> is not very large, calculating the exact final size distribution is more difficult, because there is a combinatorial explosion in the number of ways that it is possible to end up with a given number of people having been infected, even when <span class="math inline">\(N\)</span> is relatively small. However, these can be computed easily by simulation.</p>
+<p><a href="#fig-reed-frost" class="quarto-xref">Figure&nbsp;4</a> shows the final size distribution when a single initial infective is introduced to populations of different sizes, with a fixed value of <span class="math inline">\(\R_0=2\)</span>. For small populations, the modal outcome is that the entire population is infected (recalling that <span class="math inline">\(p=\R_0/N\)</span> so the individual transmission probability is quite large in these cases). For intermediate population sizes, a bimodal distribution develops: some outbreaks stall after a relatively small number of infections; some infect almost everyone.</p>
+<p>For a population size of around <span class="math inline">\(N=50\)</span> and larger (for this value of <span class="math inline">\(\R_0=2\)</span>), the two modes are clearly separated: outbreaks either go extinct without infecting a significant fraction of the population, or they infect a large fraction whose distribution is increasingly well approximated by the normal distribution seen above with mean <span class="math inline">\(z^*\approx 0.797\)</span>. We also see that the probability <span class="math inline">\(p_{20}\)</span> that the outbreak infects a significant fraction of the population (chosen to be at least 20% in this example) also converges to <span class="math inline">\(z^*\)</span> as <span class="math inline">\(N\)</span> increases, as expected from the Galton-Watson theory above.</p>
+<p><a href="#fig-reed-frost-DD" class="quarto-xref">Figure&nbsp;5</a> shows the same results, but with fixed <span class="math inline">\(p=0.1\)</span> so that <span class="math inline">\(\R_0=pN\)</span> increases with population size. For small populations, the process is subcritical (i.e.&nbsp;<span class="math inline">\(\R_0&lt;1\)</span>) and the modal outcome is that there are no infections beyond the seed case. As <span class="math inline">\(N\)</span> increases, the size and frequency of large outbreaks increase. For populations above around <span class="math inline">\(N=50\)</span>, we have <span class="math inline">\(\R_0&gt;5\)</span> and the epidemic infects essentially the whole population with probability <span class="math inline">\(1\)</span>.</p>
+<p>Note that fixing <span class="math inline">\(p\)</span> as <span class="math inline">\(N\)</span> varies (as in <a href="#fig-reed-frost-DD" class="quarto-xref">Figure&nbsp;5</a>) corresponds to a density-dependent transmission model, whereas fixing <span class="math inline">\(\R_0\)</span> (as in <a href="#fig-reed-frost" class="quarto-xref">Figure&nbsp;4</a>) is a frequency-dependent transmission model. The small population results in <a href="#fig-reed-frost-DD" class="quarto-xref">Figure&nbsp;5</a> are particularly relevant for modelling transmission within households, where a density-dependent model may be more realistic that a transmission-dependent model.</p>
+<div id="fig-reed-frost" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-reed-frost-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figures/reed_frost.png" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-reed-frost-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;4: Simulations of the Reed-Frost model. Each panel shows the histogram of final epidemic size (cumulative fraction of the population infected) when a single infective is introduced into populations of different size <span class="math inline">\(N\)</span>, from <span class="math inline">\(10^5\)</span> model simulations. For all cases <span class="math inline">\(\R_0=2\)</span> and the individual transmission probability is <span class="math inline">\(p=\R_0/N\)</span>. For each value of <span class="math inline">\(N\)</span>, the proportion <span class="math inline">\(p_\mathrm{20}\)</span> of simulations that infected at least 20% of the population is shown. In the lower panels, the solid red line shows the expected final size of large outrbeaks <span class="math inline">\(z^*\approx 0.797\)</span> and the dotted red lines show the 95% prediction interval of the asymptotic normal distribution for the final size.
+</figcaption>
+</figure>
+</div>
+<div id="fig-reed-frost-DD" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-reed-frost-DD-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figures/reed_frost_DD.png" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-reed-frost-DD-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;5: Simulations of the Reed-Frost model. Each panel shows the histogram of final epidemic size (cumulative fraction of the population infected) when a single infective is introduced into populations of different size <span class="math inline">\(N\)</span>, from <span class="math inline">\(10^5\)</span> model simulations. For all cases the individual transmission probability is <span class="math inline">\(p=0.1\)</span> and <span class="math inline">\(\R_0=pN\)</span>. For each value of <span class="math inline">\(N\)</span>, the proportion <span class="math inline">\(p_\mathrm{20}\)</span> of simulations that infected at least 20% of the population is shown. In the lower panels, the solid red line shows the expected final size of large outrbeaks <span class="math inline">\(z^*\)</span> and the dotted red lines show the 95% prediction interval of the asymptotic normal distribution for the final size.
+</figcaption>
+</figure>
+</div>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

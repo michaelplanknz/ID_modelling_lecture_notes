@@ -1,0 +1,495 @@
+---
+title: "Topic 5. SIRS model"
+author: "Michael Plank"
+format:
+  html:
+    toc: true
+    number-sections: true
+    theme: cosmo
+---
+
+
+::: {.hidden}
+$$
+\newcommand{\vect}[1]{\boldsymbol{\mathbf{#1}}}
+\newcommand{\R}{\mathcal{R}}
+\newcommand{\Reff}{\mathcal{R}_\mathrm{eff}}
+\newcommand{\inc}{\mathrm{inc}}
+$$
+:::
+
+
+# Motivation
+
+The basic SIR model studied in Topic 2 assumes that recovered individuals have perfect and permanent immunity. It also ignores births. Together, this means that there is no mechanism for replenishment of the susceptible population: $S(t)$ can only ever decrease over time. Once $S(t)$ falls below the herd immunity threshold $1/\R_0$, the epidemic will be in permanent decline.
+
+This may be a reasonable approximation as a model for a single epidemic wave of a disease that confers long-lasting immunity and in a time window where births are negligible. However, in other situations, replenishment of the susceptible population cannot be ignored and, as we shall see, this has profound consequences for the model dynamics.
+
+
+# SIRS model for waning immunity
+
+We shall begin by considering a simple modification to the SIR model from Topic 2. In addition to the transmission and recovery processes, we add a third process which is transition from the recovered to the susceptible compartment at rate $w>0$. Using $S$, $I$ and $R$ to denote population fractions, this gives: 
+
+$$
+\begin{align*}
+\dot{S} &= -\beta SI + wR \\
+\dot{I} &= \beta SI - \gamma I \\
+\dot{R} &= \gamma I - wR
+\end{align*}
+$$
+
+This models gradual loss of immunity over time (often referred to as waning immunity). Note that the mean time spent in the recovered compartment is $1/w$ so this quantity represents the *average immune period*.
+
+Again we can eliminate the variable $R$ and express the model as a system of two ODEs:
+
+::: {.callout-note}
+### SIRS model
+
+$$
+\begin{align*}
+\dot{S} &= -\beta SI + w(1-S-I) \\
+\dot{I} &= \beta SI - \gamma I 
+\end{align*}
+$$ {#eq-SIRS}
+:::
+
+Notes:
+
+* This model as the same expression for $\R_0$ as the SIR model ($\R_0=\beta/\gamma$), because the waning process does not affect that number of infections that a single infectious individual causes when the population is fully susceptible.
+* The SIR model is a special case of the SIRS model with $w=0$.
+* As with the SIR model, the SIRS model can be adapted to include an exposed compartment, giving the SEIRS model. We do not analyse this here but note that many of the results for the SIRS model we will cover below have analogous version for the SEIRS model.
+
+We will now perform an equilibrium and stability analysis on the system defined by @eq-SIRS.
+
+
+
+# Equilibria
+
+Clearly $(S,I)=(0,0)$ is an equilibrium, termed the *disease-free equilibrium* (DFE).
+
+As for the SIR model, the $I$ nullcine is $S=\gamma/\beta= 1/\R_0$. Hence, the SIRS model has the same herd immunity threshold as the SIR model. Any time that $S(t)>1/\R_0$, the epidemic is growing (provided $I(t)>0$), whereas if $S(t)<1/\R_0$ the epidemic is shrinking.
+
+However, whereas in the SIR model every point with $I=0$ is an equilibrium, this is not the case for the SIRS model. Apart from the DFE, there is only one other equilibrium, which is at:
+
+::: {.callout-note}
+### SIRS model endemic equilibrium
+
+$$
+S^* = \frac{1}{\R_0}, \qquad I^* = \frac{1}{1+\gamma/w} \left(1-\frac{1}{\R_0} \right)
+$$ {#eq-SIRS-EE}
+:::
+
+This is called the *endemic equilibrium* (EE) because the disease is present ($I(t)>0$).
+
+It is clear from the equation above that the EE is in the feasible region ($S\ge 0$, $I\ge 0$) if and only if $\R_0>1$. We can also see that $I^*$ is an increasing function of $\R_0$ and $w/\gamma$. This makes sense: more transmissible diseases have higher equilibrium prevalence, as do those where immunity wanes quickly (relative to the mean infectious period $1/\gamma$).
+
+
+# Stability and dynamics
+
+To investigate stability, we require the Jacobian matrix for (@eq-SIRS). It simplifies the algebra to work with the non-dimensionalised version of this system (see Part 2), using the dimensionless parameter $\tilde{w}=w/\gamma$ (which is equivalent to the ratio of the infectious period $1/\gamma$ to the immune period $1/w$). Then the Jacobian matrix is
+
+$$
+J = \left[ \begin{array}{ll} -\R_0 I-\tilde{w} & -\R_0 S-\tilde{w} \\  \R_0 I & \R_0 S -1    \end{array} \right]
+$$
+
+At the DFE, we have 
+$$
+J(1,0) = \left[ \begin{array}{ll} -\tilde{w} & -\R_0 -\tilde{w} \\  0 & \R_0-1    \end{array} \right]
+$$
+
+This has eigenvalues $\lambda_1=-\tilde{w}$ and $\lambda_2=\R_0-1$. Since $\lambda_1<0$, the DFE is stable if $\R_0<1$ and a saddle if $\R_0>1$. Hence, as expected, the introduction of a small number of infectives to a fully susceptible population will result in an epidemic if and only if $\R_0>1$. 
+
+At the EE, the Jacobian matrix is 
+$$
+J(S^*,I^*) = \left[ \begin{array}{ll} -\frac{\tilde{w}(\R_0-1)}{1+\tilde{w}}-\tilde{w} & -(1 +\tilde{w}) \\  \frac{\tilde{w}(\R_0-1)}{1+\tilde{w}} & 0    \end{array} \right]
+$$
+
+The trace and determinant of this matrix are
+$$
+\mathrm{tr}(J) = -\tilde{w} \frac{\R_0+\tilde{w}}{1+\tilde{w}} <0, \qquad \mathrm{det}(J)=\tilde{w}(\R_0-1)
+$$
+Therefore if $\R_0<1$, $\mathrm{det}(J)<0$ and so the EE is a saddle (and outside the feasible region as shown above). If $\R_0>1$, the EE is stable.
+
+::: {.callout-tip}
+### Bifurcation of the disease-free and endemic equilibria
+
+When $\R_0=1$ there is a *transcritical bifurcation* in which the DFE and EE collide and interchange stability.
+
+Although we have shown this result here for the specific model defined by @eq-SIRS, it is a very common feature in infectious disease models where there is some mechanism for replenishment of the susceptible population. This includes the SIS model and sIR model with demography (see below), models with immunisation, as well as multi-type and age-structured models (which we will cover in Topics 10 and 11).
+
+:::
+
+
+
+The behaviour of the SIRS models in the $(S,I)$ phase plane for $\R_0=3$ and $\tilde{w}=0.05$ is shown in @fig-SIRS-phase-plane. When a trajectory passes the herd immunity threshold from right to left so that $S<1/\R_0$, the epidemic begins to shrink. But eventually, the trajectory crosses the $S$ nullcline, which means that the susceptible population starts to grow. Eventually the trajectory crosses back over the herd immunity threshold when $S>1/\R_0$, which means that the epidemic statrs to grow again, and the cycle repeats. Trajectories spiral in towards the EE, which means that there is a series of epidemic waves, each with smaller amplitude than the previous one (see @fig-SIRS-solution). 
+
+::: {.callout-tip}
+### Qualitative difference between SIR and SIRS
+
+The above should make it clear that the SIR and SIRS model are qualitatively different. In the SIR model (and more general models such as the Kermack-McKendrick model), there is a single epidemic which ends with the number of infectious individuals returning to zero. In the SIRS model, no matter how slow the waning is (provided it is non-zero), the system tends to an endemic state where there is always some positive fraction of the population infectious.  
+
+However, there is an important caveat to this observation. 
+
+The prevalence $I(t)$ can drop to very low levels between epidemic waves (see @fig-SIRS-phase-plane where trajectories pass very close to the horizontal axis). Deterministic ODE models allow arbitrarily small values of the state variables, but in reality the population size $N$ is always finite and the size of each compartment is always integer-valued. This means that when $I(t)$ is of the order $1/N$ or below, stochastic effects become important and there is a possibility that the infection can go extinct. In contrast, the deterministic SIRS model (with $\R_0>1$) will always rebound from arbitrarily low values of $I(t)$. We will explore this difference further in a later Topic.
+
+:::
+
+![SIRS model behaviour in the $(S,I)$ phase plane with $\beta=0.6$ days$^{-1}$, $\gamma=0.2$ days^${-1}$ and $w=0.01$ days$^{-1}$ showing: the vector field $(dS/dt,dI/dt)$ (grey arrows); trajectories for selected initial conditions with $I(0)=\epsilon$ and various values of $S(0)$ (light blue); the heteroclinic trajectory (dark blue) connecting the DFE (open circle) to the EE (filled circle); herd immunity thresold (i.e. $I$ nullcline) (red); $S$ nullcline (purple). ](figures/SIRS_phase_plane.png){#fig-SIRS-phase-plane}
+
+
+
+
+
+```{r}
+#| label: fig-SIRS-solution
+#| fig-cap: "Numerical solution of the SIRS model with beta=0.6 /day, gamma=0.2 /day and w=0.01 /day."
+#| echo: false
+#| warning: false
+library(deSolve)
+
+# Parameters
+beta <- 0.6
+gamma <- 0.2
+w <- 0.01
+
+params <- c(beta = beta,
+            gamma = gamma,
+            w = w)
+
+# Initial conditions
+init <- c(
+  S = 0.99,
+  I = 0.01
+)
+
+# Time points
+times <- seq(0, 400, by = 1)
+
+# SIR model function
+sir_model <- function(t, state, parameters) {
+
+  with(as.list(c(state, parameters)), {
+
+    dS <- -beta * S * I + w * (1-S-I)
+    dI <- beta * S * I - gamma * I
+
+    list(c(dS, dI))
+  })
+}
+
+# Numerical solution
+out <- ode(y = init,
+           times = times,
+           func = sir_model,
+           parms = params)
+
+out <- as.data.frame(out)
+
+out$R = 1 - out$S - out$I
+
+# Plot
+matplot(out$time,
+        out[, c("S", "I", "R")],
+        type = "l",
+        lty = 1,
+        lwd = 2,
+        xlab = "Time",
+        ylab = "Proportion",
+        col = c("blue", "red", "darkgreen"))
+
+legend("right",
+       legend = c("Susceptible", "Infectious", "Recovered"),
+       col = c("blue", "red", "darkgreen"),
+       lty = 1,
+       lwd = 2)
+```
+
+
+
+
+# Properties of the endemic equilibrium
+
+As noted above, the infection prevalence $I^*$ at the EE is an increasing function of $\R_0$ and $w/\gamma$, but the relationships are not linear. @fig-EE shows that there is steep dependence of $I^*$ on $\R_0$ for moderate values of $\R_0$ (i.e. $\R_0$ only slightly above $1$), but this flattens out as $\R_0$ gets higher. In contrast, provided $\gamma/w \gg 1$ (which is true in many applications -- the immune period $1/w$ is long relative to the infectious period $1/\gamma$), $I^*$ is approximately linear in $w/\gamma$. As a consequence, $I^*$ is often more sensitive to small changes in $w$ than to small changes in $\R_0$. 
+
+
+
+```{r}
+#| label: fig-EE
+#| fig-cap: "Infection prevalence at the endemic equilibrium of the SIRS model against R0 for various values of the waning rate w relative to the recovery rate gamma."
+#| echo: false
+# Define f(x,a)
+f <- function(R0, w) {
+  w/(1+w) * (1-1/R0)
+}
+
+# Values of R0 and w (relative to gamma)
+R0_vals <- seq(1, 8, length.out = 200)
+w_vals <- seq(0, 0.1, length.out = 6)
+
+
+# Plot
+# Generate shades from light blue to dark blue
+cols <- colorRampPalette(c("lightblue", "darkblue"))(length(w_vals))
+
+# Leave extra space on the right
+par(mar = c(5, 4, 4, 8))
+
+# Allow drawing outside the plot region
+par(xpd = TRUE)
+
+# Plot first curve
+plot(R0_vals, f(R0_vals, w_vals[1]),
+     type = "l",
+     col = cols[1],
+     lwd = 2,
+     ylim = range(sapply(w_vals, function(w) f(R0_vals, w))),
+     xlab = "R0",
+     ylab = "I*")
+
+# Add remaining curves
+for (i in 2:length(w_vals)) {
+  lines(R0_vals, f(R0_vals, w_vals[i]),
+        col = cols[i],
+        lwd = 2)
+}
+
+# Add legend
+legend("topright",
+       inset = c(-0.3, 0),  
+       legend = lapply(w_vals,
+                       function(w)
+                         bquote(w/gamma == .(w))),,
+       col = cols,
+       lwd = 2)
+```
+
+
+
+We have derived the *prevalence* $I^*$ at equilibrium. We can also work out the equilibrium *incidence* $\inc^*$, which is $\beta S^* I^*$.  Recalling that $S^*=1/\R_0=\gamma/\beta$, this is equivalent to $\inc^*=\gamma I^*$, an expression which could also be derived directly since at equilibrium transitions into the $I$ compartment must equal transitions out of the $I$ compartment.
+
+::: {.callout-note}
+### Equilibrium incidence
+
+The number of new infections per unit time (as a fraction of the total population) is:
+$$
+\inc^* = \gamma I^* =  \frac{1}{1/\gamma+1/w} \left(1-\frac{1}{\R_0} \right)
+$$
+:::
+It follows that the mean time between successive infections in the same individual is 
+$$
+t_s = 1/\inc^* =  (1/\gamma+1/w) \frac{\R_0}{\R_0-1}
+$$
+
+This is equivalent to the sum of the mean time spent in the infectious compartment $1/\gamma$, the mean time spent in the recovered compartment $1/w$, and the mean time spent in the susceptible compartment $1/\lambda^*$, where $\lambda^*$ is the force of infection at equilibrium:
+$$
+\lambda^* = \beta I^* =  \frac{1}{1/\gamma+1/w} \left(\R_0-1 \right)
+$$
+
+This gives some insight into why, once $\R_0$ is sufficiently large, the equilibrium prevalence is governed primarily by $w$ and not $\R_0$. At equilibrium, the population is continuously cycling between the $S$, $I$ and $R$ compartments. The time $1/\lambda^*$ spent in the susceptible compartment is $(1/\gamma + 1/w)/(\R_0-1)$. This is a factor $1/(\R_0-1)$ smaller than the time spent in the other two compartments $1/\gamma$ in the $I$ compartment and $1/w$ in the recovered compartment. 
+
+So when $\R_0$ is large (and $w/\gamma\ll 1$), most of the time is spent in the recovered compartment (which is controlled by $w$) and a comparatively short time in the susceptible compartment. Increasing $\R_0$ further reduces the time spent in $S$, but this can only reduce the time between successive infections (and therefore increase the equilibrium prevalence) slightly.
+
+::: {.callout-tip}
+### General properties of endemic equilibrium
+
+Although we have derived the equilibrium for the specific model defined by @eq-SIRS, the finding that the susceptible fraction $S^*$ at endemic equilibrium is closely related to $1/\R_0$ is a very common feature of more complex models. As a consequence, disease-relevant quantities such as equilibrium prevalence and equilibrium incidence are often proportional to $1-1/\R_0$. Hence the shape of the curves seen in @fig-EE apply more generally. We will see examples of this when we get to Topic 11 on age-structured models. 
+
+:::
+
+# Timescales
+
+The SIRS model has some important natural timescales. Let us use $t_g$ to denote the mean infectious period $1/\gamma$ and $t_i$ for the mean immune period $1/w$.
+
+When the population is fully susceptible, the initial epidemic (i.e. first wave) occurs on a timescale $t_\mathrm{epi}=1/r= t_g/(\R_0-1)$, as for the SIR model. 
+
+The immunity gained as a result of this wave wanes with timescale $t_i$. If this is large relative to epidemic timescale $t_\mathrm{epi}$, the first few waves will be quite distinct: there will be short epidemics separated by relatively long periods of low prevalence while the susceptible population builds up again. This is similar to a *relaxation oscillation*.  
+
+However, over time the system typically relaxes onto a damped sinusoidal oscillation around the stable endemic equilibrium.
+Near to equilibrium, the timescale of the dynamics is determined by the eigenvalues of the Jacobian matrix. 
+Calculating these from the matrix above gives
+$$
+\lambda= \frac{w}{2}\left[- \frac{\R_0+w/\gamma}{1+w/\gamma} \pm \sqrt{\left( \frac{\R_0+w/\gamma}{1+w/\gamma} \right)^2 - 4 (\R_0-1)\frac{\gamma}{w}    } \right]
+$$
+which is often a complex pair of eigenvalues if $w/\gamma\ll 1$.
+
+Small perturbations to the equilibrium decay with rate $\mathrm{Re}(\lambda)$. Hence the timescale for the decay of wave amplitude is $t_\mathrm{damp}=-1/\mathrm{Re}(\lambda)$, which expressed in terms of $t_g$ and $t_i$ is 
+$$
+t_\mathrm{damp} =  2\frac{t_g + t_i}{\R_0+t_g/t_i}
+$$
+
+The characteristic time period $t_p$ of the damped oscillations is $2\pi/\mathrm{Im}(\lambda)$. When $w/\gamma\ll 1/\R_0<1$, this is approximately equal to 
+$$
+t_p \approx  2\pi \sqrt{ \frac{t_g t_i }{\R_0-1  } }
+$$
+To summarise the typical dynamics: over time the system moves from short epidemics with timescale $t_g/(\R_0-1)$ separated by inter-epidemic periods of timescale $t_i$, to damped sinusoidal oscillations system with period proportional to the geometric mean of $t_g/(\R_0-1)$ and $t_i$ (and decay rate approximately $2(t_g +t_i)/\R_0$).
+
+
+::: {.callout-tip}
+### SIRS timescales
+
+
+Approximate timescales when the generation interval $t_g$ is short relative to the immune period $t_i$.
+
+| &nbsp; | &nbsp; |
+|-----------------------------------------------------------------|------------------------------------|
+| Initial epidemic timescale                                      | $t_g/(\R_0-1)$                     |
+| Inter-epidemic period                                           | $t_i$                              |
+| Timescale for damping of waves near equilibrium                 | $2(t_g+t_i)/\R_0$                  |
+| Timescale for period of waves near equilibrium (when $t_g/t_i\ll 1/\R_0$) | $2\pi \sqrt{t_g t_i /(\R_0-1  ) }$ |
+
+:::
+
+
+
+
+
+
+# SIS model
+
+In the SIS model, there is no post-infection immunity and individuals move straight back to the susceptible compartment when they cease to be infectious.
+
+
+$$
+\begin{align*}
+\dot{S} &= -\beta SI + \gamma I \\
+\dot{I} &= \beta SI - \gamma I 
+\end{align*}
+$$ 
+
+Since $S+I=1$ is constant, we may write this as a single ODE as opposed to a system of two ODEs.
+
+::: {.callout-note}
+### SIS model
+
+Let $S(t)$ denote the susceptible fraction at time $t$. Then the SIS model is:
+$$
+\dot{S} = -\beta S(1-S) + \gamma (1-S) 
+$$ {#eq-SIS}
+:::
+
+
+Note that the SIS model is a limiting case of the SIRS model with $w\to \infty$ (i.e. fast waning of immunity). 
+
+Once again, if $\R_0<1$ the DFE ($S=1$) is stable. If $\R_0>1$, the DFE is unstable and there is a stable endemic equilibrium at $S^*=1/\R_0$, $I^*=1-1/\R_0$. 
+
+As it is a one-dimensional system, $S(t)$ must move monotonically towards the stable EE, i.e. there are no epidemic waves, only an increase in prevalence that subsequently flattens out. The equilibrium incidence rate per unit time is $\inc^*=\gamma(1-1/\R_0)$.
+
+
+
+
+
+# SIR model with demography
+
+The SIRS model is related to but slightly different from the SIR model with birth and death included, often termed the *SIR model with demography*. This model assumes that natural deaths occur with per capita rate $\mu$ in all compartments, and births occur with rate $b$ and enter the susceptible compartment:
+$$
+\begin{align*}
+\dot{S} &= -\frac{\beta SI}{N} + b - \mu S \\
+\dot{I} &= \frac{\beta SI}{N} - (\gamma+\mu) I \\
+\dot{R} &= \gamma I - \mu R
+\end{align*}
+$$
+Since we are often interested in the case where the population size is constant (or at least varies slowly relative the time scale of interest), it is common to assume that $b=\mu N$, so that births are equal to deaths and the total population size $S+I+R=N$ is constant.
+
+Note that the birth/death terms play a similar role as the waning provess in the SIRS model. The main difference is that deaths also occur in the infectious compartment. This causes what appears to be a transition from the $I$ compartment to the $S$ compartment, as well as the transition from $R$ to $S$ which we saw in the SIRS model. (They're not really transitions, it's just the deaths from $I$ and $R$ are always balanced by births into $S$, so it has the same effect mathematically). 
+
+Writing the equations in terms of fractions and eliminating the $R$ equation in the usual way, we obtain the following system of ODEs:
+
+::: {.callout-note}
+### SIR model with demography
+
+Let $S(t)$ denote the susceptible fraction and $I(t)$ denote the infectious fraction at time $t$. Then the SIR model with demography is:
+$$
+\begin{align*}
+\dot{S} &= -\beta SI + \mu(1-S) \\
+\dot{I} &= \beta SI - (\gamma+\mu) I 
+\end{align*}
+$$ {#eq-SIR-with-demography}
+
+:::
+
+
+
+::: {.callout-note}
+### Basic reproduction number for the SIR model with demography 
+
+The basic reproduction number for this model is
+$$
+\R_0 = \frac{\beta}{\gamma+\mu}
+$$
+:::
+
+This differs from the SIR and SIRS models by the addition of $\mu$ to the denominator. The reason is that  the total rate of transition out of the $I$ compartment is $\gamma+\mu$ (recovery and death are *competing hazards* for transition out of the infectious compartment). In other words, people can cease to become infectious either because they recover or because they die, and the mean infectious periods is $1/(\gamma+\mu)$. 
+
+Recall that $\mu$ is the background rate of death as opposed to the rate of death due to the disease, which is not included in this simple model. In situations where $\mu/\gamma\ll 1$ (i.e. the average infectious period is short relative to the average lifetime), the effect of $\mu$ on the reproduction number will be very small. 
+
+Once again the DFE ($S=1$, $I=0$) is stable if $\R_0<1$. If $\R_0>1$, the DFE is unstable and there is a stable EE. At $\R_0=1$ there is a transcritical bifurcation in which the DFE and EE collide and interchange stability. 
+
+The equations for the equilibrium susceptible and infectious fractions $(S^*,I^*)$ have the same form as for the SIRS model (@eq-SIRS-EE), but with the death rate $\mu$ in place of the waning rate $w$.
+
+::: {.callout-note}
+### Endemic equilibrium for the SIR model with demography 
+
+$$
+S^* = \frac{1}{\R_0}, \qquad I^* = \frac{1}{1+\gamma/\mu} \left(1-\frac{1}{\R_0} \right)
+$$
+:::
+
+Again, incidence is related to prevalence at equilibrium via $\inc^*=\gamma I^*$. Similar expressions for the relevant timescales may also be derived using the same approach as for the SIRS model above.  
+
+And as for the SIRS model, we caution that the deterministic model is not appropriate if $I(t)$ drops to the order of $1/N$ between epidemics due to stochastic effects (see Topic 7 for more details).
+
+
+
+
+# Immunisation
+
+In Topic 3, we saw some examples of modelling vaccination in the SIR model, where immunity arising from either vaccination or prior infection is assumed to be permanent. We can also think about the effects of vaccination in the models seen in this Topic, where there is a mechanism for replenishment of susceptibles, either through waning immunity as in the SIRS model, or through births as in the SIR model with demography. 
+
+Let us suppose, for simplicity, that some fraction $p$ of the population is immunised at any point in time. This could be though a vaccine that produces long-lasting immunity, or by a routine booster program that counteracts the effects of waning vaccine-derived immunity.   
+
+As we have seen previously, if $p>p^*=1-1/\R_0$ the disease will be eliminated. If $p<p^*$, we would expect immunisaton to shift the stable endemic equilibrium, hopefully reducing the equilibrium prevalence.
+
+Counterintuitiviely, immunisation does not change the equilibrium susceptible fraction at equilibrium: to ensure $\dot{I}=0$, we must still have $S^*=1/\R_0$. 
+However, we find the the endemic equilibrium prevalence is indeed reduced by immunisation in both the SIRS model and SIR model with demography:
+$$
+\textrm{SIRS: } \quad I^* = \frac{1}{1+\gamma/w} \left(1-p-\frac{1}{\R_0}\right), \qquad \textrm{SIR with demography: } \quad I^* = \frac{1}{1+\gamma/\mu}\left(1-p-\frac{1}{\R_0}\right)
+$$
+In both cases, we see that $I^*$ decreases linearly with $p$ and reaches zero when $p$ reaches the critical immunisation fraction $p^*=1-1/\R_0$. 
+
+
+
+
+
+# Seasonal forcing 
+
+All the models we have looked at so far have assumed that the parameter $\beta$ (which recall represents the produce of the contact rate and the per contact transmission probability) is constant. In reality, many factors may cause $\beta$ to vary over time, such as behavioural change, interventions, evolution of the pathogen. Some of these factors are unpredictable, but some cause $\beta$ to vary in predictable ways. For example, many respiratory pathogens such as influenza and respiratory syncytial virus (RSV) exhibit clear seasonal transmission patterns, woith peaks common during winter and periods of relatively low prevalence in summer. This is likely due to a combination of biological factors (e.g. colder temperatures or lower humidity making it easier for pathogens to get from one host to another) and social factors (e.g. people are more likely to agther ni crowded indoor places during colder months).
+
+This can be included in a SIRS model by replacing the constant $\beta$ with a time-dependent, periodic transmission rate, such as a sinusoidal function
+$$
+\beta(t)=\beta_0\left( 1 + a \cos\left(\frac{2\pi}{p} (t-t_0)\right) \right)
+$$
+where $a$ is the amplitude of the seasonal forcing and $p$ is the period (typically 1 year to model annual seasonality).
+
+The addition of seasonal forcing means that the model will not tend towards equilibrium, but will instead settle down to a periodic solution. @fig-SIRS-solution-seasonal shows the long-term dynamics (i.e. the solution after it has settled down to a regular repeating cycle) of $I(t)$ in the SIRS model with seasonal forcing, for various values of $\R_0$, the average immune period $t_i=1/w$ and seasonality amplitude $a$. These plots illustrate various features:
+
+* Seasonality induces periodic dynamics, but does not substantially change the long-term average prevalence.  The susceptible fraction $S(t)$ always oscillates around the herd immunity threshold $1/\R_0$. 
+* Consistent with what we have seen previously, once $\R_0$ is above about 4, the average prevalence is relatively insensitive to $\R_0$ and more sensitive to the length of the immune period $t_i$.
+* Seasonality is more pronounced as the amplitude parameter $a$ increases.
+* Seasonality tends to be more pronounced for lower values of $\R_0$. This is because, when $\R_0$ is sufficiently high, the epidemic will typically start to grow as soon as $S(t)$ increases above $1/\R_0$, so $S(t)$ never strays far from the herd immunity threshold. For more moderate values of $\R_0$, the susceptible population can grow to levels well above $1/\R_0$ during the part of the year when $\beta(t)$ is low, which can lead to large wave when $\beta(t)$ subsequently increases.
+* It is possible to get a single wave per year, two waves per year (e.g. when $t_i$ is short or when $\R_0$ is large), or one wave every two or more years (e.g. when $\R_0$ is low and $t_i$ is long).
+* For modest values of $\R_0$, the wave typically occurs when $\beta(t)$ is near its peak; for higher values of $\R_0$ it tends to occur earlier in the season.
+
+For further reading see Ch. 5. of [Keeling and Rohani, 2008](https://doi.org/10.2307/j.ctvcm4gk0).
+
+![Long-term dynamics of $I(t)$ in the SIRS model behaviour for various values of $\R_0$, average immune period $t_i=1/w$, and seasonality amplitude $a$, with $\gamma=0.2$ days$^{-1}$, $p=1$ year and $t_0=0.5$ years so that the transmission coefficient $\beta(t)$ takes its minimum value when $t$ is an integer number of years and its maximum value mid-way between years. ](figures/SIRS_seasonal.png){#fig-SIRS-solution-seasonal}
+
+
+
+
+
+
+
+
+
+
+

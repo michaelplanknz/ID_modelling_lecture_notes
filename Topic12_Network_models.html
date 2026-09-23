@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.553">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Michael Plank">
+
+<title>Topic 12. Network models</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="Topic12_Network_models_files/libs/clipboard/clipboard.min.js"></script>
+<script src="Topic12_Network_models_files/libs/quarto-html/quarto.js"></script>
+<script src="Topic12_Network_models_files/libs/quarto-html/popper.min.js"></script>
+<script src="Topic12_Network_models_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="Topic12_Network_models_files/libs/quarto-html/anchor.min.js"></script>
+<link href="Topic12_Network_models_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="Topic12_Network_models_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="Topic12_Network_models_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="Topic12_Network_models_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="Topic12_Network_models_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body>
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction"><span class="header-section-number">1</span> Introduction</a></li>
+  <li><a href="#representation-of-a-network" id="toc-representation-of-a-network" class="nav-link" data-scroll-target="#representation-of-a-network"><span class="header-section-number">2</span> Representation of a network</a>
+  <ul class="collapse">
+  <li><a href="#terminology-and-notation" id="toc-terminology-and-notation" class="nav-link" data-scroll-target="#terminology-and-notation"><span class="header-section-number">2.1</span> Terminology and notation</a></li>
+  <li><a href="#types-of-network" id="toc-types-of-network" class="nav-link" data-scroll-target="#types-of-network"><span class="header-section-number">2.2</span> Types of network</a></li>
+  </ul></li>
+  <li><a href="#sir-epidemic-on-a-network" id="toc-sir-epidemic-on-a-network" class="nav-link" data-scroll-target="#sir-epidemic-on-a-network"><span class="header-section-number">3</span> SIR epidemic on a network</a></li>
+  <li><a href="#configuration-model" id="toc-configuration-model" class="nav-link" data-scroll-target="#configuration-model"><span class="header-section-number">4</span> Configuration model</a>
+  <ul class="collapse">
+  <li><a href="#degree-distribution-of-infected-nodes" id="toc-degree-distribution-of-infected-nodes" class="nav-link" data-scroll-target="#degree-distribution-of-infected-nodes"><span class="header-section-number">4.1</span> Degree distribution of infected nodes</a></li>
+  <li><a href="#basic-reproduction-number" id="toc-basic-reproduction-number" class="nav-link" data-scroll-target="#basic-reproduction-number"><span class="header-section-number">4.2</span> Basic reproduction number</a></li>
+  <li><a href="#simulation-results" id="toc-simulation-results" class="nav-link" data-scroll-target="#simulation-results"><span class="header-section-number">4.3</span> Simulation results</a></li>
+  <li><a href="#weak-and-strong-transmission-limits" id="toc-weak-and-strong-transmission-limits" class="nav-link" data-scroll-target="#weak-and-strong-transmission-limits"><span class="header-section-number">4.4</span> Weak and strong transmission limits</a></li>
+  <li><a href="#probability-of-extinction" id="toc-probability-of-extinction" class="nav-link" data-scroll-target="#probability-of-extinction"><span class="header-section-number">4.5</span> Probability of extinction</a></li>
+  <li><a href="#final-epidemic-size" id="toc-final-epidemic-size" class="nav-link" data-scroll-target="#final-epidemic-size"><span class="header-section-number">4.6</span> Final epidemic size</a></li>
+  </ul></li>
+  <li><a href="#pair-approximation" id="toc-pair-approximation" class="nav-link" data-scroll-target="#pair-approximation"><span class="header-section-number">5</span> Pair approximation</a>
+  <ul class="collapse">
+  <li><a href="#sir-model" id="toc-sir-model" class="nav-link" data-scroll-target="#sir-model"><span class="header-section-number">5.1</span> SIR model</a></li>
+  </ul></li>
+  </ul>
+</nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Topic 12. Network models</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Michael Plank </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="hidden">
+<p><span class="math display">\[
+\newcommand{\vect}[1]{\boldsymbol{\mathbf{#1}}}
+\newcommand{\R}{\mathcal{R}}
+\newcommand{\Reff}{\mathcal{R}_\mathrm{eff}}
+\newcommand{\inc}{\mathrm{inc}}
+\]</span></p>
+</div>
+<section id="introduction" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> Introduction</h1>
+<p>All the models we have seen so far, even those that include heterogeneous mixing patterns, lack any information about the contact network on which the disease is spreading. Effectively, the population is assumed to be well mixed within whatever subgroups the model has (e.g.&nbsp;age groups), meaning that each new contact is a randomly selected individual from a given group.</p>
+<p>This ignores the fact that, often, people make repeated contacts with the same person and that a given pair of contacts are likely to have additional contacts in common.</p>
+<p>A <em>network model</em> includes an explicit representation of the network of contacts between individuals along which a disease may be transmitted. Network models of infectious diseases are a large and active are of research, which we can only scratch the surface of here.</p>
+<p>This Topic draws on Ch. 7.6 of <a href="https://press.princeton.edu/books/hardcover/9780691116174/modeling-infectious-diseases-in-humans-and-animals">Keeling and Rohani (2008)</a> and Ch. 10.5 of <a href="https://www.google.co.nz/books/edition/Mathematical_Epidemiology_of_Infectious/5VjSaAf35pMC?hl=en">Dieckmann and Heesterbeek (2000)</a>.</p>
+</section>
+<section id="representation-of-a-network" class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> Representation of a network</h1>
+<p>Mathematically, a contact network may be represented by a <em>graph</em>, which represents connections between pairs of individuals in the network. In general, the network could be undirected or directed (depending on whether or not connections have an associated direction), weighted (i.e.&nbsp;different connections can have different strength), and time-varying (meaning that connections may form and dissolve over time).</p>
+<p>Here, we will focus on the simplest type of network, which is an undirected, unweighted, time-invariant graph. We should remember that this assumes that contacts are symmetric, binary (two individuals are either connected or they are not) and unchanging over time. The first assumption is reasonable in many contexts, the second two are not fully realistic for most real social contact networks.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Definition of a contact network as an undirected graph
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>An <em>undirected graph</em> is a set of vertices <span class="math inline">\(V\)</span> (which we shall refer to as nodes or individuals) and edges <span class="math inline">\(E\)</span> (which we shall refer to as contacts), where each edge <span class="math inline">\(e\in E\)</span> is an unordered pair of vertices <span class="math inline">\(\{v_i,v_j\}\in V\times V\)</span>.</p>
+<p>Throughout this topic, we will assume that edges must connect two <em>different</em> vertices, i.e.&nbsp;<span class="math inline">\(\{v_i,v_i\}\notin E\)</span>.</p>
+</div>
+</div>
+<p>An undirected graph can be represented by a symmetric <span class="math inline">\(N\times N\)</span> <em>adjacency matrix</em> <span class="math inline">\(A\)</span> (where <span class="math inline">\(N=|V|\)</span> is the population size) defined by <span class="math display">\[
+A_{ij}=\left\{ \begin{array}{ll} 1, &amp; \{v_i,v_j\}\in E \\ 0, &amp; \textrm{otherwise} \end{array} \right.
+\]</span> In words, <span class="math inline">\(A_{ij}\)</span> is <span class="math inline">\(1\)</span> if individuals <span class="math inline">\(i\)</span> and <span class="math inline">\(j\)</span> are connected and <span class="math inline">\(0\)</span> otherwise.</p>
+<p>Note for large populations, it may be infeasible to store <span class="math inline">\(A\)</span> in memory (and it is likely to be inefficient to do computations directly involving <span class="math inline">\(A\)</span>), but as we shall see it is a useful quantity conceptually and analytically.</p>
+<section id="terminology-and-notation" class="level2" data-number="2.1">
+<h2 data-number="2.1" class="anchored" data-anchor-id="terminology-and-notation"><span class="header-section-number">2.1</span> Terminology and notation</h2>
+<p>Some relevant graph-related terminology and notation:</p>
+<ul>
+<li>The <em>degree</em> <span class="math inline">\(k_i\)</span> of a vertex <span class="math inline">\(v_i\)</span> is the number of edges that are incident upon it (i.e.&nbsp;the number of other vertices it is connected to):</li>
+</ul>
+<p><span class="math display">\[
+k_i = \sum_j A_{ij}
+\]</span></p>
+<ul>
+<li>The <em>mean degree</em> is <span class="math inline">\(\langle k \rangle = (1/N)\sum_{i} k_i\)</span>.</li>
+<li>A <em>neighbour</em> of vertex <span class="math inline">\(v_i\)</span> is another vertex <span class="math inline">\(v_j\)</span> such that <span class="math inline">\(\{v_i,v_j\}\in E\)</span> (or equivalent <span class="math inline">\(A_{ij}=1\)</span>).</li>
+<li>The <em>neighbourhood</em> of vertex <span class="math inline">\(v_i\)</span> is the set of all neighbours of <span class="math inline">\(v_i\)</span>.</li>
+<li>The <em>density</em> <span class="math inline">\(\rho\)</span> of the graph is ratio of the number of edges to the maximum possible number of edges on a graph with the same number of vertices, i.e.</li>
+</ul>
+<p><span class="math display">\[
+\rho=\frac{2|E|}{N(N-1)} = \frac{\langle k \rangle}{N-1}
+\]</span></p>
+<ul>
+<li>A <em>path</em> of length <span class="math inline">\(L\)</span> between vertices <span class="math inline">\(i\)</span> and <span class="math inline">\(j\)</span> is a set of <span class="math inline">\(L\)</span> distinct edges connecting <span class="math inline">\(v_i\)</span> to <span class="math inline">\(v_j\)</span>, i.e.&nbsp;<span class="math inline">\(e_l=\{v_{n_l},v_{n_{l+1}}\}\)</span> (<span class="math inline">\(l=0,\ldots,L-1\)</span>), such that <span class="math inline">\(n_0=i\)</span> and <span class="math inline">\(n_{L}=j\)</span>.</li>
+<li>A graph is <em>connected</em> if there is a path between every pair of vertices.</li>
+<li>The <em>distance</em> <span class="math inline">\(d(v_i,v_j)\)</span> between vertices <span class="math inline">\(i\)</span> and <span class="math inline">\(j\)</span> is the number of edges in the shortest path between <span class="math inline">\(v_i\)</span> and <span class="math inline">\(v_j\)</span>.</li>
+<li>The <em>average path length</em> (for a connected graph) is</li>
+</ul>
+<p><span class="math display">\[
+\bar{l} = \frac{1}{N(N-1)}\sum_{i\neq j} d(v_i,v_j)
+\]</span></p>
+<ul>
+<li>A <em>cycle</em> is a path from a vertex <span class="math inline">\(v_i\)</span> back to itself.</li>
+<li>A <em>tree</em> is a connected graph without cycles.</li>
+<li>Clustering refers to the tendency of connected vertices to share neighbours. This can be measured via the <em>clustering coefficent</em> <span class="math inline">\(C\)</span>, which is the proportion of connected triplets that are triangles.</li>
+</ul>
+</section>
+<section id="types-of-network" class="level2" data-number="2.2">
+<h2 data-number="2.2" class="anchored" data-anchor-id="types-of-network"><span class="header-section-number">2.2</span> Types of network</h2>
+<p>In general, networks are very high-dimensional objects: for a graph with <span class="math inline">\(N\)</span> vertices, the adjacency matrix has <span class="math inline">\(N(N-1)/2\)</span> elements which can each be either <span class="math inline">\(0\)</span> or <span class="math inline">\(1\)</span>, so the number of unique graphs is <span class="math inline">\(2^{N(N-1)/2}\)</span>. Some of these graphs will be isomorphic (i.e.&nbsp;the same network up to a relabelling of the vertices). Nevertheless, the number of distinct networks is staggeringly large, even on very small populations; for example, there are <a href="https://oeis.org/A000088">more than <span class="math inline">\(10^{34}\)</span> distinct networks</a> on just <span class="math inline">\(N=19\)</span> vertices!</p>
+<p>As a result, it is typically necessary to impose some structure on the network. This may be done by constructing the network from empirical data, or by using a random graph model.</p>
+<p>Some common types of network: * A <strong>regular</strong> network is one in which all vertices have the same degree. * A <strong>lattice</strong> is a regular network arranged in a repeating layout such as a square or a hexagonal lattice. Lattices have strong clustering and a very long average path length. * <a href="https://doi.org/10.1038/30918"><strong>Small-world networks</strong></a> are largely lattice-like, but with some number of edges added between random pairs of vertices. These additional edges effectively provide short cuts from one part of the graph to another. This drastically reduces the average path length. * <strong>Scale-free networks</strong> are networks with a heavy-tailed degree distribution, such as a power-law. * <strong>Spatial networks</strong> are networks where each node is associated with a location <span class="math inline">\({\bf x}_i\)</span> in space and nodes to be connected to nearby nodes. For example, a spatial network can be constructed by connected each pair of nodes located at <span class="math inline">\({\bf x}_i\)</span> and <span class="math inline">\({\bf x}_j\)</span> with probability <span class="math inline">\(K\left(|{\bf x}_i-{\bf x}_j|\right)\)</span> for some specified function <span class="math inline">\(K\)</span>.</p>
+<p>Random graph models essentially place probability distributions over graphs, and are typically implemented via a probabilistic algorithm that constructs a random graph with certain statistical properties.</p>
+<p>One of the simplest random graph models is the <em>Erdős-Rényi (ER)</em> model, where each pair of vertices is connected by an edge with fixed probability <span class="math inline">\(\rho\)</span>, independent of all other pairs. ER networks have low heterogeneity in the number of edges per individual (i.e.&nbsp;the degree), a lack of clustering, and short average path length. ER networks are generally not realistic models of social contact networks in real human populations, but they are useful because they are mathematically tractable and allow the effects of a minimal amount network structure on disease transmission to be elucidated.</p>
+<p>We will see some examples using ER networks later.</p>
+</section>
+</section>
+<section id="sir-epidemic-on-a-network" class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> SIR epidemic on a network</h1>
+<p>Suppose we have an explicit network on a population of size <span class="math inline">\(N\)</span> defined by adjacency matrix <span class="math inline">\(A\)</span>. Suppose that at each time <span class="math inline">\(t\)</span>, each individual in the network is either susceptible, infectious or recovered. Let <span class="math inline">\(S_i(t)=1\)</span> if individual <span class="math inline">\(i\)</span> is susceptible at time <span class="math inline">\(t\)</span> and <span class="math inline">\(0\)</span> otherwise, and let <span class="math inline">\(I_i(t)=1\)</span> if individual <span class="math inline">\(i\)</span> is infectious at time <span class="math inline">\(t\)</span> and <span class="math inline">\(0\)</span> otherwise (<span class="math inline">\(i=1,\ldots,N\)</span>).</p>
+<p>Extensions to other disease models, such as SEIR or a non-Markovian model, are possible but we focus on the simplest SIR case here.</p>
+<p>We may define a continuous-time Markov process on the network by defining the rates at which individual <span class="math inline">\(i\)</span> transitions from one state to another state. Like in the simple SIR model seen in Topic 2, we assume that each infectious individual transitions to the recovered state at fixed rate <span class="math inline">\(\gamma\)</span>.</p>
+<p>Similarly the rate at which a susceptible individual <span class="math inline">\(i\)</span> transitions to the infectious state is equal to the force of infection <span class="math inline">\(\lambda_i(t)\)</span> acting on that individual at time <span class="math inline">\(t\)</span>. We assume that the force of infection <span class="math inline">\(\lambda_i(t)\)</span> is proportional to the number of infectious neighbours at time <span class="math inline">\(t\)</span>: <span class="math display">\[
+\lambda_i(t) = \tilde{\beta} \sum_j A_{ij}I_j(t)
+\]</span></p>
+<p>Note that, for the purposes of simulating the model, it would be inefficient to compute <span class="math inline">\(\lambda_i(t)\)</span> using this equation because it involves summing over all <span class="math inline">\(N\)</span> individuals. Instead, we would normally store the neighbours of each individual <span class="math inline">\(i\)</span> in a list <span class="math inline">\(\left\{n_{i,1},\ldots, n_{i,k_i}  \right\}\)</span> and calculate <span class="math display">\[
+\lambda_i(t) = \tilde{\beta} \sum_{j=1}^{k_i} I_{n_{i,j}}(t)
+\]</span> only updating <span class="math inline">\(\lambda_i(t)\)</span> at times when one of the neighbours of <span class="math inline">\(i\)</span> changes state.</p>
+<p>This model may be simulated via the Gillespie algorithm or a fixed time-step approximation, as seen in Topic 7.</p>
+</section>
+<section id="configuration-model" class="level1" data-number="4">
+<h1 data-number="4"><span class="header-section-number">4</span> Configuration model</h1>
+<p>We now look at a special class of random networks constructed using an algorithm known as a <em>configuration model</em>. These networks are characterised by an arbitrary degree distribution, but lack other structure such as clustering and assortativity.</p>
+<p>In a configuration model, each of the <span class="math inline">\(N\)</span> nodes is assigned a degree <span class="math inline">\(k\)</span> drawn independently from the degree distribution with probability mass function <span class="math inline">\(p_k\)</span>. A node of degree <span class="math inline">\(k\)</span> is assigned <span class="math inline">\(k\)</span> “stubs” (i.e.&nbsp;edges whose other vertex is yet to be determined). This process creates a total of approximately <span class="math inline">\(N\langle k\rangle\)</span> stubs, which are then connected at random to produce <span class="math inline">\(N\langle k\rangle/2\)</span> edges. Some of the resulting edges may be self-edges or repeated edges, but provided <span class="math inline">\(N\)</span> is large these will be negligible.</p>
+<p>The configuration model is a special type of network that lacks most of the structure of a real social contact network, but nevertheless accounts for the fact that:</p>
+<ul>
+<li>Individuals tend to have repeated contacts with the same set of individuals</li>
+<li>There can be high individual heterogeneity in the number of contacts per individual.</li>
+</ul>
+<p>ER networks are a special case of the configuration model with a binomial degree distribution (which is approximately Poisson provided <span class="math inline">\(N\)</span> is large).</p>
+<section id="degree-distribution-of-infected-nodes" class="level2" data-number="4.1">
+<h2 data-number="4.1" class="anchored" data-anchor-id="degree-distribution-of-infected-nodes"><span class="header-section-number">4.1</span> Degree distribution of infected nodes</h2>
+<p>In analysing the configuration model, we need to account for the fact that the number of neighbours an individual has (i.e.&nbsp;their degree) affects both their risk of getting infected and, if they do get infected, the number of individuals they will transmit to. Hence infected nodes will, in general, have a different degree distribution than the network as a a whole.</p>
+<p>In an almost fully susceptible population, the probability <span class="math inline">\(\nu_k\)</span> that a randomly selected infected node has degree <span class="math inline">\(k\)</span> must be proportional to the number of edges that are attached to degree <span class="math inline">\(k\)</span> nodes, which is <span class="math inline">\(kp_kN\)</span>. This implies that <span id="eq-infected-degree-PMF"><span class="math display">\[
+\nu_k = \frac{kp_k}{\sum_{k'} k' p_{k'}} = \frac{kp_k}{\langle k \rangle}
+\tag{1}\]</span></span></p>
+<p>The distribution defined by <span class="math inline">\(\nu_k\)</span> is sometimes called the <em>excess degree distribution</em> as infected nodes will typically have higher degree than randomly chosen nodes.</p>
+<p>The fact that a simple expression for <span class="math inline">\(\nu_k\)</span> is available makes the configuration model more tractable than more general network models.</p>
+</section>
+<section id="basic-reproduction-number" class="level2" data-number="4.2">
+<h2 data-number="4.2" class="anchored" data-anchor-id="basic-reproduction-number"><span class="header-section-number">4.2</span> Basic reproduction number</h2>
+<p>Under the SIR model, once a node is infected, it infects each of its neighbours at rate <span class="math inline">\(\tilde{\beta}\)</span> and recovers at rate <span class="math inline">\(\gamma\)</span>. So the probability the infected individual will transmit to a given neighbour before recovering is <span class="math inline">\(\tilde{\beta}/(\tilde{\beta}+\mu)\)</span>, independently of all other neighbours. An individual of degree <span class="math inline">\(k\)</span> will have <span class="math inline">\(k-1\)</span> susceptible neighbours and so, on average, will infect <span class="math inline">\((k-1)\tilde{\beta}/(\tilde{\beta}+\mu)\)</span> of them.</p>
+<p>Conditioning on the degree of the infecting node therefore gives <span class="math display">\[
+\R_0 = \sum_k \nu_k (k-1) \frac{\tilde{\beta}}{\tilde{\beta}+\mu}
+\]</span> Substituting in <a href="#eq-infected-degree-PMF" class="quarto-xref">Equation&nbsp;1</a> leads to the following result for <span class="math inline">\(\R_0\)</span>.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Basic reproduction number for the configuration model
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The basic reproduction number for the SIR model with per-edge transmission rate <span class="math inline">\(\beta\)</span>, recovery rate <span class="math inline">\(\gamma\)</span> on a configuration network is</p>
+<p><span id="eq-R0"><span class="math display">\[
+\R_0 = \frac{\tilde{\beta}}{\tilde{\beta}+\gamma} \left(\frac{\langle k^2 \rangle}{\langle k \rangle}-1\right)
+\tag{2}\]</span></span></p>
+</div>
+</div>
+<p>Three aspects of <a href="#eq-R0" class="quarto-xref">Equation&nbsp;2</a> deserve brief mention:</p>
+<ol type="1">
+<li>The ratio <span class="math inline">\(\langle k^2 \rangle/\langle k \rangle\)</span> is equal to <span class="math inline">\(\langle k \rangle (1+CV^2)\)</span>, which is effectively a “variance correction” to the mean degree <span class="math inline">\(\langle k \rangle\)</span>. This accounts for the fact that high-degree nodes are more likely to get infected than low-degree nodes, meaning the average infected individual has higher than average degree. We have come across a similar expression previously in Topic 11.</li>
+<li>The <span class="math inline">\(-1\)</span> term reflects the fact that an infectious degree <span class="math inline">\(k\)</span> node must have been infected by someone and so, even in an otherwise fully susceptible population, has at most <span class="math inline">\(k-1\)</span> susceptible neighbours. However, it does not account for th effects of clustering (which is absent in the configuration model). In a clustered network, <span class="math inline">\(\R_0\)</span> will typically be smaller than the expression in <a href="#eq-R0" class="quarto-xref">Equation&nbsp;2</a> because, even when the non-susceptible fraction is negligible at population-level, an average infected individual may have more than one non-susceptible neighbours.</li>
+<li>The factor <span class="math inline">\(\tilde{\beta}/(\tilde{\beta}+\gamma)\)</span> reflects the fact that a degree <span class="math inline">\(k\)</span> node contacts the same <span class="math inline">\(k\)</span> neighbours repeatedly and each one can only be infected at most once (more on this below). If contacts continuously dissolved and reformed at random, we would instead have a factor of <span class="math inline">\(\tilde{\beta}/\gamma\)</span>. So we may quantify the effect of repeated contacts: this reduces <span class="math inline">\(\R_0\)</span> by a factor <span class="math inline">\(\gamma/(\tilde{\beta}+\gamma)\)</span>.</li>
+</ol>
+<p>Note that for a regular network where all nodes have degree <span class="math inline">\(k\)</span>, we have <span class="math inline">\(\langle k^2\rangle = \langle k \rangle^2\)</span> and so <span class="math display">\[
+\R_0= \frac{\tilde{\beta} }{\tilde{\beta}+\gamma}\left(\langle k \rangle-1\right)
+\]</span></p>
+<p>For an ER network, the degree distribution is approximately Poisson, which means that <span class="math inline">\(\langle k^2\rangle=\langle k \rangle + \langle k \rangle^2\)</span>. Therefore, on an ER network <span class="math display">\[
+\R_0 = \frac{\tilde{\beta} }{\tilde{\beta}+\gamma}\langle k \rangle
+\]</span></p>
+<p>Thus for ER networks, the fact that infections are more likely to occur in high-degree nodes exactly balances the fact that a node of degree <span class="math inline">\(k\)</span> can only transmit to a maximum of <span class="math inline">\(k-1\)</span> individuals, and <span class="math inline">\(\R_0\)</span> is proportional to the mean degree <span class="math inline">\(\langle k \rangle\)</span>.</p>
+<p>Real-world networks often have very heterogeneous degree distributions, and as a result <span class="math inline">\(\R_0\)</span> may be many times larger than <span class="math inline">\(\tilde{\beta}/( \tilde{\beta}+\gamma)\langle k \rangle\)</span>.</p>
+</section>
+<section id="simulation-results" class="level2" data-number="4.3">
+<h2 data-number="4.3" class="anchored" data-anchor-id="simulation-results"><span class="header-section-number">4.3</span> Simulation results</h2>
+<p><a href="#fig-ER-net-SIR" class="quarto-xref">Figure&nbsp;1</a> shows the results of a simulation of the SIR model on an ER network with mean degree <span class="math inline">\(\langle k \rangle=5\)</span>, transmission rate <span class="math inline">\(\tilde{\beta}=0.1\)</span> day<span class="math inline">\(^{-1}\)</span> and recovery rate <span class="math inline">\(\gamma=0.2\)</span> day<span class="math inline">\(^{-1}\)</span>. Also shown is the solution of the SIR ODE model in two cases: (i) with the same average rate of transmission-sufficient contacts (<span class="math inline">\(\beta=\langle k \rangle \tilde{\beta}= 0.5\)</span> day<span class="math inline">\(^{-1}\)</span>); and (ii) and with the same value of <span class="math inline">\(\R_0=5/3\)</span>.</p>
+<div id="fig-ER-net-SIR" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-ER-net-SIR-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figures/ER_net_SIR.png" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-ER-net-SIR-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Simulation of the SIR model on an ER network with a population of size <span class="math inline">\(N=10000\)</span> with mean degree <span class="math inline">\(\langle k \rangle=5\)</span>, transmission rate <span class="math inline">\(\tilde{\beta}=0.1\)</span> day<span class="math inline">\(^{-1}\)</span> and recovery rate <span class="math inline">\(\gamma=0.2\)</span> day<span class="math inline">\(^{-1}\)</span> (blue) alongside the solution of the SIR ODE model with the same average rate of transmission-sufficient contacts, <span class="math inline">\(\beta=\langle k \rangle \tilde{\beta}= 0.5\)</span> day<span class="math inline">\(^{-1}\)</span> (red), and with the same value of <span class="math inline">\(\R_0=5/3\)</span> (yellow). Both models were initialised by setting 0.5% of the population to be infectious and the remainder to be susceptible.
+</figcaption>
+</figure>
+</div>
+<p>The network simulation grows more slowly and has lower peak prevalence than the ODE model with the same mean contact rate <span class="math inline">\(\beta\)</span>. This is primarily due to the effect of repeated contacts in the network model.</p>
+<p>When the value of <span class="math inline">\(\beta\)</span> in the ODE model is reduced to give the same <span class="math inline">\(\R_0\)</span> as the network model, it grows more slowly than the network model (though has very similar final size). This happens because, although the network model has the same reproduction number as the same as the ODE model, it has a shorter generation interval. In the network model, once an edge has been “used” for transmission, it cannot be used again and so the infectiousness drops with each transmission event. Thus we observe the following.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Infectiousness profile and mean generation interval for network SIR model
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The infectiousness profile for an individual with <span class="math inline">\(k\)</span> neighbours is <span class="math display">\[
+f(\tau) = k\tilde{\beta} e^{-(\gamma+\tilde{\beta}) \tau}
+\]</span> and so the mean generation interval is <span class="math inline">\(1/(\gamma+\tilde{\beta})\)</span>. This is smaller than for the ODE model with the same infectious period, which has mean generation interval <span class="math inline">\(1/\gamma\)</span>.</p>
+</div>
+</div>
+<p>Note that <a href="#fig-ER-net-SIR" class="quarto-xref">Figure&nbsp;1</a> compares the ER network model to the SIR ODE model with the same value of <span class="math inline">\(\R_0\)</span> and same mean infectious period <span class="math inline">\(1/\gamma\)</span>. We could alternatively consider the ODE model with a shorter mean infectious period in the ODE model (i.e.&nbsp;higher value of <span class="math inline">\(\gamma\)</span>) than the network model, so that both models have the same values of <span class="math inline">\(\R_0\)</span> and epidemic growth rate <span class="math inline">\(r\)</span>.</p>
+</section>
+<section id="weak-and-strong-transmission-limits" class="level2" data-number="4.4">
+<h2 data-number="4.4" class="anchored" data-anchor-id="weak-and-strong-transmission-limits"><span class="header-section-number">4.4</span> Weak and strong transmission limits</h2>
+<p>For an ER network in the case where <span class="math inline">\(\tilde{\beta}/\gamma\ll 1\)</span>, we have <span class="math inline">\(\R_0\approx \tilde{\beta} \langle k \rangle/ \gamma\)</span> and the generation interval is approximately <span class="math inline">\(1/\gamma\)</span>. Hence we would expect the network model to behave similarly to the ODE model in this parameter regime, sometimes called the <em>weak transmission limit</em>.</p>
+<p>This should not come as a surprise: if we let the network density <span class="math inline">\(\rho\)</span> approach <span class="math inline">\(1\)</span>, we see that <span class="math inline">\(\langle k\rangle\)</span> approaches <span class="math inline">\(N\)</span> and hence, for fixed <span class="math inline">\(\R_0\)</span>, <span class="math inline">\(\tilde{\beta}/\gamma\)</span> must be very small. So this limit corresponds to the situation where there is a (weak) connection between every pair of individuals. In other words, our population is well-mixed and homogeneous, precisely the assumptions of the SIR ODE model.</p>
+<p>By contrast, in the <em>strong transmission limit</em> (<span class="math inline">\(\tilde{\beta}/\gamma\to\infty\)</span>), an infected individual is guaranteed to infect all their neighbours. In this limit, we see that <span class="math inline">\(\R_0\to\langle k\rangle\)</span>: the basic reproduction number is determined solely by network properties (namely the mean degree) and independently of the transmission and recovery rates rates.</p>
+</section>
+<section id="probability-of-extinction" class="level2" data-number="4.5">
+<h2 data-number="4.5" class="anchored" data-anchor-id="probability-of-extinction"><span class="header-section-number">4.5</span> Probability of extinction</h2>
+<p>Suppose that the model is initialised with a single seed infection in a randomly selected individual and we want to calculate the probability this sparks a major epidemic.</p>
+<p>Let <span class="math inline">\(q_k\)</span> denote the probability that the transmission chain starting from a single degree <span class="math inline">\(k\)</span> node in a fully susceptible population goes extinct. Conditioning on the degree of the initial seed infection gives <span class="math display">\[
+q = \sum_k p_k q_k
+\]</span></p>
+<p>For the transmission chain starting from a degree <span class="math inline">\(k\)</span> node to go extinct requires that, for each of the neighbours <span class="math inline">\(\{v_1,\ldots,v_k\}\)</span>, either <span class="math inline">\(v_i\)</span> not infected, or the transmission chain starting from <span class="math inline">\(v_i\)</span> goes extinct. An infected individual transmits to each of its neighbours independently with probability <span class="math inline">\(P\)</span>. (In the SIR model, we have seen that <span class="math inline">\(P=\tilde{\beta}/(\tilde{\beta}+\gamma)\)</span>, but in more general models it can be any value in <span class="math inline">\([0,1]\)</span>).)</p>
+<p>Hence <span class="math inline">\(q_k=(1-P+P\pi)^k\)</span>, where <span class="math inline">\(\pi\)</span> is the probability that the transmission chain starting from a randomly selected <em>neighbour</em> of the seed infection goes extinct. We may calculate <span class="math inline">\(\pi\)</span> using the results from Topic 6, by observing that, other than the seed infection, infected nodes have degree distribution <span class="math inline">\(\nu_k\)</span>. Hence the generating function <span class="math inline">\(G_X(s)\)</span> for the offspring distribution (excluding the seed infection) is <span class="math display">\[
+G_X(s) = \sum_n \sum_k P(\textrm{degree } k \textrm{ node has } n \textrm{ offspring}) \nu_k s^n = \sum_k \nu_k G_k(s)
+\]</span> where <span class="math inline">\(G_k(s)\)</span> is the generating function for the offspring distribution for a degree <span class="math inline">\(k\)</span> node. This offspring distribution is <span class="math inline">\(\mathrm{Bin}(k-1,P)\)</span>, so <span class="math inline">\(G_k(s)=(1-P+Ps)^{k-1}\)</span>. Recalling from Topic 6 that <span class="math inline">\(\pi\)</span> is the root of <span class="math inline">\(s=G_X(s)\)</span>, we obtain the following result.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Extinction probability for a configuration network
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The extinction probability <span class="math inline">\(q\)</span> for an epidemic seeded by a randomly selected node in a configuration network with per-edge transmission probability <span class="math inline">\(P\)</span>, degree distribution <span class="math inline">\(p_k\)</span> and excess degree distribution <span class="math inline">\(\nu_k\)</span> is <span class="math display">\[
+q = \sum_k p_k \left( 1-P+ P\pi  \right)^k
+\]</span> where <span class="math inline">\(\pi\)</span> is the unique root in <span class="math inline">\((0,1)\)</span> of <span class="math display">\[
+\pi = \sum_k \nu_k \left(1-P+P\pi\right)^{k-1}
+\]</span></p>
+</div>
+</div>
+<p><a href="#fig-PUE" class="quarto-xref">Figure&nbsp;2</a> shows the extinction probability for a configuration network with a negative binomial degree distribution with fixed per-edge transmission probability <span class="math inline">\(P\)</span> and for a range of values of <span class="math inline">\(\R_0\)</span> and dispersion parameter <span class="math inline">\(\kappa\)</span>. The extinction probability is a decreasing function of both <span class="math inline">\(\R_0\)</span> and <span class="math inline">\(\kappa\)</span> and is very similar (though not identical) to a Galton-Watson branching process. The difference between the two models comes down to the fact that, in the network model, the offspring distribution of the initial seed infection is different to that of downstream infections.</p>
+<div id="fig-PUE" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-PUE-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figures/network_PUE.png" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-PUE-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: Probability of ultimate extinction (PUE) for: (a) a confirugation network with negative binomial degree distribution; (b) a Galton-Watson branching process with negatiive binomial offspring distribution, as a function of <span class="math inline">\(\R_0\)</span> for different values of the dispersion parameter <span class="math inline">\(\kappa\)</span>. Per-edge transmission probability for the network model <span class="math inline">\(P=0.3\)</span>.
+</figcaption>
+</figure>
+</div>
+<p>Note that the above result for the extinction probability assumes that an infected nodes transmits to each susceptible neighbour with the same probability <span class="math inline">\(P\)</span>. The result can be generalised to allow for each node to have its own individual per-edge transmission probability <span class="math inline">\(P_i\)</span> independent of degree, drawn from some continuous distribution – see Ch. 10.5 of <a href="https://www.google.co.nz/books/edition/Mathematical_Epidemiology_of_Infectious/5VjSaAf35pMC?hl=en">Dieckmann and Heesterbeek (2000)</a>. This combines two sources of heterogeneity: heterogeneity in the number of contacts (i.e.&nbsp;degree), and heterogeneity in the probability of transmission per contact (which could be due to biological factors such as individual variability in viral load).</p>
+</section>
+<section id="final-epidemic-size" class="level2" data-number="4.6">
+<h2 data-number="4.6" class="anchored" data-anchor-id="final-epidemic-size"><span class="header-section-number">4.6</span> Final epidemic size</h2>
+<p>Recall from Topic 6 that the probability of a major epidemic and final epidemic size in a large population are closely related. In fact, by considering the backwards branching process ending with a given individual, we may reason in exactly the same way to show that the expected fraction of the population infected by the epidemic is <span class="math inline">\(1-q\)</span>.</p>
+<p>To briefly restate the previous argument in reverse, the probability <span class="math inline">\(q\)</span> that a randomly selected individual escapes infection is <span class="math inline">\(q=\sum_k p_k q_k\)</span> where <span class="math inline">\(q_k\)</span> is the probability that a randomly selected degree <span class="math inline">\(k\)</span> individual escapes infection. Again <span class="math inline">\(q_k=(1-\langle P\rangle+\langle P\rangle\pi)^k\)</span> where <span class="math inline">\(\langle P\rangle\)</span> is the average of the individual-specific per-edge transmission probabilities <span class="math inline">\(P_i\)</span> and <span class="math inline">\(\pi\)</span> is the probability that a randomly selected <em>ancestor</em> escapes infection. The ancestor distribution of a degree <span class="math inline">\(k\)</span> node (i.e.&nbsp;the distribution of the number of individuals who <em>would</em>, if they became infected, transmit to that node) is <span class="math inline">\(\mathrm{Bin}(k-1,\langle P\rangle)\)</span>, the degree distribution of ancestors is <span class="math inline">\(\nu_k\)</span> and the result follows.</p>
+<p>Note that, unlike the extinction probability, this result for final size depends only on the average of the individual-specific transmission probabilities <span class="math inline">\(P_i\)</span>. This is because the ancestor distribution depends only on <span class="math inline">\(\langle P\rangle\)</span>, not on the individual-specific <span class="math inline">\(P_i\)</span>.</p>
+<p>We finish by emphasising that the results in this section are specific to the configuration model, with its lack of clustering and assortativity. The epidemic threshold, probability of extinction and final epidemic size may differ dramatically on more general networks. In fact, there are multiple possible definitions of <span class="math inline">\(\R_0\)</span> for general network models. All have the epidemic threshold in common (i.e.&nbsp;an epidemic is possible if and only if <span class="math inline">\(\R_0&gt;1\)</span>), but differ in quantitative value. See <a href="https://link.springer.com/book/10.1007/978-3-319-50806-1">Kiss et al.&nbsp;(2017)</a> for more details.</p>
+</section>
+</section>
+<section id="pair-approximation" class="level1" data-number="5">
+<h1 data-number="5"><span class="header-section-number">5</span> Pair approximation</h1>
+<p>At the very beginning of this course in Topic 1, we saw an expression for the expected number of new infections in a short period of time <span class="math inline">\(\delta t\)</span>. With a slight modification, we may write this as <span class="math display">\[
+\textrm{rate of new infections per unit time} = \tilde{\beta}k S(t)x(t)
+\]</span> where <span class="math inline">\(S(t)\)</span> is the number of susceptible hosts, <span class="math inline">\(k\)</span> is the average number of contacts per person, <span class="math inline">\(\tilde{\beta}\)</span> is the per-contact transmission rate, and <span class="math inline">\(x(t)\)</span> is the probability that a contact at time <span class="math inline">\(t\)</span> is infectious. Making the simplifying assumption that contacts are selected at random means that <span class="math inline">\(x(t)\)</span> is just the fraction of the population that is infectious, leading to the standard SIR expression <span class="math display">\[
+\textrm{rate of new infections per unit time} = \frac{ \tilde{\beta}k S(t)I(t) }{N}
+\]</span></p>
+<p>This ignores correlations between the disease statuses of the two individuals in the contact. More generally, we let <span class="math inline">\([SI](t)\)</span> denote the number of connected pairs of individuals, where one individual is susceptible and the other is infectious. Then we may obtain a more accurate expression: <span class="math display">\[
+\textrm{rate of new infections per unit time} = \tilde{\beta} [SI](t)
+\]</span></p>
+<p>From here on, we will drop the tilde and just use <span class="math inline">\(\beta\)</span> to denote the per-contact transmission rate.</p>
+<p>Now, we may write down an ODE for the dynamics of <span class="math inline">\([SI](t)\)</span> by considering the ways in which susceptible-infectious pairs may arise or disappear. For simplicity, we begin with the SIS model, in which individuals become susceptible again immediately after recovery. We will return to the SIR model later. ## SIS model</p>
+<p>In the SIS model, the processes that can create susceptible-infectious pair are:</p>
+<ul>
+<li><span class="math inline">\([SSI]\longrightarrow [SII]\)</span>. One individual in a <span class="math inline">\([SS]\)</span> pair is infected by a third individual outside the pair.</li>
+<li><span class="math inline">\([II] \longrightarrow [SI]\)</span>. One individual in a <span class="math inline">\([II]\)</span> pair recovers and becomes susceptible again.</li>
+</ul>
+<p>On the other hand, a susceptible-infectious pair can be destroyed in the following ways:</p>
+<ul>
+<li><span class="math inline">\([SI]\longrightarrow [II]\)</span>. The susceptible infectious in a <span class="math inline">\([SI]\)</span> pair is infected by the infectious individual.</li>
+<li><span class="math inline">\([ISI]\longrightarrow [III]\)</span>. The susceptible individual in a <span class="math inline">\([SI]\)</span> pair is infected by a third individual outside the pair.</li>
+<li><span class="math inline">\([SI]\longrightarrow [SS]\)</span>. The infectious individual an a <span class="math inline">\([SI]\)</span> pair recovers and becomes susceptible again.</li>
+</ul>
+<p>Putting this together gives the follow ODE for <span class="math inline">\([SI](t)\)</span>: <span class="math display">\[
+\dot{[SI]} = \beta[SSI] + \gamma[II] - \beta[SI] - \beta[ISI] - \gamma [SI]
+\]</span></p>
+<p>Notice that this ODE depends on the number of triples <span class="math inline">\([SSI]\)</span> and <span class="math inline">\([ISI]\)</span>. We could follow a similar procedure to obtain ODEs for these quantities, but these would depend on the number of quadruples, and so on.</p>
+<p>Instead, we make an approximation (known as a <em>closure</em>) for the number of triples in terms of the number of pairs and singles: <span class="math display">\[
+[ABC] \approx \frac{n-1}{n} \frac{[AB][BC]}{[B]}
+\]</span> where <span class="math inline">\(n=\langle k\rangle\)</span> is the mean degree.</p>
+<p>This approximation ignores any correlation that may exist in the disease statuses of the nodes at the ends of the triple (i.e.&nbsp;A and C) other than that they are connected via B. Therefore, if the network has a high frequency of triangles so that there is a non-negligible probability that A and C are directly connected, the approximation may lose accuracy. However, it is still likely to be more accurate than the standard mean-field approximation <span class="math inline">\([AB]=n[A][B]/N\)</span>, which closes the system at the level of singles instead of at the level of pairs.</p>
+<p>Noting that the total number of individuals is <span class="math inline">\(N\)</span>, and the total number of pairs is <span class="math inline">\(nN\)</span>, we have <span class="math inline">\(S+I=N\)</span>, and it can be shown that <span class="math inline">\([SS]+[SI]=nS\)</span> and <span class="math inline">\([SI]+[II]=nI\)</span>. Then we may write the system in terms of <span class="math inline">\(S\)</span> and <span class="math inline">\([SI]\)</span>.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+SIS model pair approximation
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The SIS model pair approximation equations are <span class="math display">\[
+\begin{align}
+\dot{S} &amp;= -\beta[SI] + \gamma(N-S) \\
+\dot{[SI]} &amp;= \beta\frac{n-1}{n} \frac{ \left(n S-2[SI]\right)[SI]}{S} - \beta[SI] + \gamma\left(n (N-S)-2[SI]\right)   
+\end{align}
+\]</span></p>
+</div>
+</div>
+<section id="sir-model" class="level2" data-number="5.1">
+<h2 data-number="5.1" class="anchored" data-anchor-id="sir-model"><span class="header-section-number">5.1</span> SIR model</h2>
+<p>In the SIR model, we need to keep track of <span class="math inline">\([SS]\)</span> and <span class="math inline">\([SI]\)</span> pairs. <span class="math inline">\([SS]\)</span> pairs cannot be created (as the flow is one way from <span class="math inline">\(S\)</span> to <span class="math inline">\(I\)</span> to <span class="math inline">\(R\)</span>, but can be destroyed as follows:</p>
+<ul>
+<li><span class="math inline">\([SSI]\longrightarrow [SII]\)</span>. One individual in a <span class="math inline">\([SS]\)</span> pair is infected by a third individual outside the pair.</li>
+</ul>
+<p>This process also creates an <span class="math inline">\([SI]\)</span> pair (and is the only way an <span class="math inline">\([SI]\)</span> pair can be created). On the other hand, <span class="math inline">\([SI]\)</span> pairs can be destroyed in the following ways (similarly to the SIS model):</p>
+<ul>
+<li><span class="math inline">\([SI]\longrightarrow [II]\)</span>. The susceptible infectious in a <span class="math inline">\([SI]\)</span> pair is infected by the infectious individual.</li>
+<li><span class="math inline">\([ISI]\longrightarrow [III]\)</span>. The susceptible individual in a <span class="math inline">\([SI]\)</span> pair is infected by a third individual outside the pair.</li>
+<li><span class="math inline">\([SI]\longrightarrow [SR]\)</span>. The infectious individual an a <span class="math inline">\([SI]\)</span> pair recovers.</li>
+</ul>
+<p>Applying the same closure approximation as previously, this leads to the following system.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+SIR model pair approximation
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The SIR model pair approximation equations are <span class="math display">\[
+\begin{align}
+\dot{S} &amp;= -\beta[SI]  \\
+\dot{I} &amp;= \beta[SI] - \gamma I  \\
+\dot{[SI]} &amp;= \beta\frac{n-1}{n} \frac{ \left([SS]-[SI]\right)[SI]}{S} - \beta[SI] - \gamma[SI]   \\
+\dot{[SS]} &amp;= -2\beta \frac{n-1}{n} \frac{ [SI][SS] }{S}
+\end{align}
+\]</span></p>
+</div>
+</div>
+<p><a href="#fig-pair-approx-ERk25" class="quarto-xref">Figure&nbsp;3</a> compares a simulation of the SIR model on an ER network with mean degree <span class="math inline">\(n=25\)</span>, <span class="math inline">\(\beta=0.0143\)</span> days<span class="math inline">\(^{-1}\)</span> and <span class="math inline">\(\gamma=0.2\)</span> days<span class="math inline">\(^{-1}\)</span> against the solution of the mean-field (i.e.&nbsp;SIR ODE) model and the pair approximation. We see that the mean-field model overestimates the peak prevalence and final epidemic size, while the pair approximation does a slightly better job, particularly for final size, although slightly underestimates peal prevalence.</p>
+<p><a href="#fig-pair-approx-ERk5" class="quarto-xref">Figure&nbsp;4</a> shows the same set of results but with a mean degree of <span class="math inline">\(n=5\)</span> and <span class="math inline">\(\beta=0.1\)</span> days<span class="math inline">\(^{-1}\)</span> (which gives the same value of <span class="math inline">\(\R_0=5/3\)</span> as in <a href="#fig-pair-approx-ERk25" class="quarto-xref">Figure&nbsp;3</a>). Here we see that both the mean-field model and the pair approximation do a poor job (though in opposite directions). The reason is that the degree distribution is too heterogeneous: with <span class="math inline">\(n=5\)</span> and a Poisson degree distribution, the standard deviation in degree is close to 50% of the mean.</p>
+<div id="fig-pair-approx-ERk25" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-pair-approx-ERk25-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figures/ER_k25_pair_approx.png" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-pair-approx-ERk25-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;3: Simulation of the SIR model on an ER network with a population of size <span class="math inline">\(N=10000\)</span>, mean degree <span class="math inline">\(n=25\)</span>, transmission rate <span class="math inline">\(\beta=0.0143\)</span> day<span class="math inline">\(^{-1}\)</span> and recovery rate <span class="math inline">\(\gamma=0.2\)</span> day<span class="math inline">\(^{-1}\)</span> (blue) alongside the solution of the mean-field model (red) and pair approximation (yellow), with the same values of <span class="math inline">\(\beta\)</span> and <span class="math inline">\(\gamma\)</span>. All models were initialised by setting 0.5% of the population to be infectious and the remainder to be susceptible.
+</figcaption>
+</figure>
+</div>
+<div id="fig-pair-approx-ERk5" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-pair-approx-ERk5-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figures/ER_k5_pair_approx.png" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-pair-approx-ERk5-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;4: Simulation of the SIR model on an ER network with a population of size <span class="math inline">\(N=10000\)</span>, mean degree <span class="math inline">\(n=5\)</span>, transmission rate <span class="math inline">\(\beta=0.1\)</span> day<span class="math inline">\(^{-1}\)</span> and recovery rate <span class="math inline">\(\gamma=0.2\)</span> day<span class="math inline">\(^{-1}\)</span> (blue) alongside the solution of the mean-field model (red) and pair approximation (yellow), with the same values of <span class="math inline">\(\beta\)</span> and <span class="math inline">\(\gamma\)</span>. All models were initialised by setting 0.5% of the population to be infectious and the remainder to be susceptible.
+</figcaption>
+</figure>
+</div>
+<p>This serves as a useful reminder that the systems derived in this section may provide reasonable approximations for relatively simple networks without significant clustering or assortativity and where the degree distribution is relatively homogeneous. More sophisticated approximations are required for highly clustered, assortative or heterogeneous networks – see <a href="https://link.springer.com/book/10.1007/978-3-319-50806-1">Kiss et al.&nbsp;(2017)</a> for more details.</p>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

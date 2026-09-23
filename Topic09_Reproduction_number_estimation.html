@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Michael Plank">
+
+<title>Topic 9. Reproduction number estimation</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="Topic09_Reproduction_number_estimation_files/libs/clipboard/clipboard.min.js"></script>
+<script src="Topic09_Reproduction_number_estimation_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="Topic09_Reproduction_number_estimation_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="Topic09_Reproduction_number_estimation_files/libs/quarto-html/popper.min.js"></script>
+<script src="Topic09_Reproduction_number_estimation_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="Topic09_Reproduction_number_estimation_files/libs/quarto-html/anchor.min.js"></script>
+<link href="Topic09_Reproduction_number_estimation_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="Topic09_Reproduction_number_estimation_files/libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="Topic09_Reproduction_number_estimation_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="Topic09_Reproduction_number_estimation_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="Topic09_Reproduction_number_estimation_files/libs/bootstrap/bootstrap-67270d1595a62d14f123c043d4fb2f18.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview"><span class="header-section-number">1</span> Overview</a></li>
+  <li><a href="#estimating-directly-from-the-deterministic-renewal-equation" id="toc-estimating-directly-from-the-deterministic-renewal-equation" class="nav-link" data-scroll-target="#estimating-directly-from-the-deterministic-renewal-equation"><span class="header-section-number">2</span> Estimating directly from the deterministic renewal equation</a></li>
+  <li><a href="#estimation-using-the-poisson-renewal-model" id="toc-estimation-using-the-poisson-renewal-model" class="nav-link" data-scroll-target="#estimation-using-the-poisson-renewal-model"><span class="header-section-number">3</span> Estimation using the Poisson renewal model</a></li>
+  <li><a href="#practical-issues-with-reproduction-number-estimation" id="toc-practical-issues-with-reproduction-number-estimation" class="nav-link" data-scroll-target="#practical-issues-with-reproduction-number-estimation"><span class="header-section-number">4</span> Practical issues with reproduction number estimation</a></li>
+  <li><a href="#time-series-analysis-with-epinow2" id="toc-time-series-analysis-with-epinow2" class="nav-link" data-scroll-target="#time-series-analysis-with-epinow2"><span class="header-section-number">5</span> Time series analysis with EpiNow2</a>
+  <ul class="collapse">
+  <li><a href="#accounting-for-delays" id="toc-accounting-for-delays" class="nav-link" data-scroll-target="#accounting-for-delays"><span class="header-section-number">5.1</span> Accounting for delays</a></li>
+  <li><a href="#real-time-estimation" id="toc-real-time-estimation" class="nav-link" data-scroll-target="#real-time-estimation"><span class="header-section-number">5.2</span> Real-time estimation</a></li>
+  </ul></li>
+  </ul>
+</nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Topic 9. Reproduction number estimation</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Michael Plank </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="hidden">
+<p><span class="math display">\[
+\newcommand{\vect}[1]{\boldsymbol{\mathbf{#1}}}
+\newcommand{\R}{\mathcal{R}}
+\newcommand{\Reff}{\mathcal{R}_\mathrm{eff}}
+\newcommand{\inc}{\mathrm{inc}}
+\]</span></p>
+</div>
+<section id="overview" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> Overview</h1>
+<p>Estimating the effective reproduction number from data is a common task in infectious disease modelling and epidemic analytics.</p>
+<p>In this Topic, we will consider various approaches and see how they perform when applied to synthetic data generated from a simple model where we <em>know</em> the true value of the thing we are trying to estimate (another use of the <em>simulation-estimation</em> method seen prevoiusly)</p>
+<p>Here we will generate some synthetic data from the Poisson renewal model seen in Topic 7. Example daily incidence data from this model are shown in <a href="#fig-Rt-inference" class="quarto-xref">Figure&nbsp;1</a>(a), where we have set <span class="math inline">\(\R_t=1.5\)</span> for <span class="math inline">\(0\le t\le 30\)</span> and then <span class="math inline">\(\R_t\)</span> decreases linearly to <span class="math inline">\(0.7\)</span> between <span class="math inline">\(t=30\)</span> and <span class="math inline">\(t=50\)</span>. We have assumed that the generation interval distribution is a discretised gamma distribution with mean 5 days and standard deviation 2.5 days truncated at maximum 15 days.</p>
+<p>Recall from the previous Topic that it is impossible to separately infer <span class="math inline">\(\R_t\)</span> and the generation interval. In this Topic, we will assume that we have access to an independent estimate for the generation interval distribution (e.g.&nbsp;from contact tracing data or a household study) and we will use this to enable estimates of <span class="math inline">\(\R_t\)</span>. However, we will also see what happens if the generation interval estimate is wrong.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Semi-mechnastic models
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Note that the models we are going to see are agnostic about what is causing <span class="math inline">\(\R_t\)</span> to vary over time. It could be depletion of the susceptible population, or it could be an intervention or other change that alters contact rates or transmission probabilities (think back to the DOTS framework we saw in Topic 1).</p>
+<p>For this reason, these are sometimes called <em>semi-mechanistic</em> models: they include a mechanistic transmission process by relating current infection incidence to past infection incidence, but they make only statistical rather than mechanistic assumptions about the processes controlling <span class="math inline">\(\R_t\)</span>.</p>
+</div>
+</div>
+<p>We will now look at a couple of simple methods for estimating <span class="math inline">\(\R_t\)</span> from this data, pretending for the moment that we don’t know what the true <span class="math inline">\(\R_t\)</span> is, we only have the incidence data in <a href="#fig-Rt-inference" class="quarto-xref">Figure&nbsp;1</a>(a).</p>
+</section>
+<section id="estimating-directly-from-the-deterministic-renewal-equation" class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> Estimating directly from the deterministic renewal equation</h1>
+<p>The discrete-time version of the Kermack-McKendrick model expresses the incidence <span class="math inline">\(\inc_t\)</span> at time <span class="math inline">\(t\)</span> as a function of the previous incidence and the PMF <span class="math inline">\(g_\tau\)</span> of the generation interval distribution: <span id="eq-KMK"><span class="math display">\[
+\inc_t = \R_t \sum_{\tau=1}^\infty \inc_{t-\tau} g_\tau
+\tag{1}\]</span></span></p>
+<p>where <span class="math inline">\(\R_t\)</span> represents the effective reproduction number at time <span class="math inline">\(t\)</span>.</p>
+<p>It follows from (<a href="#eq-KMK" class="quarto-xref">Equation&nbsp;1</a>) that<br>
+<span id="eq-Rt-estimate-naive"><span class="math display">\[
+\R_t = \frac{\inc_t}{\sum_{\tau=1}^\infty \inc_{t-\tau} g_\tau}
+\tag{2}\]</span></span></p>
+<p>If incidence <span class="math inline">\(\inc_t\)</span> really did follow the deterministic model in <a href="#eq-KMK" class="quarto-xref">Equation&nbsp;1</a> and we had perfect information about daily incidence (and we knew the correct generation interval distribution <span class="math inline">\(g_\tau\)</span>), then we could simply apply this equation to calculate <span class="math inline">\(\R_t\)</span>. In reality, this is rarely the case: observations will typically be noisy and often incomplete and delayed.</p>
+<p>The results of estimating <span class="math inline">\(\R_t\)</span> via <a href="#eq-Rt-estimate-naive" class="quarto-xref">Equation&nbsp;2</a> are shown in <a href="#fig-Rt-inference" class="quarto-xref">Figure&nbsp;1</a>(b). The estimates bear some resemblance to the true value of <span class="math inline">\(\R_t\)</span>, but they are clearly very noisy with a not of variability from one day to the next. Furthermore, there is no measure of uncertainty in the estimates produced and so this method is not recommended.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Instantaneous reproduction number versus case reproduction number
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The reproduction number <span class="math inline">\(\R_t\)</span> referred to above is known as the <em>instantaneous reproduction number</em>. It measures the number of new infections occurring at an instant <span class="math inline">\(t\)</span> in time relative to the number of infections in the previous generation, weighted by their current infectiousness.</p>
+<p>This is not the same thing as the average number of people that an individual who became infected at time <span class="math inline">\(t\)</span> will infect, which is the <em>case reproduction number</em> denoted <span class="math inline">\(\R^c_t\)</span>. If the population is fully susceptible, both the instantaneous and the case reproduction number are equal to <span class="math inline">\(\R_0\)</span>. In general, <span class="math inline">\(\R_t\)</span> and <span class="math inline">\(\R^c_t\)</span> are related via the convolution equation <span class="math display">\[
+\R^c_t =  \sum_{\tau=1}^\infty \R_{t+\tau} g_\tau
+\]</span> In other words, the case reproduction number <span class="math inline">\(\R_t^c\)</span> is a weighted average of the instantaneous reproduction number over the case’s infectious period, weighted by the case’s time-dependent infectiousness. Hence <span class="math inline">\(\R_t\)</span> will tend to lag <span class="math inline">\(\R_t^c\)</span>, which is a future-looking measure of reproductive output.</p>
+</div>
+</div>
+</section>
+<section id="estimation-using-the-poisson-renewal-model" class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> Estimation using the Poisson renewal model</h1>
+<p>To allow for noise, we can use a stochastic model. For example, the Poisson renewal equation we saw in Topic 7 adds Poisson noise to (<a href="#eq-KMK" class="quarto-xref">Equation&nbsp;1</a>): <span class="math display">\[
+\inc_t \sim \mathrm{Poiss}\left( \R_t \sum_{\tau=1}^\infty \inc_{t-\tau} g_\tau \right)
+\]</span> We could estimate <span class="math inline">\(\R_t\)</span> independently each day using maximum likelihood and this would yield the same central estimate as (<a href="#eq-Rt-estimate-naive" class="quarto-xref">Equation&nbsp;2</a>). As we have seen, however, this is highly sensitive to noise leading to large variations in <span class="math inline">\(\R_t\)</span> estimates from one day to the next.</p>
+<p>As a consequence, it is usually preferable to impose some constraints on how rapidly <span class="math inline">\(\R_t\)</span> can vary over time. One way to do this is to specify a prior for the function <span class="math inline">\(\R_t\)</span>, such as Gaussian process, which penalises rapid variations. Another simple option is to estimate <span class="math inline">\(\R_t\)</span> over some time window. This has a mechanistic interpretation that generalises {#eq-Rt-estimate-naive}: if we we estimate <span class="math inline">\(\R_t\)</span> from the ratio of the incidence in the time window <span class="math inline">\([t,t+w]\)</span> to the infection pressure exerted by previous infections over the same time window, we are estimating the average <span class="math inline">\(\R_t\)</span> during this time windows. By sliding the window of fixed width <span class="math inline">\(W\)</span> through time, we should obtain a smooth moving average.</p>
+<p>Furthermore, we would like some uncertainty estimates on our estimates. We can do this by specifying a prior for the average value of <span class="math inline">\(\R_t\)</span> and using Bayes’ rule to obtain the posterior distribution for <span class="math inline">\(\R_t\)</span> on each day <span class="math inline">\(t\)</span>. This is the approach taken by the method known as <em>EpiEstim</em> <a href="https://doi.org/10.1093/aje/kwt133">see Cori et al 2013</a>. With the right choice of prior (called a <em>conjugate prior</em>), it possible to obtain a closed-form solution for the posterior, which is a gamma distribution with shape <span class="math inline">\(a\)</span> and scale <span class="math inline">\(b\)</span> given by <span id="eq-epiestim-post"><span class="math display">\[
+a = a_p + \inc^W, \qquad b = \frac{b_p}{1 + b_p \Lambda^W}
+\tag{3}\]</span></span> where <span class="math inline">\(a_p\)</span> and <span class="math inline">\(b_p\)</span> are the prior shape and scale, <span class="math inline">\(\inc^W\)</span> is the incidence in the time window, and <span class="math inline">\(\Lambda^W\)</span> is the total infection pressure in the time window, defined in terms of the daily incidence data as <span class="math display">\[
+\inc^W = \sum_{s=t-w+1}^t \inc_t, \qquad \Lambda^W=\sum_{s=t-w+1}^t \Lambda_s, \qquad \Lambda_t = \sum_{\tau=1}^\infty \inc_{t-\tau} g_\tau
+\]</span></p>
+<p>Notice that the mean posterior estimate for <span class="math inline">\(\R_t\)</span> is <span class="math inline">\(\bar{R_t}=ab\)</span> and in the limit of small <span class="math inline">\(a_p\)</span> and large <span class="math inline">\(b_p\)</span> (i.e.&nbsp;approximately uniform prior) this is <span class="math display">\[
+\bar{\R}_W \approx \frac{ \sum_{s=t-w+1}^t \inc_t}{\sum_{s=t-w+1}^t  \sum_{\tau=1}^\infty \inc_{s-\tau} g_\tau }
+\]</span> This has an intuitive interpretation as the ratio of the total number of incident infections in the time window <span class="math inline">\(W\)</span> to the aggregate infection pressure exerted by active infections during the time window.</p>
+<p>Note that in general, some of the infections in the data will be “external” (i.e.&nbsp;were not infected by one of the other infections in the data) as there must be at least one “seed” infection that started the outbreak (and there may be other individuals who were infected outside the region the data were collected from). These external infections should be included in the denominator (as the contribute to the force of infection) but not the numerator.</p>
+<p>If the estimation window is <span class="math inline">\([0,T]\)</span> then this reduces to <span class="math display">\[
+\bar{\R}_{[0,T]} \approx  \frac{ \sum_{s=0}^T \inc_t}{\sum_{s=0}^T \inc_s F_{T-s}}
+\]</span> where <span class="math inline">\(F_t=\sum_{\tau=1}^t g_\tau\)</span> is the CDF of the generation interval distribution.</p>
+<p>In the special case where there was a known number <span class="math inline">\(m\)</span> of seed infections at <span class="math inline">\(t=0\)</span> and the outbreaks ends in elimination with a total of <span class="math inline">\(N\)</span> locally acquired infections (i.e.&nbsp;excluding the seed cases), the above reduces to <span class="math inline">\(\bar{\R}= N/(N+m)\)</span> reflecting the <span class="math inline">\(N\)</span> infections that have arisen from <span class="math inline">\(N+m\)</span> infectors.</p>
+<p>Note the estimates arising from <a href="#eq-epiestim-post" class="quarto-xref">Equation&nbsp;3</a> can be sensitive to the choice of time window <span class="math inline">\(w\)</span>. In general, short windows will be more sensitive to noise in the data, while long windows will be slow to respond to genuine changes in <span class="math inline">\(\R_t\)</span>. The mean and 95% credible interval of the posterior distribution produced using this method with an estimation window of <span class="math inline">\(w=7\)</span> days, and an exponential prior (<span class="math inline">\(a_p=1\)</span>, <span class="math inline">\(b_p=2\)</span>) are shown in <a href="#fig-Rt-inference" class="quarto-xref">Figure&nbsp;1</a>(c). Note that the expressions above produce estimates for <span class="math inline">\(\R_t\)</span> at the end of the time window <span class="math inline">\([t-w,t]\)</span>. For these estimates to agree with the true <span class="math inline">\(\R_t\)</span> in <a href="#fig-Rt-inference" class="quarto-xref">Figure&nbsp;1</a>(c), we needed to plot them at the centre of the time window (i.e.&nbsp;by shifting the time axis by 3.5 days).</p>
+<div id="fig-Rt-inference" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-Rt-inference-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="Rt_inference.png" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-Rt-inference-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Estimation of the effective reproduction number <span class="math inline">\(\R_t\)</span>: (a) synthetic daily incidence data generated from the Poisson renewal model; (b) estimation of <span class="math inline">\(\R_t\)</span> by directly inverting the renewal equation; (c) estimation of <span class="math inline">\(\R_t\)</span> using the EpiEstim method showing the mean and 95% Bayesian credible interval. The known “true” value of <span class="math inline">\(\R_t\)</span> is shown as a blue line in (b) and (c). Generation interval distribution is discretised gamma with mean 5 days and standard deviation 2.5 days truncated at maximum 15 days.
+</figcaption>
+</figure>
+</div>
+<p>Note that the results in <a href="#fig-Rt-inference" class="quarto-xref">Figure&nbsp;1</a> assume that the true generation interval is accurately known. In reality, we will only have an imperfect estimate and this can impact <span class="math inline">\(\R_t\)</span> estimates.</p>
+<p><a href="#fig-Rt-inference-mis" class="quarto-xref">Figure&nbsp;2</a> shows the same result but with a mis-specificed generation interval mean of 10 days instead of 5 days. As we know, longer generation intervals lead to a steeper relationship between <span class="math inline">\(\R_t\)</span> and the epidemic growth rate <span class="math inline">\(r\)</span> (see Topic 2). Hence, to explain an observed growth rate <span class="math inline">\(r&gt;0\)</span> in the data, <span class="math inline">\(\R_t\)</span> must be larger when the generation interval is longer. So, as we might expect, this biases <span class="math inline">\(\R_t\)</span> upwards when the epidemic is growing (and downwards when it is shrinking).</p>
+<div id="fig-Rt-inference-mis" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-Rt-inference-mis-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="Rt_inference2.png" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-Rt-inference-mis-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: Estimation of the effective reproduction number using the EpiEstim method with a mis-specified generation interval distribution (assuemd mean 10 days, true mean 5 days). Other settings are as in <a href="#fig-Rt-inference" class="quarto-xref">Figure&nbsp;1</a>.
+</figcaption>
+</figure>
+</div>
+</section>
+<section id="practical-issues-with-reproduction-number-estimation" class="level1" data-number="4">
+<h1 data-number="4"><span class="header-section-number">4</span> Practical issues with reproduction number estimation</h1>
+<p>We have seen how to deal with noisy incidence data but there are a host of other issues that beset useful estimation of <span class="math inline">\(\R_t\)</span> from real-world data, including:</p>
+<ul>
+<li>Delays. Usually there is a delay from the infection event to the case being recorded in surveillance data, so we are generally looking back in time even with the most recent available data.</li>
+<li>Under-ascertainment. Often not all infections are recorded in the data, and those that are may be a biased subset.</li>
+<li>Model mis-specification. Above we had the luxury of estimating <span class="math inline">\(\R_t\)</span> using the same model as was used to generate the data. That is never the case in the real world and if the model is mis-specified it can lead to biased estimates (for example mis-sepcification of the generation interval distribution seen above)</li>
+<li>Imported infections. The estimation methods described above assume that the cases recorded in the data were infected by previous cases recorded in the same dataset. If some of the cases are imported infections, this will tend to bias estimates upwards.</li>
+</ul>
+<p>There are ways of dealing with these issues - <a href="https://doi.org/10.1371/journal.pcbi.1008409">see Gostic et al (2020)</a> for a good overview. It is beyond the scope of these notes to cover them all in detail, but we will briefly looks at an R package called <a href="https://epiforecasts.io/EpiNow2/">EpiNow2</a>, which handles a lot of these - see <a href="https://doi.org/10.12688/wellcomeopenres.16006.2">Abbot et al.&nbsp;(2020)</a> for more details.</p>
+</section>
+<section id="time-series-analysis-with-epinow2" class="level1" data-number="5">
+<h1 data-number="5"><span class="header-section-number">5</span> Time series analysis with EpiNow2</h1>
+<p>Here we show some of the estimates produce by EpiNow2 when applied to synthetic incidence data. Readers are encourage to experiment with the R code, referring to the <a href="https://epiforecasts.io/EpiNow2/articles/EpiNow2.html">EpiNow2 documentation</a>. The R code blocks below load pre-fitted models to reduce unnecessary computations, but the R code to fit the models may be found in the directory ‘epinow_model_fits/fit_models.R’.</p>
+<p><a href="#fig-epiNow2" class="quarto-xref">Figure&nbsp;3</a> shows plots of the synthetic incidence data along with the EpiNow2 model fit (i.e.&nbsp;the model’s posterior predictions for daily incidence), as well as estimates of the time-dependent epidemic growth rate and reproduction number. The data is not too noisy, so the model provides a good fit with reasonably narrow confidence intervals.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-epiNow2" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-epiNow2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="Topic09_Reproduction_number_estimation_files/figure-html/fig-epiNow2-1.png" class="img-fluid figure-img" width="480">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-epiNow2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;3: EpiNow2 model fit to synthetic infection incidence data
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>To investigate the effects of misspecifying the generation interval distribution, <a href="#fig-epiNow2-compare-GIs" class="quarto-xref">Figure&nbsp;4</a> shows the EpiNow2 outputs under three different assumptions for the GI distribution: one where the mean is too high, one where it is too low, and one where it is correct. As we have seen previously, if the assumed GI is too high, estmiates of <span class="math inline">\(\R_t\)</span> are biased away from <span class="math inline">\(1\)</span> and vice versa if the assumed GI is too low.</p>
+<p>Notice however that the epidemic growth rate estimates are robust to misspecification of the GI. This is because the growth rate is essentially a feature of the data (recall exponential growth of rate <span class="math inline">\(r\)</span> corresponds to a straight line of slope <span class="math inline">\(r\)</span> on log-transformed data) and does not require any assumptions about the GI.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-epiNow2-compare-GIs" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-epiNow2-compare-GIs-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="Topic09_Reproduction_number_estimation_files/figure-html/fig-epiNow2-compare-GIs-1.png" class="img-fluid figure-img" width="768">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-epiNow2-compare-GIs-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;4: EpiNow2 estimates of the reproduction number and epidemic growth rate under three different assumptions about the generation interval distribution: with a mean that is too high (9 days, green), too low (2 days, orange) and the correct mean (5 days, purple).
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<section id="accounting-for-delays" class="level2" data-number="5.1">
+<h2 data-number="5.1" class="anchored" data-anchor-id="accounting-for-delays"><span class="header-section-number">5.1</span> Accounting for delays</h2>
+<p>So far we have assumed that we have access to data on the incidence of new infections. This is rarely the case in practice and instead we are almost always limited to data relating ot downstream consequences of infections, e.g.&nbsp;case notification (which often relies on symptom onset), presentation for healthcare, or death. This has two important ramifications for model fitting:</p>
+<ol type="1">
+<li>We do not generally have data on <em>all</em> infections, only the subset of infections for which the downstream event occurs and is observed.</li>
+<li>The downstream event typically occurs some time later than infection, which means the data is <em>delayed</em> (by some distributed time delay).</li>
+</ol>
+<p>As we have seen previously, one way to model this is by combining the Poisson renewal equation for daily infection incidence <span class="math inline">\(\inc_t\)</span> <span class="math display">\[
+\inc_t \sim \mathrm{Poiss}\left( \R_t \sum_{\tau=1}^\infty \inc_{t-\tau} g_\tau \right)
+\]</span> with an observed variable <span class="math display">\[
+C_t \sim \mathrm{Poiss}\left(  p  \sum_{\tau=0}^\infty \inc_{t-\tau} u_\tau\right)
+\]</span> where <span class="math inline">\(p\in[0,1]\)</span> is the probability that infection leads to the observed downstream event occurring, and <span class="math inline">\(u_s\)</span> is the PMF of the distribution of the number of days from infection to occurrence of the downstream event.</p>
+<p>This is a simplified model, but EpiNow2 uses this basic idea to allows observation delays to be included in the model.</p>
+<p><a href="#fig-epiNow2-cases-no-delay" class="quarto-xref">Figure&nbsp;5</a> shows EpiNow2 fits to the infection incidence data (top panel, as seen previously) and the reported case data (middle panel), assuming incorrectly that there is no delay from infection to case notification. This means that the reproduction number estimates based on reported case data (orange curve in bottom panel) are shifted to the right compared to the “correct” reproduction number (green curve in bottom panel).</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-epiNow2-cases-no-delay" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-epiNow2-cases-no-delay-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="Topic09_Reproduction_number_estimation_files/figure-html/fig-epiNow2-cases-no-delay-1.png" class="img-fluid figure-img" width="768">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-epiNow2-cases-no-delay-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;5: EpiNow2 model fits to synthetic data on daily infection incidence (top panel) and on new daily reported cases (middle panel), assuming no delay from infection to case notification. Bottom panel shows the reproduction number estimates from fitting to infection incidence data (orange) and reported case data (green).
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>We can properly account for the delay by telling EpiNow2 that the time from infection to case notification is the sum of the incubation period, which in this example was a gamma distribution with mean 3 days and s.d. 2 days, and the delay from symptom onset to notification, which was a gamma distribution with mean 2 days and s.d. 1.6 days.</p>
+<p>The result of this is shown in <a href="#fig-epiNow2-cases-delay" class="quarto-xref">Figure&nbsp;6</a>. Here we see that the reproduction number inferred from the reported case data (orange curve in bottom panel) more closely matches the true reproduction number (green curve in bottom panel). We also see that the inferred daily incidence of infections (red curve in middle panel) correctly matches the timing of the true infection incidence (top panel). If we had done the same thing in <a href="#fig-epiNow2-cases-no-delay" class="quarto-xref">Figure&nbsp;5</a> where we didn’t account for the delay, the red curve would (incorrectly) have the same timing as the reported cases</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-epiNow2-cases-delay" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-epiNow2-cases-delay-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="Topic09_Reproduction_number_estimation_files/figure-html/fig-epiNow2-cases-delay-1.png" class="img-fluid figure-img" width="768">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-epiNow2-cases-delay-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;6: EpiNow2 model fits to synthetic data on daily infection incidence (top panel) and on new daily reported cases (middle panel), correctly accounting for the delay from infection to case notification as the sum of two independent gamma distributions, one with mean 3 days and s.d. 2 days, and one with mean 2 days and s.d. 1.6 days. The red curve in the middle panel shows the estimated daily infection incidence inferred from the reported case data. Bottom panel shows the reproduction number estimates from fitting to infection incidence data (orange) and reported case data (green).
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="real-time-estimation" class="level2" data-number="5.2">
+<h2 data-number="5.2" class="anchored" data-anchor-id="real-time-estimation"><span class="header-section-number">5.2</span> Real-time estimation</h2>
+<p>In the examples above, we have data for the whole epidemic wave and so the model fits provide a retrospective analysis of how <span class="math inline">\(\R_t\)</span> and infection incidence varies over the course of the completed epidemic.</p>
+<p>In reality, we are often interested in estimating these variables in real-time, when we only have partial data. <a href="#fig-epiNow2-RT" class="quarto-xref">Figure&nbsp;7</a> shows model fits to the same time series for infections and reported cases, but only including data up to 1 March.</p>
+<p>The infection incidence has peaked just before the end of the available data, but this is not necessarily obvious looking at noisy real-time data. However, the reproduction number estimate from the infection data (orange curve in bottom panel) has just gone under <span class="math inline">\(1\)</span> and has quite narrow confidence intervals, meaning we have high confidence that the epidemic has peaked.</p>
+<p>If we only had access to the reported case data up to 1 March, we only really have any information about <span class="math inline">\(\R_t\)</span> and infection incidence up to about a week or so previously because of the lag from infection to case notification. This means that estimates of <span class="math inline">\(\R_t\)</span> beyond around 21 February become progressively less informed by data and hence revert more towards the prior used by EpiNow2. As a consequence, the confidence intervals on <span class="math inline">\(\R_t\)</span> get steadily wider in the last week or so of data.</p>
+<p>In this example, we would have been less confident that the epidemic had peaked since the confidence interval of the orange curve in the bottom panel of <a href="#fig-epiNow2-RT" class="quarto-xref">Figure&nbsp;7</a> contains <span class="math inline">\(\R_t=1\)</span>. Similarly we would be less certain about the number of new infections in the most recent week, as indicated by the expanding confidence intervals on the red curve in the middle panel.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-epiNow2-RT" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-epiNow2-RT-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="Topic09_Reproduction_number_estimation_files/figure-html/fig-epiNow2-RT-1.png" class="img-fluid figure-img" width="768">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-epiNow2-RT-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;7: EpiNow2 model fits to the same synthetic data on daily infection incidence (top panel) and on new daily reported cases (middle panel) as in the previous figure, but truncated at 1 March. The red curve in the middle panel shows the estimated daily infection incidence inferred from the reported case data. Bottom panel shows the reproduction number estimates from fitting to infection incidence data (orange) and reported case data (green).
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

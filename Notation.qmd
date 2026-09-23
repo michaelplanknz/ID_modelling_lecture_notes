@@ -1,0 +1,96 @@
+---
+title: "Notation and abbreviations"
+author: "Michael Plank"
+format:
+  html:
+    toc: true
+    number-sections: true
+    theme: cosmo
+---
+
+
+::: {.hidden}
+$$
+\newcommand{\vect}[1]{\boldsymbol{\mathbf{#1}}}
+\newcommand{\R}{\mathcal{R}}
+\newcommand{\Reff}{\mathcal{R}_\mathrm{eff}}
+\newcommand{\inc}{\mathrm{inc}}
+$$
+:::
+
+
+# Table of notation
+
+Notation           | Quantity                                                        | Dimensions  |
+-------------------|-----------------------------------------------------------------|-------------|
+$S(t)$, $S_t$      | Number of susceptible individuals at time $t$                   |             |
+$E(t)$             | Number of exposed individuals at time $t$                       |             |
+$I(t)$, $I_t$      | Number of infectious individuals at time $t$                    |             |
+$R(t)$             | Number of recovered individuals at time $t$                     |             |
+$N$                | Population size                                                 |             |
+$\R_0$             | Basic reproduction number                                       |             |
+$\Reff$, $\R_t$    | Effective or time-varying reproduction number at time $t$       |             |
+$\R_v$             | Reproduction number with vaccination                            |             |
+$\lambda(t)$       | Force of infection at time $t$                                  | $T^{-1}$    |
+$\inc(t)$          | Incidence rate at time $t$                                      | $T^{-1}$    |
+$\inc_t$           | Daily incidence on day $t$                                      |             |
+$\beta$            | Transmission rate                                               | $T^{-1}$    |
+$\alpha$           | Transition rate from exposed to infectious state                | $T^{-1}$    |
+$\gamma$           | Recovery rate                                                   | $T^{-1}$    |
+$w$                | Immunity waning rate                                            | $T^{-1}$    |
+$\mu$              | Mortality rate                                                  | $T^{-1}$    |
+$r$                | Epidemic growth rate                                            | $T^{-1}$    |
+$z$                | Final epidemic size                                             |             |
+$p_v$              | Proportion vaccinated                                           |             |
+$v_I$              | Vaccine effectiveness against infection                         |             |
+$v_T$              | Vaccine effectiveness against transmission given infection      |             |
+$v_S$              | Vaccine effectiveness against severe disease given infection    |             |
+$\epsilon$         | Assortativity parameter                                         |             |
+$X_i$              | Number of offspring form individual $i$                         |             |
+$Z_t$              | Number of new infections at time $t$ or in generation $t$       |             |
+$G_X(.)$           | Probability generating function for $X$                         |             |
+$q$                | Probability of extinction                                       |             |
+$a$                | Age                                                             | $T$         |
+$\tau$             | Age of infection                                                | $T$         |
+$f(\tau)$          | Average infectiousness at age-of-infection $\tau$               | $T^{-1}$    |
+$g(\tau)$          | Generation interval probability density at age-of-infection $\tau$  | $T^{-1}$    |
+$g_\tau$           | Generation interval probability mass function at age-of-infection $\tau$  |          |
+$K_{ij}$           | Next generation matrix (expected number of infections of type $i$ caused by an individual of type $j$ in fully susceptible population) |             |
+$C_{ij}$           | Contact matrix (expected number of contracts per unit time of type $i$ for an individual of type $j$  | $T^{-1}$    |
+$E(.)$, $\langle . \rangle$ | Expected value                                                  |             |
+$\mathrm{Var}(.)$  | Variance                                                        |             |
+
+
+
+
+
+
+
+# Table of abbreviations
+
+
+Abbreviation   | Meaning                                                          |
+---------------|------------------------------------------------------------------|
+CDF            | Cumulative distribution function                                 |
+DFE            | Disease-free equilibrium                                         |
+EE             | Endemic equilibrium                                              |
+ER             | Erdös-Rényi                                                    |
+GI             | Generation interval                                              |
+ID             | Infectious disease                                               |
+NGM            | Next generation matrix                                           |
+ODE            | Ordinary differential equation                                   |
+PDE            | Partial differential equation                                    |
+PDF            | Probability density function                                     |
+PMF            | Probability mass function                                        |
+PUE            | Probability of ultimate extinction                               |
+
+
+
+
+
+
+
+
+
+
+

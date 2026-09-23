@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.37">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Michael Plank">
+
+<title>Topic 7. Stochastic models</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="Topic07_Stochastic_models_files/libs/clipboard/clipboard.min.js"></script>
+<script src="Topic07_Stochastic_models_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="Topic07_Stochastic_models_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="Topic07_Stochastic_models_files/libs/quarto-html/popper.min.js"></script>
+<script src="Topic07_Stochastic_models_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="Topic07_Stochastic_models_files/libs/quarto-html/anchor.min.js"></script>
+<link href="Topic07_Stochastic_models_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="Topic07_Stochastic_models_files/libs/quarto-html/quarto-syntax-highlighting-7f8f88aac4f3542376d5c11b86a4c14d.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="Topic07_Stochastic_models_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="Topic07_Stochastic_models_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="Topic07_Stochastic_models_files/libs/bootstrap/bootstrap-67270d1595a62d14f123c043d4fb2f18.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#stochastic-sir-model" id="toc-stochastic-sir-model" class="nav-link active" data-scroll-target="#stochastic-sir-model"><span class="header-section-number">1</span> Stochastic SIR model</a></li>
+  <li><a href="#extinction-probability-for-a-branching-process-in-continuous-time" id="toc-extinction-probability-for-a-branching-process-in-continuous-time" class="nav-link" data-scroll-target="#extinction-probability-for-a-branching-process-in-continuous-time"><span class="header-section-number">2</span> Extinction probability for a branching process in continuous time</a></li>
+  <li><a href="#stochastic-sir-model-simulation" id="toc-stochastic-sir-model-simulation" class="nav-link" data-scroll-target="#stochastic-sir-model-simulation"><span class="header-section-number">3</span> Stochastic SIR model simulation</a>
+  <ul class="collapse">
+  <li><a href="#gillespie-algorithm" id="toc-gillespie-algorithm" class="nav-link" data-scroll-target="#gillespie-algorithm"><span class="header-section-number">3.1</span> Gillespie algorithm</a></li>
+  <li><a href="#fixed-time-step-algorithm" id="toc-fixed-time-step-algorithm" class="nav-link" data-scroll-target="#fixed-time-step-algorithm"><span class="header-section-number">3.2</span> Fixed time step algorithm</a></li>
+  </ul></li>
+  <li><a href="#stochastic-sirs-model-simulation" id="toc-stochastic-sirs-model-simulation" class="nav-link" data-scroll-target="#stochastic-sirs-model-simulation"><span class="header-section-number">4</span> Stochastic SIRS model simulation</a></li>
+  <li><a href="#non-markovian-models" id="toc-non-markovian-models" class="nav-link" data-scroll-target="#non-markovian-models"><span class="header-section-number">5</span> Non-Markovian models</a>
+  <ul class="collapse">
+  <li><a href="#non-markovian-models-in-continuous-time" id="toc-non-markovian-models-in-continuous-time" class="nav-link" data-scroll-target="#non-markovian-models-in-continuous-time"><span class="header-section-number">5.1</span> Non-Markovian models in continuous time</a></li>
+  <li><a href="#discrete-time-model" id="toc-discrete-time-model" class="nav-link" data-scroll-target="#discrete-time-model"><span class="header-section-number">5.2</span> Discrete time model</a></li>
+  <li><a href="#including-individual-heterogeneity" id="toc-including-individual-heterogeneity" class="nav-link" data-scroll-target="#including-individual-heterogeneity"><span class="header-section-number">5.3</span> Including individual heterogeneity</a></li>
+  </ul></li>
+  <li><a href="#a-taxonomy-of-models" id="toc-a-taxonomy-of-models" class="nav-link" data-scroll-target="#a-taxonomy-of-models"><span class="header-section-number">6</span> A taxonomy of models</a></li>
+  <li><a href="#important-delays-in-infectious-disease-dynamics" id="toc-important-delays-in-infectious-disease-dynamics" class="nav-link" data-scroll-target="#important-delays-in-infectious-disease-dynamics"><span class="header-section-number">7</span> Important delays in infectious disease dynamics</a></li>
+  <li><a href="#example-modelling-case-isolation" id="toc-example-modelling-case-isolation" class="nav-link" data-scroll-target="#example-modelling-case-isolation"><span class="header-section-number">8</span> Example: modelling case isolation</a>
+  <ul class="collapse">
+  <li><a href="#model-simulation" id="toc-model-simulation" class="nav-link" data-scroll-target="#model-simulation"><span class="header-section-number">8.1</span> Model simulation</a></li>
+  <li><a href="#outbreak-controllability" id="toc-outbreak-controllability" class="nav-link" data-scroll-target="#outbreak-controllability"><span class="header-section-number">8.2</span> Outbreak controllability</a></li>
+  </ul></li>
+  </ul>
+</nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Topic 7. Stochastic models</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Michael Plank </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="hidden">
+<p><span class="math display">\[
+\newcommand{\vect}[1]{\boldsymbol{\mathbf{#1}}}
+\newcommand{\R}{\mathcal{R}}
+\newcommand{\Reff}{\mathcal{R}_\mathrm{eff}}
+\]</span></p>
+</div>
+<p>The models we covered in the previous Topic assumed that infections occurred in a series of non-overlapping generations, which simplified the analysis considerably. Here we will study a more general class of models in which infections occur in continuous time.</p>
+<section id="stochastic-sir-model" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> Stochastic SIR model</h1>
+<p>Similarly to the deterministic SIR model, suppose that each individual makes contacts with randomly selected members of the population as a Poisson process of intensity <span class="math inline">\(c\)</span> and that, if contact occurs between a susceptible and an infective, the susceptible is infected with probability <span class="math inline">\(p\)</span> and let <span class="math inline">\(\beta=cp\)</span>. Suppose that infectives recover as a Poisson process of intensity <span class="math inline">\(\gamma\)</span>. This defines a continuous-time Markov process with state variables <span class="math inline">\(S(t)\)</span> and <span class="math inline">\(I(t)\)</span> representing the number of susceptible and infectious individuals respectively. Note that, unlike the deterministic mean-field models studied earlier, the state variables are now always integer-valued.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Stochastic SIR model
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Let the random variables <span class="math inline">\(S(t)\)</span> and <span class="math inline">\(I(t)\)</span> denote the number of susceptible and infectious individuals respectively at time <span class="math inline">\(t\)</span>. Consider the continuous-time Markov process with two types of state transition:</p>
+<ol type="1">
+<li><strong>Transmission</strong> <span class="math inline">\((S,I) \longrightarrow (S-1, I+1)\)</span> occurs at rate <span class="math inline">\(\beta SI/N\)</span>.</li>
+<li><strong>Recovery</strong> <span class="math inline">\((S,I) \longrightarrow (S,I-1)\)</span> occurs at rate <span class="math inline">\(\gamma I\)</span>.</li>
+</ol>
+</div>
+</div>
+<p>Like the SIR model, the basic reproduction number is <span class="math inline">\(\R_0=\beta/\gamma\)</span>.</p>
+</section>
+<section id="extinction-probability-for-a-branching-process-in-continuous-time" class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> Extinction probability for a branching process in continuous time</h1>
+<p>In the early stages, when the population is almost fully susceptible, the model beahve like a branching process but, unlike the models we saw in the previous Topic, in continuous time as opposed to discrete generations.</p>
+<p>Nonetheless, a similar approach may be used to calculate the probability of ultimate extinction (PUE) <span class="math inline">\(q\)</span> for an outbreak starting with a single infective.</p>
+<p>Let the random variable <span class="math inline">\(X\)</span> denote the number of offspring of the initial infective. These all occur at different times but the outbreak as a whole goes extinct if and only if the tranmission chains starting from all <span class="math inline">\(X\)</span> offspring go extinct. By conditioning on <span class="math inline">\(X\)</span>, we obtain <span class="math display">\[
+q = \sum_{n=0}^\infty P(X=n)q^n = E(q^X)
+\]</span></p>
+<p>We may also condition on the length of the initial infective’s infectious period <span class="math inline">\(T_I\)</span> to write <span class="math display">\[
+q = E\left( E(q^X \ | \ T_I) \right)
+\]</span></p>
+<p>For a given value of <span class="math inline">\(T_I=t_I\)</span>, <span class="math inline">\(X\)</span> has a Poisson distribution with mean <span class="math inline">\(\beta t_I\)</span>, so <span class="math inline">\(E(q^X \ | \ T_I=t_I) = e^{-\beta t_I(1-q) }\)</span> (the generating function for a Poisson distribution), giving <span class="math display">\[
+q = E\left(e^{-\beta T_I(1-q)}  \right)
+\]</span> Observe that this is the moment generating function for <span class="math inline">\(T_I\)</span> evaluated at <span class="math inline">\(-\beta(1-q)\)</span> giving the following general result.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Probability of ultimate extinction for a continuous-time branching process
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For a continuous-time branching process where each infective transmits as a Poisson process of intensity <span class="math inline">\(\beta\)</span> for a random period of time <span class="math inline">\(T_I\)</span>, the probability of ultimate extinction <span class="math inline">\(q\)</span> satisfies <span class="math display">\[
+q = M_{T_I}(-\beta(1-q))
+\]</span> where <span class="math inline">\(M_{T_I}\)</span> is the moment generating function for <span class="math inline">\(T_I\)</span>.</p>
+</div>
+</div>
+<p>In the case where <span class="math inline">\(T_I\)</span> is exponentially distributed with mean <span class="math inline">\(1/\gamma\)</span>, we obtain <span class="math display">\[
+q = \frac{\gamma}{\gamma+\beta(1-q)} = \frac{1}{1+\R_0(1-q)}
+\]</span> whose smallest root is <span class="math inline">\(q=1\)</span> if <span class="math inline">\(\R_0&lt;1\)</span> and <span class="math inline">\(q=1/\R_0\)</span> if <span class="math inline">\(\R_0&gt;1\)</span>.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Probability of ultimate extinction for a Markovian continuous-time branching process
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For a continuous-time branching process where each the infectious period is exponentially distributed, the probability of extinction <span class="math inline">\(q\)</span> is <span id="eq-PUE-stochastic-SIR"><span class="math display">\[
+q = \left\{ \begin{array}{ll}  1, &amp; \R_0\le 1 \\ \frac{1}{\R_0}, &amp; \R_0 &gt;1 \end{array} \right.
+\tag{1}\]</span></span></p>
+</div>
+</div>
+<p>This is consistent with the result in Topic 6 on branching processes because if individuals transit as a Poisson process for an exponentially distributed period of time, the number of offspring is geometrically distributed, which leads to the same expression for <span class="math inline">\(q\)</span> as in <a href="#eq-PUE-stochastic-SIR" class="quarto-xref">Equation&nbsp;1</a>.</p>
+<p>As for the branching process models with non-overlapping generations seen previously, if the outbreak starts with <span class="math inline">\(m\)</span> initial infectives, then the PUE is <span class="math inline">\(q^m\)</span>.</p>
+<p>If the branching process does not go extinct and a large epidemic occurs then, as for the SIR model, the expected fraction infected <span class="math inline">\(z\)</span> (assuming an initially susceptible population) satisfies the same final size equation <span class="math inline">\(1-z=e^{-\R_0 z}\)</span>.</p>
+<p>It is also possible to add more disease states, such as an exposed compartment, in the natural way but we omit this here.</p>
+<p>Other theoretical results are available for this model (see <a href="https://doi.org/10.1016/j.mbs.2010.01.006">Britton, 2010</a>) but are beyond the scope of these notes, so we now move our focus to computational simulation of the stochastic model.</p>
+</section>
+<section id="stochastic-sir-model-simulation" class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> Stochastic SIR model simulation</h1>
+<section id="gillespie-algorithm" class="level2" data-number="3.1">
+<h2 data-number="3.1" class="anchored" data-anchor-id="gillespie-algorithm"><span class="header-section-number">3.1</span> Gillespie algorithm</h2>
+<p>The stochastic SIR model (and Markovian models in general) can be simulated exactly using the <em>Gillespie algorithm</em>, which explicitly simulates every transition event in continuous time.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Gillespie algorithm
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ol type="1">
+<li>Set <span class="math inline">\(t=0\)</span>, <span class="math inline">\(S(t)=S_0\)</span>, <span class="math inline">\(I(t)=I_0\)</span>.</li>
+<li>Calculate the transmission rate <span class="math inline">\(r_1=\beta S(t)I(t)/N\)</span> and recovery rate <span class="math inline">\(r_2 = \gamma I(t)\)</span>. Set the total event rate <span class="math inline">\(r=r_1+r_2\)</span>.</li>
+<li>Generate the time until the next event <span class="math inline">\(\delta t \sim \mathrm{Exp}(r)\)</span>.</li>
+<li>Generate a uniform random deviate <span class="math inline">\(u\sim U[0,1]\)</span></li>
+<li>If <span class="math inline">\(u&lt;r_1/(r_1+r_2)\)</span> event is a transmission. Set <span class="math inline">\(S(t+\delta t)=S(t)-1\)</span> and <span class="math inline">\(I(t+\delta t)=I(t)+1\)</span></li>
+<li>Else event is a recovery. Set <span class="math inline">\(S(t+\delta t)=S(t)\)</span> and <span class="math inline">\(I(t+\delta t)=I(t)-1\)</span></li>
+<li>Update time variable to <span class="math inline">\(t+\delta t\)</span>.</li>
+<li>Return to step 2 until <span class="math inline">\(I(t)=0\)</span>.</li>
+</ol>
+</div>
+</div>
+<p><a href="#fig-stochastic-SIR-Gillespie" class="quarto-xref">Figure&nbsp;1</a> shows some example simulations using the Gillespie algorithm, alongside the solution of the corresponding deterministic SIR model and the mean of a large number of realisations. Note that, because different realisations peak at different times, the mean of the realisations produces a curve that systematically underestimates the size of the epidemic peak. In this case, the initial condition <span class="math inline">\(I(0)\)</span> was chosen to be large enough that the probability of extinction before a major outbreak was negligible. However, if a significant propotion of realisations went extinct in the early stages, the mean would be even less representative of a typical realisation.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Averaging stochastic model outputs
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Caution is needed when calculating the average (either the mean or median) of time-dependent variables in stochastic models. It is often better to focus on relevant summary metrics (e.g.&nbsp;final epidemic size, maximum prevalence) that can be calculated for each realisation and report the statistics (e.g.&nbsp;mean, median, 2.5th and 97.5th percentiles) of those metrics.</p>
+<p>To visualise time-dependent behaviour, curve-based statistics can be useful, e.g.&nbsp;discard the most extreme 5% of realisations. on some metric (such as final size) and construct an interval that traps the remaining 95% of realisations. See <a href="https://doi.org/10.1038/s41567-020-01121-y">Juul et al.&nbsp;(2020)</a> for more details.</p>
+</div>
+</div>
+<div id="fig-stochastic-SIR-Gillespie" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-stochastic-SIR-Gillespie-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="stochastic_SIR.png" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-stochastic-SIR-Gillespie-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Simulations of the continuous-time stochastic SIR model with the Gillespie algorithm showing the number of infectious individuals <span class="math inline">\(I(t)\)</span> against time <span class="math inline">\(t\)</span>. Parameter values: <span class="math inline">\(\R_0=1.5\)</span>, <span class="math inline">\(\gamma=0.25\)</span> days<span class="math inline">\(^{-1}\)</span>, population size <span class="math inline">\(N=10000\)</span>, initial condition <span class="math inline">\(I(0)=20\)</span>, <span class="math inline">\(S(0)=N-I(0)\)</span>. Plots shows 20 realisations of the stochastic model (grey); the mean of 10000 realisations at each time <span class="math inline">\(t\)</span> (red); and the solution of the deterministic SIR model.
+</figcaption>
+</figure>
+</div>
+<p>Although the Gillespie algorithm is exact, it can be computationally intensive for large population sizes because the number of events that need to be individually simulated is very large.</p>
+</section>
+<section id="fixed-time-step-algorithm" class="level2" data-number="3.2">
+<h2 data-number="3.2" class="anchored" data-anchor-id="fixed-time-step-algorithm"><span class="header-section-number">3.2</span> Fixed time step algorithm</h2>
+<p>An alternative method is to simulate the changes in <span class="math inline">\(S(t)\)</span> and <span class="math inline">\(I(t)\)</span> in fixed time steps. Since each susceptible gets infected at rate <span class="math inline">\(\lambda(t)\)</span> where <span class="math inline">\(\lambda(t)=\beta I(t)/N\)</span> is the force of infection, provided <span class="math inline">\(\delta t\)</span> is sufficiently small we may approximate the number of transmission events in the time interval <span class="math inline">\([t,t+\delta t]\)</span> as <span class="math inline">\(\mathrm{Bin}\left(S(t), \lambda(t)\delta t/N \right)\)</span>. Similarly, we approximate the number of recoveries at <span class="math inline">\(\mathrm{Bin}\left( I(t), \gamma\delta t\right)\)</span>. Note that this formulation ensures that the state variables always remain non-negative integers.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Simulating the stochastic SIR model with fixed time steps
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><span class="math display">\[
+\begin{align}
+S(t+\delta t) &amp;= S(t)-X(t) \\
+I(t+\delta t) &amp;= I(t)+X(t) - Y(t)
+\end{align}
+\]</span></p>
+<p>where</p>
+<p><span class="math display">\[
+\begin{align}
+X(t) &amp; \sim \mathrm{Bin}\left( S(t), \frac{\beta I(t)}{N}\delta t\right) \\
+Y(t) &amp; \sim \mathrm{Bin}\left( I(t), \gamma\delta t \right)
+\end{align}
+\]</span></p>
+</div>
+</div>
+</section>
+</section>
+<section id="stochastic-sirs-model-simulation" class="level1" data-number="4">
+<h1 data-number="4"><span class="header-section-number">4</span> Stochastic SIRS model simulation</h1>
+<p>We have previously seen how the deterministic SIR model can be extended to account for waning immunity by adding a transition from the R to the S compartment. This can be done with the stochastic version of these models as well.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Stochastic SIRS model
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Let the random variables <span class="math inline">\(S(t)\)</span> and <span class="math inline">\(I(t)\)</span> denote the number of susceptible and infectious individuals respectively at time <span class="math inline">\(t\)</span>. Consider the continuous-time Markov process with three types of state transition:</p>
+<ol type="1">
+<li><strong>Transmission</strong> <span class="math inline">\((S,I) \longrightarrow (S-1, I+1)\)</span> occurs at rate <span class="math inline">\(\beta SI/N\)</span>.</li>
+<li><strong>Recovery</strong> <span class="math inline">\((S,I) \longrightarrow (S,I-1)\)</span> occurs at rate <span class="math inline">\(\gamma I\)</span>.</li>
+<li><strong>Waning</strong> <span class="math inline">\((S,I) \longrightarrow (S+1,I)\)</span> occurs at rate <span class="math inline">\(w (N-S- I)\)</span>.</li>
+</ol>
+</div>
+</div>
+<p>As with the stochastic SIR model, this model can be simulated via a Gillespie algorithm or with a fixed time-step approximation. <a href="#fig-stochastic-SIRS" class="quarto-xref">Figure&nbsp;2</a> shows some example simulations with two different waning rates and the same values of <span class="math inline">\(\R_0\)</span>, <span class="math inline">\(\gamma\)</span> as for the SIR simulations in <a href="#fig-stochastic-SIR-Gillespie" class="quarto-xref">Figure&nbsp;1</a> in a population of <span class="math inline">\(N=10000\)</span>. When waning is fast (average immune period 20 days), the number of infectious individuals never drops below around 400 after the initial epidemic period. The stochastic simulation oscillates around the endemic equilibrium of the deterministic SIRS model (<a href="#fig-stochastic-SIRS" class="quarto-xref">Figure&nbsp;2</a>(a)).</p>
+<p>However, when waning is slower (average immune period 200 days), after the first epidemic wave, the number of infectives predicted by the deterministic model drops to a small number (approximately 3 in this example). This means that the stochastic model trajectory has a reasonably high chance of going extinct, and this is what happens in <a href="#fig-stochastic-SIRS" class="quarto-xref">Figure&nbsp;2</a>(b): the number of infectives drops to zero at around <span class="math inline">\(t=150\)</span> days and, since the model does not include imported infections, there is way for the epidemic to be reintroduced. This occurrence is sometimes called <strong>stochastic fadeout</strong>.</p>
+<p>Of course, in reality reintroductions may happen with some frequency, and this is straightforward to incorporate into the model. This will tend to result in trajectories oscillating around the deterministic model’s endemic equilibrium in the long-term.</p>
+<div id="fig-stochastic-SIRS" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-stochastic-SIRS-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="stochastic_SIRS.png" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-stochastic-SIRS-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: Simulations of the continuous-time stochastic SIRS model with the Gillespie algorithm showing the number of infectious individuals <span class="math inline">\(I(t)\)</span> against time <span class="math inline">\(t\)</span> (top panels) and the trajectory in the <span class="math inline">\((S,I)\)</span> phase plane (bottom panels) for two waning rates: (a) <span class="math inline">\(w=0.05\)</span> days<span class="math inline">\(^{-1}\)</span>; (b) <span class="math inline">\(w=0.005\)</span> days<span class="math inline">\(^{-1}\)</span>. Other parameter values: <span class="math inline">\(\R_0=1.5\)</span>, <span class="math inline">\(\gamma=0.25\)</span> days<span class="math inline">\(^{-1}\)</span>, population size <span class="math inline">\(N=10000\)</span>, initial condition <span class="math inline">\(I(0)=20\)</span>, <span class="math inline">\(S(0)=N-I(0)\)</span>. Each plot shows a single realisations of the stochastic model (grey); and the solution of the deterministic SIRS model.
+</figcaption>
+</figure>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Stochastic fadeout
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Stochastic fadeout is the name for what happens when the infection goes extinct in a stochastic model despite persisting in the equivalent mean-field model. <a href="https://academic.oup.com/book/53038">Anderson and May</a> distinguish between <strong>epidemic fadeout</strong> and <strong>endemic fadeout</strong>.</p>
+<p>We have seen an example of epidemic fadeout in <a href="#fig-stochastic-SIRS" class="quarto-xref">Figure&nbsp;2</a>(b). Following a large epidemic in an initially susceptible population, the prevalence of infected individuals drops to low levels, meaning there is a high chance of stochastic extinction. If the pathogen persists through the first few waves, the chance of this happening decreases because the inter-epidemic troughs get progressively higher.</p>
+<p>Endemic fadeout refers to the situation where the system is close to the deterministic model’s endemic equilibrium, but intrinsic oscillations due to stochasticity (such as those see in <a href="#fig-stochastic-SIRS" class="quarto-xref">Figure&nbsp;2</a>(a)) are large enough that there is a non-negligible probability that the number of infected individuals drops to zero at some point in time.</p>
+<p>Stochastic fadeout (of either type) is more likely in smaller populations and when the waning rate is slow relative to the infectious period (or infectious and latent period combined in an equivalent SEIRS model).</p>
+<p>Similar observations apply to the SIR model with demography, where population turnover replaces waning immunity as the mechanism for replenishment of the susceptible population.</p>
+</div>
+</div>
+</section>
+<section id="non-markovian-models" class="level1" data-number="5">
+<h1 data-number="5"><span class="header-section-number">5</span> Non-Markovian models</h1>
+<p>Markovian models such as those described above assume that the waiting time in any given state is exponentially distributed. As we saw with the Kermack-McKendrick model, a more general approach assigns an average “infectiousness” <span class="math inline">\(f(\tau)=\R_0 g(\tau)\)</span> that depends on the age of infection <span class="math inline">\(\tau\)</span>.</p>
+<section id="non-markovian-models-in-continuous-time" class="level2" data-number="5.1">
+<h2 data-number="5.1" class="anchored" data-anchor-id="non-markovian-models-in-continuous-time"><span class="header-section-number">5.1</span> Non-Markovian models in continuous time</h2>
+<p>Non-Markovian stochastic models commonly assume either: (A) that infectives transmit as a time-homogeneous Poisson process of intensity <span class="math inline">\(\beta\)</span> for some random period of time drawn form a specified distribution; or (B) that infectives make <em>infectious contacts</em> (i.e.&nbsp;contacts that would result in transmission if the person the contact is with is susceptible) as a time-inhomogeneous Poisson process of intensity <span class="math inline">\(\beta(\tau)\)</span> (although in principle both a random infectious period and a time-dependent infectiousness could be included, as in the general <em>Crump-Mode-Jagers</em> process).</p>
+<p>Here we will focus on assumption (B). In this case, we have <span class="math inline">\(\beta(\tau)=\R_0 g(\tau)\)</span> where <span class="math inline">\(g(\tau)\)</span> is the PDF for the generation interval distribution.</p>
+<p>The force of infection <span class="math inline">\(\lambda(t)\)</span> at time <span class="math inline">\(t\)</span> is <span class="math display">\[
+\lambda(t) = \frac{\R_0}{N} \sum_j g(t-T_j)
+\]</span> where <span class="math inline">\(T_j\)</span> is the time individual <span class="math inline">\(j\)</span> was infected.</p>
+<p>Transmission events occur as an inhomogeneous Poisson process with intensity <span class="math inline">\(\lambda(t)S(t)\)</span> and hence the probability that no event occurs in the time interval <span class="math inline">\([t,t+s]\)</span> is <span class="math display">\[
+P(t) = \exp\left(-\int_t^{t+s} \lambda(t)S(t) dt \right)
+\]</span></p>
+<p>The time <span class="math inline">\(\tau\)</span> to the next transmission event may therefore be simulated by drawing <span class="math inline">\(U\sim \mathrm{Uniform}[0,1]\)</span> and setting <span class="math inline">\(\tau=F^{-1}(U)\)</span> where <span class="math inline">\(F(t)=1-P(t)\)</span> is the CDF of the time-to-next-event distribution.</p>
+<p>If required, the parent (i.e.&nbsp;infector) associated with the transmission event can be simulated by calculating the force of infection contributed by each infective <span class="math inline">\(j\)</span> over the time interval <span class="math inline">\([t,t+\tau]\)</span> <span class="math display">\[
+\Lambda_j = \frac{\R_0}{N} \int_t^{t+\tau} g(s-T_j) ds
+\]</span> The probability that the parent is individual <span class="math inline">\(j\)</span> is then just <span class="math inline">\(\Lambda_j/\sum_k \Lambda_k\)</span>.</p>
+<p>To be computationally tractable in a large population usually requires that there is some maximum generation interval <span class="math inline">\(\tau_\mathrm{max}\)</span> such that <span class="math inline">\(g(\tau)=0\)</span> for <span class="math inline">\(\tau&gt;\tau_\mathrm{max}\)</span>. This means that it is only necessary to keep track of infectives infected up to time <span class="math inline">\(t-\tau_\mathrm{max}\)</span>.</p>
+</section>
+<section id="discrete-time-model" class="level2" data-number="5.2">
+<h2 data-number="5.2" class="anchored" data-anchor-id="discrete-time-model"><span class="header-section-number">5.2</span> Discrete time model</h2>
+<p>Although the process can be simulated in continuous time as outlined above, it is often easier in practice to work in discrete time by modelling the number of new infections <span class="math inline">\(inc_t\)</span> that occur at time step <span class="math inline">\(t\)</span>: <span class="math display">\[
+inc_t \sim\mathrm{Bin}\left(S(t),  \frac{\R_0}{N} \sum_{s=1}^\infty inc_{t-s} g_s   \right)
+\]</span> where <span class="math inline">\(g_s\)</span> is the probability mass function of the discretised generation interval distribution, such that <span class="math inline">\(\sum_{s=1}^\infty g_s=1\)</span> and with <span class="math display">\[
+S_{t+1}=S_t-inc_t
+\]</span> In a large population, a Poisson approximation is usually adequate: <span id="eq-Poiss-renewal"><span class="math display">\[
+inc_t \sim\mathrm{Poiss}\left(  \frac{ \R_0 S_t}{N} \sum_{s=1}^\infty inc_{t-s} g_s   \right)
+\tag{2}\]</span></span></p>
+<p>This is known as the <em>Poisson renewal equation</em>.</p>
+</section>
+<section id="including-individual-heterogeneity" class="level2" data-number="5.3">
+<h2 data-number="5.3" class="anchored" data-anchor-id="including-individual-heterogeneity"><span class="header-section-number">5.3</span> Including individual heterogeneity</h2>
+<p>A limitation of this model is that each infective has the same time-dependent intensity function <span class="math inline">\(\beta(\tau)\)</span> and so the number of offspring from a given infective is Poisson distributed with mean <span class="math inline">\(\R_0\)</span>. This means it can’t model superspreading type dymamoics.</p>
+<p>We saw in Topic 6 on branching processes that a common model for individual heterogeneity is where the offspring distribution is negative binomial, with some dispersion parameter <span class="math inline">\(\kappa\)</span>. We also saw that this distribution derives from a situation where each infective has a Poisson number of offspring with an individual-specific mean that is gamma distributed.</p>
+<p>We can incorporate the same mechanism into this model by assigning each individual <span class="math inline">\(j\)</span> a transmission multiplier <span class="math display">\[
+Y_j \sim \Gamma(\kappa, 1/\kappa)
+\]</span> such that <span class="math inline">\(E(Y_j)=1\)</span>, and giving individual <span class="math inline">\(j\)</span> intensity function <span class="math inline">\(\beta_j(\tau) = \R_0 Y_j g(\tau)\)</span>. To implement this in the Poisson renewal equation, we need to know the sum of the <span class="math inline">\(Y_j\)</span>’s for individual infected at a given time step <span class="math inline">\(t\)</span>, which we will denote <span class="math inline">\(\bar{Y}_t\)</span>. This is just the sum of a given number (<span class="math inline">\(inc_t\)</span>) of IID gamma random variables, which is also gamma disrtributed: <span class="math display">\[
+\bar{Y}_t \sim \Gamma( \kappa \ inc_t, 1/\kappa )
+\]</span></p>
+<p>This can be included in a modified Poisson renewal equation <span class="math display">\[
+inc_t \sim\mathrm{Poiss}\left(  \frac{ \R_0 S_t}{N} \sum_{s=1}^\infty \bar{Y}_{t-s} g_s   \right)
+\]</span></p>
+<p>In the limit <span class="math inline">\(\kappa\to\infty\)</span>, <span class="math inline">\(\bar{Y}_t\to inc_t\)</span> so the model reduces back to the standard Poisson renewal equation.</p>
+<p>Note that this accounts for individual variation in infectiousness, but still assumes everyone has the same time-dependent infectiousness profile <span class="math inline">\(g_s\)</span>, corresponding to the generation interval distribution. In reality, it is likely that individuals will all have different infectiousness profiles, and <span class="math inline">\(g_s\)</span> represents the population-level average. See <a href="https://doi.org/10.64898/2026.07.15.26358199">Kissler (2026)</a> for a nice theoretical framework for including this.</p>
+</section>
+</section>
+<section id="a-taxonomy-of-models" class="level1" data-number="6">
+<h1 data-number="6"><span class="header-section-number">6</span> A taxonomy of models</h1>
+<p>By now we have some a variety of different types of model, and have learned different things each type. For example, we saw how <span class="math inline">\(\R_0\)</span> affects final epidemic size in the SIR model; we saw that the Kermack-McKendrick model can be used to test interventions that reduce transmission at a certain age of infection; and we saw how to calculate the probability of a large outbreak in the Galton-Watson branching process.</p>
+<p>Nevertheless, it can seem like there is a grab bag of unrelated infectious disease models. In fact, the various models are related in specific ways typically with one type being a special or limiting case of another. A useful way to classify model types and think about how they are related is to categorise models as either deterministic, or stochastic in discrete or continuous time, and either Markovian or non-Markovian.</p>
+<p>The following table illustrates this idea.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 32%">
+<col style="width: 31%">
+<col style="width: 35%">
+</colgroup>
+<tbody>
+<tr class="odd">
+<td></td>
+<td><strong>Markovian</strong></td>
+<td><strong>Non-Markovian</strong></td>
+</tr>
+<tr class="even">
+<td><strong>Deterministic mean-field</strong></td>
+<td>S(E)IR</td>
+<td>Kermack-McKendrick</td>
+</tr>
+<tr class="odd">
+<td><strong>Stochastic non-overlapping generations</strong></td>
+<td><ul>
+<li>Galton-Watson (infinite pop)</li>
+<li>Reed-Frost (finite pop)</li>
+</ul></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><strong>Stochastic discrete time</strong></td>
+<td>Stochastic S(E)IR (fixed time steps)</td>
+<td>Renewal process</td>
+</tr>
+<tr class="odd">
+<td><strong>Stochastic continuous time</strong></td>
+<td>Stochastic S(E)IR (Gillespie)</td>
+<td>Crump-Mode-Jagers</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="important-delays-in-infectious-disease-dynamics" class="level1" data-number="7">
+<h1 data-number="7"><span class="header-section-number">7</span> Important delays in infectious disease dynamics</h1>
+<p>There are a number of important delay times in infectious disease models (see <a href="#fig-delays" class="quarto-xref">Figure&nbsp;3</a>).</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Delay times in infectious disease dynamics
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>Latent period: the time from an individual getting infected to become infectious.</li>
+<li>Incubation period: the time from an individual getting infected to onset of symptoms.</li>
+<li>Generation interval: the time from infection of the primary case to infection of the secondary case.</li>
+<li>Serial interval: the time from symptom onset in the primary case to symptom onset in the secondary case.</li>
+<li>Time from infection or symptom onset to observed event. Often we are interested in observable downstream consequences of infection, such as positive test result, hospital admission or death.</li>
+</ul>
+</div>
+</div>
+<p>Notes:</p>
+<ul>
+<li>We have used primary case and secondary case to refer to the infector and infectee respectively in a transmission pair. These are also sometimes referred to as the index case and secondary case, or the parent case and child case (though we avoid this terminology due to the potential confusion with age).</li>
+<li>There is one latent period per infected individual and one incubation period per symptomatic infection.</li>
+<li>There is one generation interval per infector-infectee pair and one serial interval per infector-infectee pair in which both individuals become symptomatic.</li>
+<li>The generation interval is usually a key input to models but is not directly observable.</li>
+<li>Most of the delays above are always non-negative. The exception is the serial interval, which can be negative because it is possible for the child case to have symptom onset before the parent cases does.</li>
+</ul>
+<div id="fig-delays" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-delays-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="delays_diagram.png" class="img-fluid figure-img" width="500">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-delays-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;3: Diagram showing the relationship between the generation interval, serial interval and incubation period.
+</figcaption>
+</figure>
+</div>
+<p>The serial interval (SI) may be expressed in terms of the generation interval (GI) as <span class="math display">\[
+\mathrm{SI} = \mathrm{GI} + T_{\mathrm{inc},2} - T_{\mathrm{inc},1}
+\]</span> where <span class="math inline">\(T_{\mathrm{inc},1}\)</span> and <span class="math inline">\(T_{\mathrm{inc},2}\)</span> are the incubation periods of the parent and child cases respectively. Since <span class="math inline">\(T_{\mathrm{inc},1}\)</span> and <span class="math inline">\(T_{\mathrm{inc},2}\)</span> have the same mean, we see that the mean serial interval must equal the mean generation interval. However, if we assume that the generation interval and two incubation periods are independent, we get <span class="math display">\[
+\mathrm{Var}(\mathrm{SI}) = \mathrm{Var}(\mathrm{GI}) + 2\mathrm{Var}(T_{\mathrm{inc}})
+\]</span> This shows that the variance of the generation interval is always greater than that of the serial interval.</p>
+</section>
+<section id="example-modelling-case-isolation" class="level1" data-number="8">
+<h1 data-number="8"><span class="header-section-number">8</span> Example: modelling case isolation</h1>
+<p>Here we will illustrate how an intervention based on isolating confirmed cases can be included in a stochastic model. In this situation, we need to distinguish between infected individuals who have not yet tested positive (who will contribute the full amount to the force of infection) and those that have (who will contribute a reduce amount to model the effects of case isolation.</p>
+<p>We also wish to include non-Markovian dynamics (e.g.&nbsp;because the GI and the time to isolation may not have exponential distributions). This is a situation where using a Markovian model is likely to give misleading results.</p>
+<p>It is possible to do this with a compartment-based model, for example we could define <span class="math inline">\(X_{t,\tau}\)</span> to be the number of people who were infected at time <span class="math inline">\(t\)</span> and have not yet tested positive at time <span class="math inline">\(t+\tau\)</span>. However, for simplicity here will instead use an individual-based model and a simulation approach. Let’s make the following modelling assumptions:</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Model assumptions
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ol type="1">
+<li>The number of infections caused by each infected, unisolated individual in a fully susceptible population is Poisson distributed with mean <span class="math inline">\(\R_0\)</span>.</li>
+<li>Each infected individual has probability <span class="math inline">\(p_t\in[0,1]\)</span> of ever testing positive, independent of other individuals.</li>
+<li>In the absence of case isolation, the GI follows some specified distribution with probability mass function <span class="math inline">\(g_t\)</span>.</li>
+<li>The time from infection to positive test follows some specified distribution with probability mass function <span class="math inline">\(u_t\)</span>..</li>
+<li>After an individual has tested positive, their likelihood of transmitting is reduced by a factor <span class="math inline">\(c_\mathrm{iso}\in[0,1]\)</span> representing the effects of case isolation (<span class="math inline">\(c_\mathrm{iso}=0\)</span> corresponds to perfect case isolation; larger values of <span class="math inline">\(c_\mathrm{iso}\)</span> correspond to less effective case isolation).</li>
+</ol>
+</div>
+</div>
+<p>In point 2, note the qualifier “in the absence of case isolation”. This is important because case isolation measures will change the GI distribution: because it takes time for isolation to begin, transmission events with a long GI are more likely to be prevented than those with a short GI.</p>
+<section id="model-simulation" class="level2" data-number="8.1">
+<h2 data-number="8.1" class="anchored" data-anchor-id="model-simulation"><span class="header-section-number">8.1</span> Model simulation</h2>
+<p>We may simulate this as a discrete time, non-Markovian model with the following algorithm:</p>
+<ol type="1">
+<li>Initialise the model with <span class="math inline">\(m\)</span> individuals infected on day <span class="math inline">\(t=0\)</span> by setting <span class="math inline">\(T_{\mathrm{inf},i}=0\)</span> for <span class="math inline">\(i=1,\ldots,m\)</span> and the cumulative number of infection <span class="math inline">\(C_0=m\)</span>.</li>
+<li>For each individual <span class="math inline">\(i\)</span> infected on day <span class="math inline">\(t\)</span>, determine whether that individual will ever test positive by generating a Bernoulli<span class="math inline">\((p_t)\)</span> random variable. If they do test positive, generate the time <span class="math inline">\(T_{\mathrm{iso},i}\)</span> until the positive test result by drawing from the specified distribution <span class="math inline">\(u_t\)</span>. If they don’t test positive set <span class="math inline">\(T_{\mathrm{iso},i}=\infty\)</span>.</li>
+<li>Compute the daily force of infection on day <span class="math inline">\(t+1\)</span> by summing over all previously infected individuals: <span class="math display">\[
+\lambda_{t+1} = \R_0/N \sum_{i=1}^{C_t}  g_{t+1-T_{\mathrm{inf},i}}\left(1-c_\mathrm{iso}\mathbb{I}(t+1&gt;T_{\mathrm{inf},i}+T_{\mathrm{iso},i})\right)
+\]</span> where <span class="math inline">\(\mathbb{I}\)</span> is the indicator function, which equals 1 if case <span class="math inline">\(i\)</span> has been isolated by day <span class="math inline">\(t+1\)</span> and zero otherwise.</li>
+<li>Draw the number of new infections on day <span class="math inline">\(t+1\)</span> as <span class="math display">\[
+inc_{t+1}\sim\mathrm{Poiss}\left(\lambda_{t+1} (N-C_t)\right)
+\]</span> Set <span class="math inline">\(T_{\mathrm{inf},i}=t+1\)</span> for all individuals <span class="math inline">\(i\)</span> infected on day <span class="math inline">\(t+1\)</span> and set <span class="math inline">\(C_{t+1}=C_t+inc_{t+1}\)</span>.</li>
+<li>Increment <span class="math inline">\(t\)</span> by 1 and return to step 2.</li>
+</ol>
+<p>Note this is not the only way to simulate this model. For example, an equivalent simulation would be to generate the number and timing of transmission events for each infected individual as soon as they become infected, thinning any that occur after isolation.</p>
+</section>
+<section id="outbreak-controllability" class="level2" data-number="8.2">
+<h2 data-number="8.2" class="anchored" data-anchor-id="outbreak-controllability"><span class="header-section-number">8.2</span> Outbreak controllability</h2>
+<p>As well as simulating the model, we may calculate the <em>control reproduction number</em> <span class="math inline">\(\R_c\)</span>, defined in an analogous manner to <span class="math inline">\(\R_0\)</span> but with the case isolation control measure in place.</p>
+<p>Let us use <span class="math inline">\(Z_i\)</span> to denote the number of people infected by individual <span class="math inline">\(i\)</span> in a fully susceptible population, such that <span class="math inline">\(\R_c=E(Z_i)\)</span>. Note that, in the absence of case isolation, on day <span class="math inline">\(s\)</span> after infection individual <span class="math inline">\(i\)</span> infects a Poisson distributed number of people with mean <span class="math inline">\(\R_0 g_s\)</span>. Hence the expected total number of people infected over the course of their infectious period is <span class="math display">\[
+E(Z_i) = \sum_{s=1}^\infty \R_0 g_s = \R_0
+\]</span> since <span class="math inline">\(g_s\)</span> is a PMF. This confirms that the basic reproduction number for the model above is <span class="math inline">\(\R_0\)</span>.</p>
+<p>When case isolation is in place, the expected number of people infected by individual <span class="math inline">\(i\)</span> conditional on some finite time <span class="math inline">\(\tau\)</span> from infection to isolation is <span class="math display">\[
+E(Z_i \ | \ T_{\mathrm{iso},i}=\tau) = \R_0\left( F_\tau + c_\mathrm{iso}(1-F_\tau)\right)
+\]</span> where <span class="math inline">\(F(s) = \sum_{s'=0}^s g_{s'}\)</span> is the CDF of the generation interval.</p>
+<p>By the law of conditional expectation, we obtain <span class="math display">\[
+E(Z_i) = E\left( E(Z_i \ | \ T_\mathrm{iso})\right) = \R_0\left[ c_\mathrm{iso} + (1-c_\mathrm{iso}) E\left(F(T_\mathrm{iso})  \right)\right]
+\]</span> Note that <span class="math inline">\(E\left(F(T_\mathrm{iso})  \right)\)</span> is not the same thing as <span class="math inline">\(F\left(E(T_\mathrm{iso})  \right)\)</span> due to <a href="https://en.wikipedia.org/wiki/Jensen%27s_inequality">Jensen’s inequality</a>: a function of the mean is not the same thing as the mean of the function. For specified GI and infection-to-isolation distributions, <span class="math inline">\(E\left(F(T_\mathrm{iso})  \right)\)</span> can be calculated via <span class="math display">\[
+E\left(F(T_\mathrm{iso})  \right) = \sum_{s=0}^\infty F_s u_s
+\]</span> This quantity represents the average proportion of transmission (in the absence of case isolation measures) that occurs prior to the time of positive test result for people who test positive.</p>
+<p>Since only some proportion <span class="math inline">\(p_t\)</span> of infected individuals ever test positive, we obtain <span id="eq-Rc"><span class="math display">\[
+\begin{align}
+\R_c &amp;= \R_0\left[ 1 - p_t + p_t\left( c_\mathrm{iso} + (1-c_\mathrm{iso}) E\left(F(T_\mathrm{iso})  \right) \right)\right]\\
+&amp;= \R_0\left( c_\mathrm{iso} + (1-c_\mathrm{iso}) \theta \right)
+\end{align}
+\tag{3}\]</span></span> where we have used <span class="math inline">\(\theta\)</span> to denote <span class="math inline">\(1-p_t+p_tE\left(F(T_{\mathrm{iso}})  \right)\)</span>. The quantity <span class="math inline">\(\theta\in[0,1]\)</span> represents the average proportion of transmission (in the absence of case isolation measures) that occurs from people who not yet tested positive (including those who will never test positive).</p>
+<p>We can see from <a href="#eq-Rc" class="quarto-xref">Equation&nbsp;3</a> that the control reproduction number <span class="math inline">\(\R_c\)</span> is an increasing function of <span class="math inline">\(\theta\)</span> (provided <span class="math inline">\(c_\mathrm{iso}&lt;1\)</span>, i.e.&nbsp;case isolation has some non-zero effect). This is what we should expect: the more transmission occurs from people who have not tested positive, the less impact case isolation measures will have.</p>
+<p>Note that <a href="#eq-Rc" class="quarto-xref">Equation&nbsp;3</a> can be re-arranged to obtain the maximum value of <span class="math inline">\(\theta\)</span> for which <span class="math inline">\(\R_c&lt;1\)</span>, or the maximum value of <span class="math inline">\(c_\mathrm{iso}\)</span> (corresponding to the minimum isolation effectiveness) for which <span class="math inline">\(\R_c&lt;1\)</span>. This is useful for assessing whether an outbreak is controllable with case isolation measures. <a href="https://doi.org/10.1073/pnas.0307506101">Fraser et al.&nbsp;2004</a> considered the situation where people are isolated at the time they develop symptoms, so <span class="math inline">\(\tau\)</span> represents the incubation period, and <span class="math inline">\(\theta\)</span> represents the proportion of transmission that occurs in the absence of symptoms (either from pre-symptomatic or asymptomatic infectors).</p>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

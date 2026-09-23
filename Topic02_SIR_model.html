@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.553">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Michael Plank">
+
+<title>Topic 2. SIR model</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="Topic02_SIR_model_files/libs/clipboard/clipboard.min.js"></script>
+<script src="Topic02_SIR_model_files/libs/quarto-html/quarto.js"></script>
+<script src="Topic02_SIR_model_files/libs/quarto-html/popper.min.js"></script>
+<script src="Topic02_SIR_model_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="Topic02_SIR_model_files/libs/quarto-html/anchor.min.js"></script>
+<link href="Topic02_SIR_model_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="Topic02_SIR_model_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="Topic02_SIR_model_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="Topic02_SIR_model_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="Topic02_SIR_model_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body>
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#susceptible-infectious-recovered-model" id="toc-susceptible-infectious-recovered-model" class="nav-link active" data-scroll-target="#susceptible-infectious-recovered-model"><span class="header-section-number">1</span> Susceptible-infectious-recovered model</a></li>
+  <li><a href="#numerical-solutions" id="toc-numerical-solutions" class="nav-link" data-scroll-target="#numerical-solutions"><span class="header-section-number">2</span> Numerical solutions</a></li>
+  <li><a href="#force-of-infection-incidence-and-prevalence" id="toc-force-of-infection-incidence-and-prevalence" class="nav-link" data-scroll-target="#force-of-infection-incidence-and-prevalence"><span class="header-section-number">3</span> Force of infection, incidence and prevalence</a>
+  <ul class="collapse">
+  <li><a href="#force-of-infection" id="toc-force-of-infection" class="nav-link" data-scroll-target="#force-of-infection"><span class="header-section-number">3.1</span> Force of infection</a></li>
+  <li><a href="#compartment-based-models-and-waiting-times" id="toc-compartment-based-models-and-waiting-times" class="nav-link" data-scroll-target="#compartment-based-models-and-waiting-times"><span class="header-section-number">3.2</span> Compartment-based models and waiting times</a></li>
+  <li><a href="#prevalence-and-incidence" id="toc-prevalence-and-incidence" class="nav-link" data-scroll-target="#prevalence-and-incidence"><span class="header-section-number">3.3</span> Prevalence and incidence</a></li>
+  </ul></li>
+  <li><a href="#basic-and-effective-reproduction-numbers" id="toc-basic-and-effective-reproduction-numbers" class="nav-link" data-scroll-target="#basic-and-effective-reproduction-numbers"><span class="header-section-number">4</span> Basic and effective reproduction numbers</a>
+  <ul class="collapse">
+  <li><a href="#basic-reproduction-number" id="toc-basic-reproduction-number" class="nav-link" data-scroll-target="#basic-reproduction-number"><span class="header-section-number">4.1</span> Basic reproduction number</a></li>
+  <li><a href="#non-dimensionalisation" id="toc-non-dimensionalisation" class="nav-link" data-scroll-target="#non-dimensionalisation"><span class="header-section-number">4.2</span> Non-dimensionalisation</a></li>
+  <li><a href="#effective-reproduction-number" id="toc-effective-reproduction-number" class="nav-link" data-scroll-target="#effective-reproduction-number"><span class="header-section-number">4.3</span> Effective reproduction number</a></li>
+  <li><a href="#relationship-between-reproduction-number-and-epidemic-growth-rate" id="toc-relationship-between-reproduction-number-and-epidemic-growth-rate" class="nav-link" data-scroll-target="#relationship-between-reproduction-number-and-epidemic-growth-rate"><span class="header-section-number">4.4</span> Relationship between reproduction number and epidemic growth rate</a></li>
+  </ul></li>
+  <li><a href="#frequent-dependent-versus-density-dependent-transmission" id="toc-frequent-dependent-versus-density-dependent-transmission" class="nav-link" data-scroll-target="#frequent-dependent-versus-density-dependent-transmission"><span class="header-section-number">5</span> Frequent-dependent versus density-dependent transmission</a></li>
+  <li><a href="#phase-plane-analysis-and-herd-immunity-threshold" id="toc-phase-plane-analysis-and-herd-immunity-threshold" class="nav-link" data-scroll-target="#phase-plane-analysis-and-herd-immunity-threshold"><span class="header-section-number">6</span> Phase plane analysis and herd immunity threshold</a></li>
+  <li><a href="#final-epidemic-size" id="toc-final-epidemic-size" class="nav-link" data-scroll-target="#final-epidemic-size"><span class="header-section-number">7</span> Final epidemic size</a>
+  <ul class="collapse">
+  <li><a href="#final-size-of-an-epidemic-in-a-fully-susceptible-population" id="toc-final-size-of-an-epidemic-in-a-fully-susceptible-population" class="nav-link" data-scroll-target="#final-size-of-an-epidemic-in-a-fully-susceptible-population"><span class="header-section-number">7.1</span> Final size of an epidemic in a fully susceptible population</a></li>
+  <li><a href="#final-size-of-an-epidemic-in-a-partially-susceptible-population" id="toc-final-size-of-an-epidemic-in-a-partially-susceptible-population" class="nav-link" data-scroll-target="#final-size-of-an-epidemic-in-a-partially-susceptible-population"><span class="header-section-number">7.2</span> Final size of an epidemic in a partially susceptible population</a></li>
+  <li><a href="#final-epidemic-size-with-disease-induced-mortality" id="toc-final-epidemic-size-with-disease-induced-mortality" class="nav-link" data-scroll-target="#final-epidemic-size-with-disease-induced-mortality"><span class="header-section-number">7.3</span> Final epidemic size with disease-induced mortality</a></li>
+  <li><a href="#peak-prevalence" id="toc-peak-prevalence" class="nav-link" data-scroll-target="#peak-prevalence"><span class="header-section-number">7.4</span> Peak prevalence</a></li>
+  </ul></li>
+  </ul>
+</nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Topic 2. SIR model</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Michael Plank </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="hidden">
+<p><span class="math display">\[
+\newcommand{\vect}[1]{\boldsymbol{\mathbf{#1}}}
+\newcommand{\R}{\mathcal{R}}
+\newcommand{\Reff}{\mathcal{R}_\mathrm{eff}}
+\newcommand{\inc}{\mathrm{inc}}
+\]</span></p>
+</div>
+<section id="susceptible-infectious-recovered-model" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> Susceptible-infectious-recovered model</h1>
+<p>We start with one of the simplest compartment-based models of an epidemic - the susceptible-infectious-recovered (SIR) model in a closed, homogeneous, well-mixed population. This is a canonical model in infectious disease dynamics and, although it can be generalised and extended in lots of different ways, many of its qualitative properties apply to other more complex models.</p>
+<p>The model splits the population <span class="math inline">\(N\)</span> into three compartments representing the number of people who are susceptible <span class="math inline">\(S\)</span>, infectious <span class="math inline">\(I\)</span> and recovered <span class="math inline">\(R\)</span> and makes the following assumptions:</p>
+<ol type="1">
+<li>Each individual contacts <span class="math inline">\(c&gt;0\)</span> randomly selected individuals per unit time.</li>
+<li>Contacts are selected randomly from the whole population.</li>
+<li>Some proportion <span class="math inline">\(p\in[0,1]\)</span> of contacts between a susceptible individual and an infectious individual (which we will term an <em>infective</em>) result in transmission.</li>
+<li>Infectives transition to the recovered state at a rate <span class="math inline">\(\gamma&gt;0\)</span> per unit time.</li>
+<li>Individuals in the recovered state remain there for ever (i.e.&nbsp;have permanent immunity).</li>
+<li>Births, deaths and migration are neglected.</li>
+</ol>
+<p>As we saw in the previous Topic, susceptible individuals transition to the infectious compartment at rate <span class="math inline">\(cpI(t)/N\)</span> per unit time.</p>
+<p>If we define <span class="math inline">\(\beta=cp\)</span> to be the <em>transmission rate</em> then we obtain the following system of ordinary differential equations for <span class="math inline">\(S(t)\)</span>, <span class="math inline">\(I(t)\)</span> and <span class="math inline">\(R(t)\)</span>:</p>
+<p><span class="math display">\[
+\begin{align*}
+\frac{dS}{dt} &amp;= -\frac{\beta SI}{N} \\
+\frac{dI}{dt} &amp;= \frac{\beta SI}{N} - \gamma I \\
+\frac{dR}{dt} &amp;= \gamma I
+\end{align*}
+\]</span></p>
+<p>Note:</p>
+<ul>
+<li>The ODE model treats <span class="math inline">\(S\)</span>, <span class="math inline">\(I\)</span> and <span class="math inline">\(R\)</span> as continuous variables, which will take non-integer values. This means that care is needed with interpretation and, in particular in situations where <span class="math inline">\(I(t)\)</span> is small. There are two separate reasons for this: (1) when <span class="math inline">\(I(t)\)</span> is small, stochastic effects become important and the epidemic may deviate significantly from its mean-field limit; (2) it is impossible in reality to have between zero and one infectious people, yet the SIR model admits solutions where <span class="math inline">\(0&lt;I(t)\ll 1\)</span>, which can lead to unrealistic epidemics (e.g.&nbsp;where <span class="math inline">\(I(t)\)</span> grows from <span class="math inline">\(10^{-12}\)</span> to <span class="math inline">\(1\)</span> over a period of several years).</li>
+</ul>
+<p>Because the total population size <span class="math inline">\(N\)</span> is fixed (we are ignoring births, deaths and migration), we have <span class="math inline">\(S(t)+I(t)+R(t)=N\)</span> for all <span class="math inline">\(t\)</span>. Hence we can eliminate <span class="math inline">\(R(t)\)</span> from the model and write it as a two-dimensional system, using <span class="math inline">\(\dot{S}\)</span> to denote <span class="math inline">\(dS/dt\)</span> and so on.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+SIR model
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><span id="eq-SIR"><span class="math display">\[
+\begin{align*}
+\dot{S} &amp;= -\frac{\beta SI}{N} \\
+\dot{I} &amp;= \frac{\beta SI}{N} - \gamma I
+\end{align*}
+\tag{1}\]</span></span></p>
+</div>
+</div>
+<p>This system needs to be accompanied by an initial condition for <span class="math inline">\(S(0)\)</span> and <span class="math inline">\(I(0)\)</span>.</p>
+<p>Often, it is convenient to work with compartment sizes expressed as a <em>fraction</em> of the total population <span class="math inline">\(N\)</span>, i.e.&nbsp;<span class="math inline">\(\tilde{S}(t)=S(t)/N\)</span>, <span class="math inline">\(\tilde{I}(t)=I(t)/N\)</span>. In these variables, the system becomes <span id="eq-SIR-frac"><span class="math display">\[
+\begin{align*}
+\dot{\tilde{S}} &amp;= -\beta \tilde{S}\tilde{I} \\
+\dot{\tilde{I}} &amp;= \beta \tilde{S}\tilde{I} - \gamma \tilde{I}
+\end{align*}
+\tag{2}\]</span></span></p>
+</section>
+<section id="numerical-solutions" class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> Numerical solutions</h1>
+<p>The basic SIR model is easy to solve numerically. For example, consider the model with <span class="math inline">\(\beta=0.2\)</span>, <span class="math inline">\(\gamma=0.1\)</span>. Suppose that initially 1% of the population is infections and everyone else is susceptible, so the initial conditions ares <span class="math inline">\(\tilde{S}(0)=0.99\)</span>, <span class="math inline">\(\tilde{I}(0)=0.01\)</span>. This gives the following solution for <span class="math inline">\(\tilde{S}(t)\)</span>, <span class="math inline">\(\tilde{I}(t)\)</span> and <span class="math inline">\(\tilde{R}(t)\)</span></p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-SIR-solution" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-SIR-solution-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="Topic02_SIR_model_files/figure-html/fig-SIR-solution-1.png" class="img-fluid figure-img" width="672">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-SIR-solution-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Numerical solution of the SIR model with beta=0.2, gamma=0.1 and initial condition I(0)=0.01, S(0)=1-I(0).
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>Two important observations may be made, which are true for general parameter values.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+General properties of the SIR model
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ol type="1">
+<li>The epidemic ends because the susceptible population becomes too small to sustain continued transmission.</li>
+<li>At the end of the epidemic, some positive proportion of the population remains susceptible. This is called <em>herd immunity</em>: not everyone is immune, those who aren’t are indirectly protected from subsequent infection by those who are.</li>
+</ol>
+</div>
+</div>
+<p>Point 2 will be particularly important when we come to consider vaccination.</p>
+</section>
+<section id="force-of-infection-incidence-and-prevalence" class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> Force of infection, incidence and prevalence</h1>
+<p>We now introduce some important terms in epidemiological modelling.</p>
+<section id="force-of-infection" class="level2" data-number="3.1">
+<h2 data-number="3.1" class="anchored" data-anchor-id="force-of-infection"><span class="header-section-number">3.1</span> Force of infection</h2>
+<p>The <em>force of infection</em> is the rate <span class="math inline">\(\lambda(t)\)</span> at which susceptible individuals become infected per unit time. For the basic SIR model, this is <span class="math display">\[
+\lambda(t) = \beta\frac{I(t)}{N} = \beta \tilde{I}(t)
+\]</span> In other words, the force of infection is the transmission rate parameter <span class="math inline">\(\beta\)</span> multiplied by the infectious fraction <span class="math inline">\(I(t)/N\)</span>. Each infectious individual contributes a force of infection <span class="math inline">\(\beta/N\)</span> per unit time.</p>
+<p>The SIR model may be expressed in terms of the force of infection as <span id="eq-SIR-FOI"><span class="math display">\[
+\begin{align*}
+\dot{S} &amp;= -\lambda S \\
+\dot{I} &amp;= \lambda S - \gamma I
+\end{align*}
+\tag{3}\]</span></span></p>
+<p>This may seem like unnecessary extra notation for this model, but it is useful in more complex models where the force of infection is defined by a more complicated equation, but the dynamics still follow the basic structure of (<a href="#eq-SIR-FOI" class="quarto-xref">Equation&nbsp;3</a>).</p>
+<p>Note: in epidemiological terminology, the force of infection is a <em>hazard</em>, and <span class="math inline">\(\lambda(t)\)</span> is sometimes called the infection hazard. <span class="math inline">\(\lambda(t)\)</span> has dimensions <span class="math inline">\(T^{-1}\)</span>.</p>
+</section>
+<section id="compartment-based-models-and-waiting-times" class="level2" data-number="3.2">
+<h2 data-number="3.2" class="anchored" data-anchor-id="compartment-based-models-and-waiting-times"><span class="header-section-number">3.2</span> Compartment-based models and waiting times</h2>
+<p>For compartment-based models in general, if the sum of all the transition rates out of a given compartment is some constant <span class="math inline">\(\Lambda&gt;0\)</span> then the probability that an individual who is in the compartment at time <span class="math inline">\(t\)</span> is still in the compartment time <span class="math inline">\(\tau\)</span> later is <span class="math inline">\(e^{-\Lambda t}\)</span>. Hence, the expected time an individual spends in a given compartment (called the mean <em>waiting time</em>) is <span class="math inline">\(1/\Lambda\)</span>.</p>
+<p>From this we see that, for the SIR model, the waiting time in the <span class="math inline">\(I\)</span> compartment (i.e.&nbsp;the mean infectious period) is <span class="math inline">\(1/\gamma\)</span>, as expected.</p>
+<p>More generally if <span class="math inline">\(\Lambda(t)\)</span> is time-dependent, the probability of an individual who is in the compartment at time <span class="math inline">\(t\)</span> still being there at time <span class="math inline">\(t+\tau\)</span> is <span class="math inline">\(\exp\left(-\int_t^{t+\tau} \Lambda(t') dt'  \right)\)</span>.</p>
+<p>The transition rate out of the <span class="math inline">\(S\)</span> compartment is the force of infection <span class="math inline">\(\lambda\)</span> so we have <span class="math display">\[
+P(\textrm{still susceptible at time } t+\tau \ | \ \textrm{susceptible at time } t ) = \exp\left(-\int_t^{t+\tau} \lambda(t') dt'  \right)
+\]</span></p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Probabilistic interpretation in deterministic models
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>It can seem like talking about probability is in conflict with the fact the model is purely deterministic.</p>
+<p>We should remember that deterministic compartment-based models can be derived as the mean-field equations for a corresponding stochastic model, i.e.&nbsp;they track the proportion of a population that is in each compartment at a given point in time, in the limit where the population is infinitely large (and there is a non-negligible fraction of the population in each relevant compartment) such that stochastic effects of negligible.</p>
+<p>When we talk about probability, it should be interpreted in this context. It is often useful to think about a cohort of individuals who entered a given compartment at the same time. Then, the statement above about the <em>probability</em> of remaining in that compartment at some later time can be interpreted as the <em>proportion</em> of the cohort that remain in that compartment. When the cohort is sufficiently large, these are effectively the same thing.</p>
+</div>
+</div>
+</section>
+<section id="prevalence-and-incidence" class="level2" data-number="3.3">
+<h2 data-number="3.3" class="anchored" data-anchor-id="prevalence-and-incidence"><span class="header-section-number">3.3</span> Prevalence and incidence</h2>
+<p>Prevalence relates to the number of people who are currently in the infectious state at a given point in time, while incidence relates to the occurrence of new infections.</p>
+<p>Prevalence is normally expressed as a proportion and for the basic SIR model this is simply <span class="math inline">\(\tilde{I}(t)\)</span>. This is sometimes referred to as <em>point prevalence</em> because it is the prevalence at a single point in time.</p>
+<p>The instantaneous incidence rate per unit time is the rate at which people are moving from <span class="math inline">\(S\)</span> to <span class="math inline">\(I\)</span>. This can be expressed as an absolute number of infections per unit time, <span class="math inline">\(\lambda S\)</span>, or as a proportion of the population, <span class="math inline">\(\lambda \tilde{S}\)</span>.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Per capita prevalence and incidence rate
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><span class="math display">\[
+\begin{array}{rll}
+\textrm{prevalence} =&amp; \tilde{I}(t) &amp; \qquad \textrm{(dimensionless)} \\
+\textrm{incidence rate} =&amp; \lambda(t) \tilde{S}(t) &amp; \qquad \textrm{(dimensions }T^{-1}\textrm{)}  
+\end{array}
+\]</span></p>
+</div>
+</div>
+<p>For the SIR model, the force of infection is <span class="math inline">\(\lambda(t)=\beta \tilde{I}(t)\)</span>, so the absolute incidence rate is <span class="math inline">\(\beta SI/N\)</span>, and the per capita incidence rate is <span class="math inline">\(\beta SI/N^2= \beta \tilde{S}\tilde{I}\)</span>.</p>
+<p>Incidence is often also used to refer to the number of new infections in a specified period of time (e.g.&nbsp;one day). In general, this can be calculated by integrating the incidence rate over the relevant time period. For example, the absolute incidence in a time period <span class="math inline">\([t,t+\Delta t]\)</span> is <span class="math display">\[
+\textrm{incidence in } [t,t+\Delta t] =  \int_t^{t+\Delta t} \lambda(t') S(t')  dt'
+\]</span></p>
+<p>This can also be calculated via the change in the size of the susceptible population between <span class="math inline">\(t\)</span> and <span class="math inline">\(t+\Delta t\)</span>: <span class="math display">\[
+\textrm{incidence in } [t,t+\Delta t] = S(t)-S(t+\Delta t)
+\]</span> This follows by application of the fundamental theorem of calculus to the ODE for <span class="math inline">\(\dot{S}\)</span>.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Estimating prevalence and incidence from data
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Prevalence and incidence relate to different ways in which information about the state of an epidemic may be gathered:</p>
+<ul>
+<li>If we take a random sample of the population and tested whether they were infectious or not, this would give a (noisy) estimate of the prevalence.</li>
+<li>If we count the number of new cases detected each day, this would be a measure of the daily incidence. Note in reality, this type of data is likely to be affected by incomplete ascertainment and reporting delay, meaning that it is a lagged and incomplete measure of daily incidence.</li>
+<li>It is difficult to observe the <span class="math inline">\(S\)</span> and <span class="math inline">\(R\)</span> compartments directly, although in some cases seroprevalence data (which measures the number of people who have antibodies indicating a previous infection) may be used to estimated the recovered population <span class="math inline">\(R(t)\)</span>.</li>
+</ul>
+</div>
+</div>
+<p>We will return to methods for estimating incidence in more detail later on.</p>
+</section>
+</section>
+<section id="basic-and-effective-reproduction-numbers" class="level1" data-number="4">
+<h1 data-number="4"><span class="header-section-number">4</span> Basic and effective reproduction numbers</h1>
+<section id="basic-reproduction-number" class="level2" data-number="4.1">
+<h2 data-number="4.1" class="anchored" data-anchor-id="basic-reproduction-number"><span class="header-section-number">4.1</span> Basic reproduction number</h2>
+<p>Recall from the previous Topic:</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Basic reproduction number
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The basic reproduction number <span class="math inline">\(\mathcal{R}_0\)</span> is the expected number of infections caused by a single infectious individual in a fully susceptible population over the course of their infectious period.</p>
+</div>
+</div>
+<p>Note:</p>
+<ul>
+<li>It is important to remember that <span class="math inline">\(\mathcal{R}_0\)</span> is the <em>average</em> number of infections. In the basic SIR model, this is not an important distinction because the model essentially assumes everyone is identical, and so everyone causes <span class="math inline">\(\R_0\)</span> infections (if the population is fully susceptible). But more complex models allow for individual heterogeneity (e.g.&nbsp;by treating the number of infections caused by a single individual as a random variable, or by dividing the population into different types). We will come back to these models later, but the important thing for now is that <span class="math inline">\(\R_0\)</span> is the number of infections caused by an <em>average infected person</em>. This might not be the same as the number of infections caused by an <em>average person</em>, because infected people at the start of an epidemic may differ systematically from the average in some variable that affects transmission (e.g.&nbsp;age, contact rate).</li>
+</ul>
+<p>The basic reproduction number for the SIR model (<a href="#eq-SIR" class="quarto-xref">Equation&nbsp;1</a>) can be derived in different ways. As we saw in the previous Topic, one way is by expressing <span class="math inline">\(\R_0\)</span> as the product of the mean duration of infectiousness <span class="math inline">\(1/\gamma\)</span>, the contact rate per unit time <span class="math inline">\(c\)</span> and the probability of transmission given contact <span class="math inline">\(p\)</span>. Recalling that we have defined <span class="math inline">\(\beta=pc\)</span>, we obtain</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="math inline">\(\R_0\)</span> for SIR model
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><span class="math display">\[
+\R_0 = \frac{\beta}{\gamma}
+\]</span></p>
+</div>
+</div>
+<p>An alternative approach is to consider a modified version of the SIR model (<a href="#eq-SIR" class="quarto-xref">Equation&nbsp;1</a>), in which people move out of the susceptible compartment when they become infected as usual, but instead of the entering the infectious compartment, they enter some other compartment, which does not contribute to the force of infection. If we further assume that the <span class="math inline">\(S/N\)</span> on the right-hand side of the ODE can be approximated by <span class="math inline">\(1\)</span>, we obtain the system <span class="math display">\[
+\begin{align*}
+\dot{S} &amp;= -\beta I \\
+\dot{I} &amp;= - \gamma I
+\end{align*}
+\]</span> In this modified model, only people who are in the <span class="math inline">\(I\)</span> compartment at the start of the epidemic are capable of transmitting the disease. Hence the total number of infections that are caused by the initially infectious individual(s) is <span class="math inline">\(S(0) - \lim_{t\to\infty} S(t)\)</span>.</p>
+<p>The system can be solved analytically to give <span class="math inline">\(I(t)=I(0)e^{-\gamma t}\)</span> and <span class="math inline">\(S(t)=S(0) - I(0) \beta/\gamma\left(1-e^{-\gamma t}\right)\)</span>. So if we initialise the system with a single infective, <span class="math inline">\(I(0)=1\)</span>, then we have <span class="math inline">\(\R_0 = S(0) - \lim_{t\to\infty} S(t) = \beta/\gamma\)</span> as expected.</p>
+</section>
+<section id="non-dimensionalisation" class="level2" data-number="4.2">
+<h2 data-number="4.2" class="anchored" data-anchor-id="non-dimensionalisation"><span class="header-section-number">4.2</span> Non-dimensionalisation</h2>
+<p>It is sometimes convenient to non-dimensionalise the SIR model by introducing a dimensional time variable <span class="math inline">\(\tilde{t}=\gamma t\)</span>. This can be though of as measuring time in units of the average infectious period <span class="math inline">\(1/\gamma\)</span>, which defines a natural timescale fo the epidemic. In the dimensionless time variable, the system of ODEs (<a href="#eq-SIR" class="quarto-xref">Equation&nbsp;1</a>) becomes <span class="math display">\[
+\begin{align*}
+\frac{d\tilde{S}}{d\tilde{t}} &amp;= -\R_0 \tilde{S}\tilde{I} \\
+\frac{d\tilde{I}}{d\tilde{t}} &amp;= \R_0 \tilde{S}\tilde{I} - \tilde{I} \\
+\end{align*}
+\]</span></p>
+<p>This shows that the recovery rate parameter <span class="math inline">\(\gamma\)</span> really just determines the time scale for the dynamics: doubling <span class="math inline">\(\gamma\)</span> while holding <span class="math inline">\(\R_0\)</span> fixed does not change the epidemic other than making everything happen twice as quickly.</p>
+<p>Therefore the SIR model only really has one parameter (<span class="math inline">\(\R_0\)</span>) that has a qualitative effect on the epidemic dynamics. Larger values of <span class="math inline">\(\R_0\)</span> result in faster epidemics with higher peaks. This is shown in <a href="#fig-SIR-nondim" class="quarto-xref">Figure&nbsp;2</a>, where the solution for <span class="math inline">\(\tilde{I}\)</span> is shown agains dimensionless time <span class="math inline">\(\tilde{t}\)</span> for different values of <span class="math inline">\(\R_0\)</span>. This effectively shows the epidemic in a re-scaled time variable that measures time in units of the mean infectious period <span class="math inline">\(1/\gamma\)</span>.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-SIR-nondim" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-SIR-nondim-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="Topic02_SIR_model_files/figure-html/fig-SIR-nondim-1.png" class="img-fluid figure-img" width="672">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-SIR-nondim-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: Solution for I(t) in the SIR model with different values of R0. Time is shown in units of the mean infectious period 1/gamma
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="effective-reproduction-number" class="level2" data-number="4.3">
+<h2 data-number="4.3" class="anchored" data-anchor-id="effective-reproduction-number"><span class="header-section-number">4.3</span> Effective reproduction number</h2>
+<p>Recall the effective reproduction number <span class="math inline">\(\R_\mathrm{eff}(t)\)</span> is the expected number of infections caused by a single infectious individual over the course of their infectious period when some fraction <span class="math inline">\(S(t)/N\)</span> of the population is susceptible.</p>
+<p>Since the SIR model assumes that everyone in the population member is equally likely to be a contact, the expected proportion of contacts who are susceptible is just <span class="math inline">\(S(t)/N\)</span>. Hence the effective reproduction number for the SIR model at time <span class="math inline">\(t\)</span> is <span class="math display">\[
+\R_\mathrm{eff}(t) = \R_0 \frac{S(t)}{N} = \frac{\beta S(t)}{\gamma N}
+\]</span></p>
+</section>
+<section id="relationship-between-reproduction-number-and-epidemic-growth-rate" class="level2" data-number="4.4">
+<h2 data-number="4.4" class="anchored" data-anchor-id="relationship-between-reproduction-number-and-epidemic-growth-rate"><span class="header-section-number">4.4</span> Relationship between reproduction number and epidemic growth rate</h2>
+<p>In the early stages of an epidemic when <span class="math inline">\(S(t)/N\approx 1\)</span>, we have <span class="math inline">\(\dot{I}\approx (\beta-\gamma)I\)</span> and hence <span class="math inline">\(I(t)\)</span> grows exponentially (or decays if <span class="math inline">\(\beta&lt;\gamma\)</span>).</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Early stage approximation
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>In the early stages of an epidemic when the population is almost fully susceptible, prevalence grows/decays approximately exponentially: <span class="math display">\[
+I(t) \propto e^{(\beta-\gamma) t} = e^{(\R_0-1)\gamma t}
+\]</span></p>
+</div>
+</div>
+<p>More generally, we define the <em>epidemic growth rate</em> <span class="math inline">\(r\)</span> as the relative rate of change in prevalence <span class="math inline">\(I\)</span> (or equivalently the rate of change of <span class="math inline">\(\ln(I)\)</span>) per unit time:</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Epidemic growth rate
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><span class="math display">\[
+r = \frac{1}{I}\frac{dI}{dt}
+\]</span></p>
+</div>
+</div>
+<p>For the SIR model, it follows immediately from the ODE for <span class="math inline">\(I\)</span> that <span class="math inline">\(r=\beta S/N - \gamma\)</span>. Recalling that <span class="math inline">\(\R_\mathrm{eff}(t) = \beta S / (\gamma N)\)</span>, we have the following relationship between <span class="math inline">\(\R_\mathrm{eff}(t)\)</span> and <span class="math inline">\(r\)</span>:</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Relationship between <span class="math inline">\(\R_\mathrm{eff}(t)\)</span> and <span class="math inline">\(r\)</span>
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><span class="math display">\[
+r = \gamma\left(\R_\mathrm{eff}(t) -1 \right)
+\]</span></p>
+</div>
+</div>
+<p>We can see from the equation above that the epidemic growth rate <span class="math inline">\(r\)</span> is positive if and only if <span class="math inline">\(\R_\mathrm{eff}(t)&gt;1\)</span>. Also, for a given <span class="math inline">\(\R_\mathrm{eff}(t)\)</span>, the epidemic dynamics are faster if the infectious period <span class="math inline">\(1/\gamma\)</span> is shorter.</p>
+<p>Notes:</p>
+<ul>
+<li>In practice, it is usually difficult to measure <span class="math inline">\(\R_0\)</span> or <span class="math inline">\(\Reff\)</span> directly, but the relationship above in principle allows us to estimate <span class="math inline">\(\Reff\)</span> if we know the mean infectious period <span class="math inline">\(1/\gamma\)</span>. If prevalence <span class="math inline">\(I(t)\)</span> is growing exponentially with rate <span class="math inline">\(r\)</span>, a plot of <span class="math inline">\(\ln I(t)\)</span> against <span class="math inline">\(t\)</span> will be approximately a straight line of slope <span class="math inline">\(r\)</span>. This gives above gives a crude way to estimate <span class="math inline">\(r\)</span> and hence <span class="math inline">\(\Reff\)</span>.</li>
+<li>Data on prevalence may not be available (or may be very noisy or biased). But note that the incidence of new cases is proportional to <span class="math inline">\(S(t)I(t)\)</span>. Hence, if <span class="math inline">\(I(t)\sim e^{rt}\)</span> then provided <span class="math inline">\(S(t)\)</span> does not change drastically over the estimation window, incidence will also be approximately proportional to <span class="math inline">\(e^{rt}\)</span>. We will come back to these problems in more detail later on.</li>
+<li>The relationships above between <span class="math inline">\(r\)</span> and <span class="math inline">\(\R_0\)</span> or <span class="math inline">\(\Reff\)</span> rest on the assumption of the SIR model that recovery is a Markovian (i.e.&nbsp;memoryless) process. We will see a more general relationship for non-Markovian recovery models later on.</li>
+</ul>
+<p>Some of the key properties of <span class="math inline">\(r\)</span> and <span class="math inline">\(\Reff\)</span> as metrics of an unfolding epidemic are summarised below.</p>
+<table class="table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Epidemic growth rate</th>
+<th>Reproduction number</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Can be estimated more or less empirically from data on e.g.&nbsp;reported cases</td>
+<td>Needs additional information or assumptions to estimate</td>
+</tr>
+<tr class="even">
+<td>Describes how quickly epidemic is growing and, therefore, how large it will be at some time in the near-future if growth rate is sustained</td>
+<td>Determines how many people will ultimately be infected</td>
+</tr>
+<tr class="odd">
+<td>Is uninformative on how epidemic will respond to intervention</td>
+<td>Quantifies the strength of intervention needed to control epidemic</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="frequent-dependent-versus-density-dependent-transmission" class="level1" data-number="5">
+<h1 data-number="5"><span class="header-section-number">5</span> Frequent-dependent versus density-dependent transmission</h1>
+<p>The form of the SIR model in (<a href="#eq-SIR" class="quarto-xref">Equation&nbsp;1</a>) assumes what is known as the <em>frequency-dependent transmission</em>. Here, the force of infection <span class="math inline">\(\lambda(t)\)</span> is proportional to <span class="math inline">\(I(t)/N\)</span>, the infectious <em>fraction</em> of the population. If the population size <span class="math inline">\(N\)</span> increased, the model would behave just the same but with a proportionate increase in the variables <span class="math inline">\(S\)</span>, <span class="math inline">\(I\)</span> and <span class="math inline">\(R\)</span>.</p>
+<p>An alternative formulation is to assume <em>density-dependent transmission</em>, where the force of infection <span class="math inline">\(\lambda(t)\)</span> is proportional to <span class="math inline">\(I(t)\)</span>, the <em>absolute number</em> of infectives. In a density-dependent transmission model, increasing the population size increases the reproduction number and therefore changes the epidemic dynamics.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Density-dependent SIR model
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><span id="eq-SIR-dens-dep"><span class="math display">\[
+\begin{align*}
+\dot{S} &amp;= -\beta SI \\
+\dot{I} &amp;= \beta SI - \gamma I
+\end{align*}
+\tag{4}\]</span></span></p>
+</div>
+</div>
+<p>When modelling an epidemic in a single population of constant size, the distinction between frequency-dependent and density-dependent transmission is not crucial: the models can always be made equivalent via a different choice of the transmission rate <span class="math inline">\(\beta\)</span>.</p>
+<p>However, when modelling infectious disease dynamics in a population with varying size, multiple populations, or different subgroups the distinction matters. Frequency-dependent transmission reflects a situation where the number of contacts per person is independent of population size, which is often a reasonable assumption for a directly transmitted pathogen in a large population where contact rates are largely determined by social structure.</p>
+<p>Density-dependent transmission means that the number of contacts per person increases linearly with population size. This may better capture transmission patterns in confined settings or areas where an increase in population density is expected to increase contact rates.</p>
+<p>An associated point is that the SIR models in (<a href="#eq-SIR" class="quarto-xref">Equation&nbsp;1</a>) and (<a href="#eq-SIR-dens-dep" class="quarto-xref">Equation&nbsp;4</a>) both ignore deaths. This may be a reasonable approximation for an epidemic of a disease with a low mortality rate, but what if the mortality rate is non-negligible? Then, even ignoring births and non-disease-associated deaths (which will be covered in a later Topic), the population size <span class="math inline">\(N\)</span> is not constant.</p>
+<p>The equations for the density-dependent model in (<a href="#eq-SIR-dens-dep" class="quarto-xref">Equation&nbsp;4</a>) are not affected by changing <span class="math inline">\(N\)</span>, because transmission is determined by the absolute number of infectives. But, in the frequency-dependent model, the equations depend on <span class="math inline">\(N(t)\)</span>, so the system needs to be augmented in this situation to include an ODE for population size <span class="math inline">\(N(t)\)</span>:</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Frequency-dependent SIR model with disease-induced mortality
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><span class="math display">\[
+\begin{align*}
+\dot{S} &amp;= -\frac{\beta SI}{N} \\
+\dot{I} &amp;= \frac{\beta SI}{N} - \gamma I \\
+\dot{N} &amp;= -\gamma p_M I
+\end{align*}
+\]</span> where <span class="math inline">\(p_M\in[0,1]\)</span> is the proportion of infections that cause death.</p>
+</div>
+</div>
+<p>Alternatively, we could retain the equation for the recovered compartment (<span class="math inline">\(\dot{R}=\gamma(1-p_M)I\)</span>) and replace <span class="math inline">\(N(t)\)</span> by <span class="math inline">\(S(t)+I(t)+R(t)\)</span>. This would give an equivalent system expressed in terms of <span class="math inline">\(S\)</span>, <span class="math inline">\(I\)</span> and <span class="math inline">\(R\)</span> instead of <span class="math inline">\(S\)</span>, <span class="math inline">\(I\)</span> and <span class="math inline">\(N\)</span>.</p>
+<p>It can be seen from these equations that, by reducing <span class="math inline">\(N(t)\)</span>, disease-induced mortality actually accelerates transmission and increases the fraction of the population infected. This happens because contacts that would otherwise have been with recovered individuals are replaced by contacts with non-recovered individuals (some fraction of whom will be infectious).</p>
+</section>
+<section id="phase-plane-analysis-and-herd-immunity-threshold" class="level1" data-number="6">
+<h1 data-number="6"><span class="header-section-number">6</span> Phase plane analysis and herd immunity threshold</h1>
+<p>From this section onwards, we will work with population fractions but drop the tilde notation, i.e.&nbsp;we use <span class="math inline">\(S\)</span> to denote the susceptible fraction and <span class="math inline">\(I\)</span> to denote the infectious fraction.</p>
+<p>The phase space is the triangular region of the <span class="math inline">\((S,I)\)</span> plane defined by <span class="math inline">\(S+I\le 1\)</span> (see <a href="#fig-SIR-phase-plane" class="quarto-xref">Figure&nbsp;3</a> below).</p>
+<p>The SIR model (<a href="#eq-SIR-frac" class="quarto-xref">Equation&nbsp;2</a>) has a continuous family of equilibria because any state with <span class="math inline">\(I=0\)</span> is an equilibrium (and there are no other equilibria). The state <span class="math inline">\(S=1\)</span>, <span class="math inline">\(I=0\)</span> is an important equilibrium called the <em>disease-free equilibrium</em> (DFE).</p>
+<p>The Jacobian of the SIR model is <span class="math display">\[
+J = \left [ \begin{array}{ll} -\beta \tilde{I} &amp; -\beta \tilde{S} \\ \beta\tilde{I} &amp; \beta\tilde{S} - \gamma   \end{array}  \right]
+\]</span> At the DFE, we have <span class="math display">\[
+J = \left [ \begin{array}{ll} 0 &amp; -\beta  \\ 0 &amp; \beta - \gamma   \end{array}  \right]
+\]</span> which has eigenvalues <span class="math inline">\(\lambda_1=\beta-\gamma\)</span> and <span class="math inline">\(\lambda_2=0\)</span>.</p>
+<p>Since <span class="math inline">\(R_0=\beta/\gamma\)</span> then <span class="math inline">\(\beta&gt;\gamma\)</span> if and only if <span class="math inline">\(\R_0&gt;1\)</span>. So if <span class="math inline">\(\R_0&gt;1\)</span> then the DFE is unstable. If <span class="math inline">\(\R_0&lt;1\)</span> the DFE is neutrally stable. In practice, this means that introduction of a small number of infections into an otherwise susceptible population leads to infections dying out, and the system returning to a slightly different equilibrium with <span class="math inline">\(\tilde{I}=0\)</span> and <span class="math inline">\(\tilde{S}&lt;1\)</span>.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="math inline">\(\R_0\)</span> as a bifurcation parameter
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The DFE is unstable (and hence introduction of a small number of infectious people will cause an epidemic) if and only if <span class="math inline">\(\R_0&gt;1\)</span>.</p>
+</div>
+</div>
+<p>The <span class="math inline">\(I\)</span> nullcine is the vertical line <span class="math inline">\(S=1/\R_0\)</span>. This critical value of the susceptible population size is known as the <em>herd immunity threshold</em>.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Herd immunity threshold
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If <span class="math inline">\(S(t)&gt;1/\R_0\)</span> then <span class="math inline">\(\dot{I}&gt;0\)</span> which means that the epidemic is growing.</p>
+<p>If <span class="math inline">\(S(t)&lt;1/\R_0\)</span> then <span class="math inline">\(\dot{I}&lt;0\)</span> which means that the epidemic is shrinking.</p>
+</div>
+</div>
+<p>Notes:</p>
+<ul>
+<li>When the system is at the herd immunity threshold, the effective reproduction number (<span class="math inline">\(\Reff=\R_0 S(t)\)</span>) is equal to <span class="math inline">\(1\)</span>.</li>
+<li>The herd immunity threshold is the point at which <em>prevalence</em> <span class="math inline">\(I(t)\)</span> switches from growing to shrinking. <em>Incidence</em> peaks before prevalence does (we say that prevalence lags incidence): the rate of change of incidence is <span class="math inline">\(\beta(\dot{S}I+S\dot{I})\)</span> so, recalling that <span class="math inline">\(\dot{S}&lt;0\)</span>, by the time <span class="math inline">\(\dot{I}=0\)</span> incidence must already be falling.</li>
+</ul>
+<p>By applying linear stability analysis above to all the equilibria of the SIR model, we obtain the following result</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Stability of equilibria
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>All equilibria <span class="math inline">\((S,0)\)</span> with <span class="math inline">\(S&gt;1/\R_0\)</span> are unstable: the introduction of a small number of infectives will cause an epidemic.</p>
+<p>All equilibria <span class="math inline">\((S,0)\)</span> with <span class="math inline">\(S&lt;1/\R_0\)</span> are neutrally stable: the introduction of a small number of infectives will not cause an epidemic; instead the system will return to another nearby equilibrium.</p>
+</div>
+</div>
+<p>This implies that, once an epidemic has started, the only way it can end is by reaching one of the equilibria to the left of the herd immunity threshold. In other words, the susceptible population has to drop below the herd immunity threshold <span class="math inline">\(S=1/\R_0\)</span>, otherwise the population remains at risk of an epidemic if infectives are introduced.</p>
+<div id="fig-SIR-phase-plane" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-SIR-phase-plane-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="SIR_phase_plane.png" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-SIR-phase-plane-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;3: SIR model behaviour in the <span class="math inline">\((S,I)\)</span> phase plane with <span class="math inline">\(R_0=3\)</span> showing: the vector field <span class="math inline">\((dS/dt,dI/dt)\)</span> (grey arrows); trajectories for selected initial conditions with <span class="math inline">\(I(0)=\epsilon\)</span> and various values of <span class="math inline">\(S(0)\)</span> (blue); herd immunity thresold (i.e.&nbsp;<span class="math inline">\(I\)</span> nullcline) (red); peak prevalence when the epidemic starts with a small number of infectives in an otherwise fully susceptible population (dashed black line); neutrally stable equilibria (yellow); unstable equilibria (purple).
+</figcaption>
+</figure>
+</div>
+<p>Note: if the population is initially almost all susceptible, the herd immunity condition <span class="math inline">\(S(t)&lt;1/\R_0\)</span> is equivalent to a condition on the cumulative fraction of the population infected (i.e.&nbsp;cumulative incidence): <span class="math display">\[
+\textrm{cumulative incidence} &gt; 1- \frac{1}{\R_0}
+\]</span></p>
+</section>
+<section id="final-epidemic-size" class="level1" data-number="7">
+<h1 data-number="7"><span class="header-section-number">7</span> Final epidemic size</h1>
+<p>Although there is no closed-form solution to the SIR model in general, it is possible to solve the system in the phase plane. It follows from (<a href="#eq-SIR-frac" class="quarto-xref">Equation&nbsp;2</a>) that <span class="math display">\[
+\frac{dI}{dS} = -1 + \frac{\gamma}{\beta S} = -1 + \frac{1}{\R_0 S}
+\]</span> which may be integrated to give <span id="eq-phase-plane-sol"><span class="math display">\[
+I(t) - I(0) = S(0) - S(t) + \frac{1}{\R_0} \ln\left( \frac{S(t)}{S(0)}  \right)
+\tag{5}\]</span></span></p>
+<p>This implies that <span class="math inline">\(I(t)+S(t)-\ln(S(t))/\R_0\)</span> is a conserved quantity and has some important applications. Since we must have <span class="math inline">\(\lim_{t\to\infty} I(t)=0\)</span>, the final susceptible fraction <span class="math inline">\(S_\infty\)</span> must satisfy <span id="eq-conserved-quantity"><span class="math display">\[
+0 = S(0)+I(0)  - S_\infty + \frac{1}{\R_0} \ln\left( \frac{S_\infty}{S(0)}  \right)
+\tag{6}\]</span></span></p>
+<section id="final-size-of-an-epidemic-in-a-fully-susceptible-population" class="level2" data-number="7.1">
+<h2 data-number="7.1" class="anchored" data-anchor-id="final-size-of-an-epidemic-in-a-fully-susceptible-population"><span class="header-section-number">7.1</span> Final size of an epidemic in a fully susceptible population</h2>
+<p>Assuming that everyone in the population is initially either susceptible or infectious (so that we have <span class="math inline">\(S(0)=1-\epsilon\)</span>, <span class="math inline">\(I(0)=\epsilon\)</span>), the fraction of the population that has been infected by the end of the epidemic is <span class="math inline">\(z=1-S_\infty\)</span>. This is often referred to as the <em>final size</em> of the epidemic, and must satisfy <span class="math display">\[
+0 = z + \frac{1}{\R_0} \ln\left( \frac{ 1-z}{1-\epsilon}  \right)
+\]</span></p>
+<p>In the limit <span class="math inline">\(\epsilon\to 0\)</span> (i.e.&nbsp;the initially infectious fraction is vanishingly small), we obtain the so called final size equation.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Final size equation
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The final size <span class="math inline">\(z\)</span> of an SIR epidemic with basic reproduction number <span class="math inline">\(\R_0\)</span> and initially fully susceptible population satisfies <span id="eq-final-size"><span class="math display">\[
+1-z = e^{-\R_0 z}
+\tag{7}\]</span></span></p>
+</div>
+</div>
+<p>We have derived this equation directly from the SIR model ODEs. It can also be obtained via an alternative argument, which we present informally here, though it can be made rigorous (e.g.&nbsp;see <a href="https://doi.org/10.1007/s11538-012-9749-6">Miller, 2012</a>). Each infective contributes <span class="math inline">\(\R_0/N\)</span> towards the force of infection over their infectious period. If <span class="math inline">\(zN\)</span> individuals are infected over the course of the epidemic, the cumulative force of infection (i.e.&nbsp;accumulated hazard) is therefore <span class="math inline">\((zN)(\R_0/N)=\R_0z\)</span>. So <a href="#eq-final-size" class="quarto-xref">Equation&nbsp;7</a> says that the probability that a randomly selected individual escapes infection (<span class="math inline">\(1-z\)</span>) is equal to the exponential of the negative accumulated hazard (which is a straightforward consequence of the differential equation for survival probability, <span class="math inline">\(\dot{p}=-\lambda p\)</span>).</p>
+<p>As we will see later, the observation that the probability of escaping infection is <span class="math inline">\(e^{-\R_0 z}\)</span> means that <a href="#eq-final-size" class="quarto-xref">Equation&nbsp;7</a> holds for a wider class of models than just the SIR model (and can be generalised to further models still).</p>
+<p><a href="#eq-final-size" class="quarto-xref">Equation&nbsp;7</a> does not have a closed-form solution for <span class="math inline">\(z\)</span>, but is straightforward to solve numerically for a given value of <span class="math inline">\(\R_0\)</span>. <a href="#fig-SIR-final-size" class="quarto-xref">Figure&nbsp;4</a> shows final size <span class="math inline">\(z\)</span> as a function of <span class="math inline">\(\R_0\)</span>. This graph also shows the minimum number of people who need to be infected to reach the herd immunity threshold (HIT), which is <span class="math inline">\(1-1/\R_0\)</span>.</p>
+<p>Both curves have a threshold at <span class="math inline">\(\R_0=1\)</span> and a similar shape for <span class="math inline">\(\R_0&gt;1\)</span>, but the final epidemic size is always greater than the herd immunity threshold. This happens because the herd immunity threshold is the point at which the epidemic changes from growing to shrinking, but a large number of additional infections occur in the shrinking phase. This is known as <em>overshooting</em> the herd immunity threshold.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-SIR-final-size" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-SIR-final-size-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="Topic02_SIR_model_files/figure-html/fig-SIR-final-size-1.png" class="img-fluid figure-img" width="672">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-SIR-final-size-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;4: Dependence of herd immunity threshold and final epidemic size on R0 in an SIR model.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>When <span class="math inline">\(\R_0\)</span> is only just above 1, a Taylor expansion of <a href="#eq-final-size" class="quarto-xref">Equation&nbsp;7</a> reveals that <span class="math display">\[
+z\approx \frac{2}{\R_0}\left(1-\frac{1}{\R_0}\right)
+\]</span> which shows that the final size is just under double the HIT. This is because almost as many people get infected in the shrinking phase of the epidemic as in the growth phase. As <span class="math inline">\(\R_0\)</span> increases, final size is always greater than the HIT but the relative gap between them shrinks; and when <span class="math inline">\(\R_0\)</span> is very large both HIT and final size are close to <span class="math inline">\(1\)</span>.</p>
+</section>
+<section id="final-size-of-an-epidemic-in-a-partially-susceptible-population" class="level2" data-number="7.2">
+<h2 data-number="7.2" class="anchored" data-anchor-id="final-size-of-an-epidemic-in-a-partially-susceptible-population"><span class="header-section-number">7.2</span> Final size of an epidemic in a partially susceptible population</h2>
+<p>In the more general case where some fraction <span class="math inline">\(R(0)\)</span> of the population is initially immune, we can obtain from (<a href="#eq-conserved-quantity" class="quarto-xref">Equation&nbsp;6</a>) a more general version of the equation for the final size <span class="math inline">\(z=S(0)+I(0)-S_\infty\)</span>: <span class="math display">\[
+0 = z + \frac{1}{\R_0} \ln\left( 1+\frac{I(0)-z}{S(0)}  \right)
+\]</span> This equation allows the size of an SIR epidemic starting at an arbitrary initial condition <span class="math inline">\((S(0),I(0))\)</span> to be calculated.</p>
+<p>Note that we can also write the above equation in terms of the effective reproduction number at the start of the epidemic <span class="math inline">\(\R_\mathrm{eff}=\R_0 S(0)\)</span>. If we assume <span class="math inline">\(I(0)\)</span> is negligibly small, this leads to <span class="math display">\[
+0 = \frac{z}{S(0)} + \frac{1}{\R_\mathrm{eff}} \ln\left( 1-\frac{z}{S(0)}  \right)
+\]</span></p>
+<p>From this we see that, for a given value of <span class="math inline">\(\Reff\)</span>, <span class="math inline">\(z/S(0)\)</span> satisfies the same final size equation (<a href="#eq-final-size" class="quarto-xref">Equation&nbsp;7</a>) as <span class="math inline">\(z\)</span> does in the case where there is no initial population immunity (i.e.&nbsp;<span class="math inline">\(R(0)=0\)</span>) and <span class="math inline">\(\Reff=\R_0\)</span>. This means that if we observe <span class="math inline">\(\Reff\)</span> in the early stages of an epidemic and use this to calculate the final size <span class="math inline">\(z\)</span>, the actual size of the epidemic will be <span class="math inline">\(zS(0)\)</span>.</p>
+<p>This has an important implication. Reducing the size of the susceptible population has two compounding effects effects: it reduces the number of people at risk, and it also <span class="math inline">\(\Reff\)</span>, which reduces the fraction of the people at risk that will get infected.</p>
+</section>
+<section id="final-epidemic-size-with-disease-induced-mortality" class="level2" data-number="7.3">
+<h2 data-number="7.3" class="anchored" data-anchor-id="final-epidemic-size-with-disease-induced-mortality"><span class="header-section-number">7.3</span> Final epidemic size with disease-induced mortality</h2>
+<p>The calculations above assume that the disease has a negligible mortality rate so that the total population size remains constant. As we have seen above, if the disease has non-negligible mortality and contact rates are frequency-dependent, the changing population size affects the transmission dynamics. How does this impact final size?</p>
+<p>From a previous section, if some fraction <span class="math inline">\(p_M\in(0,1]\)</span> of infections cause death, we have the following model <span class="math display">\[
+\begin{align*}
+\dot{S} &amp;= -\frac{\beta SI}{N} \\
+\dot{I} &amp;= \frac{\beta SI}{N} - \gamma I \\
+\dot{N} &amp;= -\gamma p_M I
+\end{align*}
+\]</span></p>
+<p>Recalling that <span class="math inline">\(\R_0=\beta/\gamma\)</span>, it follows that <span class="math display">\[
+\frac{dS}{dN} = \frac{\R_0 S}{p_M N}
+\]</span> which may be integrated to give <span class="math display">\[
+\ln\left(\frac{S(t)}{S(0)}\right)  = \frac{\R_0}{p_M} \ln\left(\frac{N(t)}{N(0)}\right)
+\]</span></p>
+<p>If we assume that the initial susceptible fraction is close to <span class="math inline">\(1\)</span> and set <span class="math inline">\(N(0)=1\)</span> (so that the state variables <span class="math inline">\(S(t)\)</span>, <span class="math inline">\(I(t)\)</span>, <span class="math inline">\(N(t)\)</span> represent the relevant compartment sizes relative to the initial size of the population) then we get <span class="math display">\[
+S(t) = N(t)^{\R_0/p_M}
+\]</span></p>
+<p>We also know that, at the end of the epidemic, if the fraction remaining susceptible is <span class="math inline">\(S_\infty\)</span> then the number of deaths must be <span class="math inline">\(p_M(1-S_\infty)\)</span> and so the final population size must be <span class="math display">\[
+N_\infty= 1-p_M(1-S_\infty)
+\]</span></p>
+<p>Combining these last two equations, we obtain the following final size equation for the fraction infected <span class="math inline">\(z=1-S_\infty\)</span>.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Final size with disease-induced mortality
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><span class="math display">\[
+\ln(1-z) = \frac{\R_0}{p_M}\ln\left(  1 - p_M z \right)
+\]</span></p>
+</div>
+</div>
+<p>Note that this equivalent to <a href="#eq-final-size" class="quarto-xref">Equation&nbsp;7</a> in the limit <span class="math inline">\(p_M \to 0\)</span>. It can be shown that <span class="math inline">\(z\)</span> is an increasing function of <span class="math inline">\(p_M\)</span> so, for a given <span class="math inline">\(\R_0\)</span>, a more lethal disease will infect a higher fraction of the population. And as <span class="math inline">\(p_M\to 1\)</span>, <span class="math inline">\(z\to 1\)</span>, so a disease with a 100% mortality rate will infect 100% of the population for <em>any</em> <span class="math inline">\(\R_0&gt;1\)</span>!</p>
+<p>The reason this happens is that recovered people reduce contact rates between susceptibles and infectives, but dead people do not. However, it is worth reflecting on what would need to happen for this effect to be observed in reality. The total population size would need to be reduced enough that contacts that would have occurred with people who are now dead are replaced by contacts with somebody else. It seems likely that, in many situations involving real human populations, such a drastic outcome would lead to major contact avoidance behaviours, which would alter the course of the epidemic.</p>
+</section>
+<section id="peak-prevalence" class="level2" data-number="7.4">
+<h2 data-number="7.4" class="anchored" data-anchor-id="peak-prevalence"><span class="header-section-number">7.4</span> Peak prevalence</h2>
+<p><a href="#eq-phase-plane-sol" class="quarto-xref">Equation&nbsp;5</a> can also be used to calculate the maximum value of <span class="math inline">\(I(t)\)</span> (i.e.&nbsp;peak prevalence), because this occurs when <span class="math inline">\(S(t)\)</span> crosses the herd immunity threshold, i.e.&nbsp;<span class="math inline">\(S(t)=1/\R_0\)</span>.</p>
+<p><span class="math display">\[
+I_\mathrm{max} = S(0)+I(0) - \frac{1}{\R_0}\left( 1 + \ln(\R_0) + \ln(S(0))   \right)
+\]</span></p>
+<p>In the case where <span class="math inline">\(I(0)=\epsilon\)</span> is small and <span class="math inline">\(S(0)= 1-\epsilon\)</span>, we have</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Peak prevalence
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><span class="math display">\[
+I_\mathrm{max} = 1 - \frac{1}{\R_0}\left( 1 + \ln(\R_0)   \right)
+\]</span></p>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-SIR-peak-prev" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-SIR-peak-prev-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="Topic02_SIR_model_files/figure-html/fig-SIR-peak-prev-1.png" class="img-fluid figure-img" width="672">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-SIR-peak-prev-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;5: Peak prevalence against R0 in an SIR epidemic initialised by introudcing a small number of infectives into an otherwise fully susceptible population.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

@@ -1,0 +1,433 @@
+---
+title: "Topic 10. Multitype models"
+author: "Michael Plank"
+format:
+  html:
+    toc: true
+    number-sections: true
+    theme: cosmo
+---
+
+
+::: {.hidden}
+$$
+\newcommand{\vect}[1]{\boldsymbol{\mathbf{#1}}}
+\newcommand{\R}{\mathcal{R}}
+\newcommand{\Reff}{\mathcal{R}_\mathrm{eff}}
+$$
+:::
+
+# Motivation
+
+In the models studied so far, we have largely ignored differences between individuals and treated them as a homogeneous population. In some situations, individual characteristics play an important role in shaping disease transmission dynamics. This could include biological characteristics, such as age, sex or species, and social characteristics such as contact rate. 
+
+In this Topic we will see some of the mathematical machinery needed to include different types of individual in SIR-type disease transmission models. In the following Topic, we will look specifically at age-structured models, both in the epidemic and the endemic context. 
+
+# Next generation matrix
+
+We will focus on a method for calculating the basic reproduction number $\R_0$ for multi-type models. See [van den Driessche and Watmough (2002)](https://doi.org/10.1016/s0025-5564(02)00108-6) and  [Dieckmann et al. (2010)](https://doi.org/10.1098/rsif.2009.0386) for further details. 
+
+Recall that $\R_0$ is defined as the expected number of infections caused by a single infectious individual in a fully susceptible population.
+
+In a model where individuals are categorised into different types, we need to account for how types differ in their susceptibility to and their propensity to transit infection. A natural quanity to consider is something called the next generation matrix.
+
+::: {.callout-note}
+### Next generation matrix definition
+
+Suppose the population consists of $n\ge 1$ types of individual.
+The *next generation matrix* (NGM) $K$ is an $n\times n$ matrix where $K_{ij}$ at the expected number of infections of type $i$ caused by a single infectious individual of type $j$ in a fully susceptible population.
+
+:::
+
+When considering types to be all possible states (that is all model compartments, corresponding to all possible combinations of disease state and individual attributes), this is what Dieckmann et al. called the *large-domain* next generation matrix. 
+
+It is often sufficient to consider a smaller matrix, which only includes the states that individual enter at *epidemiological birth* (i.e. at the point of becoming infected), called *states-at-infection*. For example, this would be the exposed states $E$ in a sEIR model. It is always possible to calculate this smaller matrix from the large-domain NGM, and as we shall see in some cases it possible to directly infer the smaller matrix from the model ODEs. 
+
+
+## Basic reproduction number
+
+::: {.callout-note}
+### Basic reproduction number
+
+The basic reproduction number $\R_0$ is defined to be the dominant eigenvalue of the next generation matrix
+
+:::
+
+To see why this definition makes sense, suppose the system is initialised according to some column vector ${\bf x}_0$ specifying the number of individuals of each state-at-infection. 
+With each generation of transmission, provided the population remains close to fully susceptible, the vector is left-multiplied by the NGM $K$. So after $m$ generations we would expect
+$$
+{\bf x}_m \approx K^m {\bf x}_0
+$$
+
+As $m$ increases, ${\bf x}_m$ becomes increasingly parallel to the dominant eigenvector of $K$ and we have
+$$
+{\bf x}_{m+1} \approx \rho(K) {\bf x}_m
+$$
+where $\rho(K)$ is the dominant eigenvalue of $K$. Hence defining $\R_0=\rho(K)$ means that $\R_0$ is the ratio of the number of (each type of) infection at generation $m+1$ to the number at generation $m$ in a fully susceptible population, once the system has settled onto a pseudo-steady distribution of infections across types (corresponding to the dominant eigenvector of $K$).  
+
+Note that this definition effectively makes $\R_0$ the average number of infections caused by a *typical infected individual* in the early stages of the epidemic when the population is fully susceptible. This is different from the expected number of infections caused by infecting a *randomly selected individual* and is an important distinction. 
+
+For example suppose a population consists of 50\% type 1 individuals and 50\% type 2 individuals, and that type 1 individuals have a higher contact rate than type 2. Even if you start with only type 2 individuals infected, you would expect new infections to quickly be disproportionately made up of type 1 individuals. Then $\R_0$ would be weighted towards the number of expected infections caused by a type 1 individual, rather than a straight average of type 1 and type 2.  We will see a specific example of this later.
+
+
+## Effective reproduction number
+
+We have defined the basic reproduction number $\R_0$ as the dominant eigenvalue of the NGM $K$, representing the average number of type $i$ infections caused by a type $j$ infection in a fully susceptible population.
+
+We might also be interested in the effective reproduction number $\Reff(t)$ at time $t$, which we define analogously as the dominant eigenvalue of the matrix $K_\mathrm{eff}(t)$ of the average number of type $i$ infections caused by a type $j$ infection when the number of type $i$ susceptibles at time $t$ is $S_i(t)$.
+
+The matrices $K$ and $K_\mathrm{eff}(t)$ are related via $K_{ij,\mathrm{eff}}(t)=K_{ij}(t)S_i(t)/N_i$. 
+
+If the susceptible fraction of every type takes the same value $s(t)$ it follows the $\Reff = \R_0s(t)$. In general the susceptible fraction will be different in different types, and $\Reff$ will lie somewhere between $\R_0s_\min(t)$ and $\R_0s_\max(t)$ where $s_\min(t)$ and $s_\max(t)$ are the minimum and maximum of $S_i(t)/N_i$ across types $i$.
+
+
+
+
+
+
+
+# Example 1: two latent periods
+
+We will illustrate the concepts and the general approach by means of a few examples. In our first example, based on [Dieckmann et al. (2010)](https://doi.org/10.1098/rsif.2009.0386), we consider a SEIR model where there are two types of individual, one with a longer latent period than the other. Let $p$ denote the (fixed) proportoin of the population that is type 1. Then the model may be expressed in terms of population fractions as:
+
+$$
+\begin{align}
+\dot{S} &= -\beta SI \\
+\dot{E_1} &= p\beta SI - \alpha_1 E_1 \\
+\dot{E_2} &= (1-p)\beta SI - \alpha_2 E_2 \\ 
+\dot{I} &= \alpha_1 E_1 + \alpha_2 E_2 - \gamma I 
+\end{align}
+$$
+where $1/\alpha_1$ and $1/\alpha_2$ are the latent periods of type 1 and 2 individuals respectively. 
+
+The first step in analysing this model is to linearised around the DFE, which is defined by $S=1$ and all other variables equal to zero. When we do this, the equations for $E_1$, $E_2$ and $I$ decouple from the equation for $S$ and so we get
+$$
+\begin{align}
+\dot{E_1} &= p\beta I - \alpha_1 E_1 \\
+\dot{E_2} &= (1-p)\beta I - \alpha_2 E_2 \\ 
+\dot{I} &= \alpha_1 E_1 + \alpha_2 E_2 - \gamma I 
+\end{align}
+$$
+This is what Dieckmann et al. call the *linearised infection subsystem* as it only includes the infected states. 
+We now define the vector ${\bf x}=(E_1, E_2, I)^T$ and write this system as 
+$$
+\dot{x} = (T+\Sigma){\bf x}
+$$
+where $T+\Sigma$ is the Jacobian matrix at the DFE, and we have split it into two matrices $T$ and $\Sigma$, where $T$ contains terms corresponding to *transmissions* (i.e. entry into a state-at-infection) and $\Sigma$ contains all other term. We call $T$ the *transmission matrix* and $\Sigma$ the *transition matrix*. In this example, we have
+$$
+T = \left[\begin{array}{ccc} 0 & 0 & p\beta \\ 0 & 0 & (1-p)\beta \\ 0 & 0 & 0   \end{array} \right], \qquad       \Sigma= \left[\begin{array}{ccc} -\alpha_1 & 0 & 0 \\ 0 & -\alpha_2 & 0 \\ \alpha_1 & \alpha_2 & -\gamma   \end{array} \right]
+$$
+
+Notice that $T_{ij}$ is the rate of new infections in compartment $i$ caused by an individual in compartment $j$ per unit time, while $\Sigma_{ij}$ ($i\neq j$) is the transition rate per unit time from state $j$ to state $i$ and $-\Sigma_{ii}$ is the aggregate transition rate out of state $i$. 
+
+Inverting $\Sigma$ gives 
+$$
+-\Sigma^{-1}= \left[\begin{array}{ccc} 1/\alpha_1 & 0 & 0 \\ 0 & 1/\alpha_2 & 0 \\ 1/\gamma & 1/\gamma & 1/\gamma   \end{array} \right]
+$$
+
+
+
+::: {.callout-tip}
+### Biological interpretaion of the inverse transition matrix
+
+The matrix $-\Sigma^{-1}$ has a neat biological interpretation: its $(i,j)$ element is the expected time that individual who is currently in state $j$ will spend in state $i$ in their future "epidemiological life" (i.e. until they no longer have any potential to transmit the disease, e.g. due to recovery or death). 
+
+To see this, let $M_{ij}$ denote the expected number of future visits that an individual currently in state $j$ will make to state $i$. Note in models where the transition network has no cycles, $M_{ij}$ will be in $[0,1]$ (being $0$ if there is no route from state $j$ to $i$, and $1$ if individuals are guaranteed to visit $i$ at some point after leaving $j$). However, in general this is not a requirement and we can have $M_{ij}>1$ if it possible to visit the same state more than once during the course of a single infection.
+
+Let $P_{ij}$ be the probability that an individual currently in state $j$ will move to state $i$ when the leave state $i$. Note that $P_{ii}=0$ and $P_{ij}=-\Sigma_{ij}/\Sigma_{ii}$ for $i\neq j$. 
+
+$M_{ij}$ and $P_{ij}$ satisfy a recurrence relation $M_{ij} = \delta_{ij} + \sum_k P_{kj}M_{ik}$, where $\delta_{ij}$ is the Kronecker delta (i.e. $\delta_{ij}=1$ if $i=j$ and $\delta_{ij}=0$ otherwise). In matrix form, this is $M=I+MP$ and hence $M=(I-P)^{-1}$ provided it is invertible. 
+
+Now let $S_{ij}$ be the expected sojourn time (i.e. total future time spent) in state $i$ for an individual currently in state $j$. Since the average waiting time in state $i$ is $-1/\Sigma_{ii}$, the matrices $S$ and $M$ are related via $S=-\mathrm{diag}(1/\Sigma_{ii})M$. Combining this with the above solution for $M$ we get
+$$
+S = -\mathrm{diag}(1/\Sigma_{ii})(I-P)^{-1}  = \left[ \mathrm{diag}(\Sigma_{ii}) (P-I)   \right]^{-1}
+$$
+Since $P_{ii}=0$, the diagonal elements of the matrix inside the square brackets are $-\Sigma_{ii}$. The off-diagonal $(i,j)$ element is $\Sigma_{ii}P_{ij}$, which by the above equals $-\Sigma_{ij}$. Hence the matrix inside the square brackets is $-\Sigma$ and it follows that $-\Sigma^{-1}$ is the sojourn time matrix $S$.
+
+:::
+
+Getting back to this example, the elements of $-\Sigma^{-1}$ are simply the waiting times in a given compartment: reading down the first column we see that an individual in state $E_1$ will spend expected time $1/\alpha_1$ in state $E_1$ (regardless of how long they have already been in $E_1$ because transitions are memoryless), no time in $E_2$, followed by time $1/\gamma$ in $I$ and similarly for the second and third columns. 
+
+More generally, when there are multiple routes by which an individual can leave a compartment, these elements will have more complicated (though still in many cases tractable) expressions, but still have the same interpretation. 
+
+## Large-domain next generation matrix
+
+We may now compute the large-domain NGM $K_L$ via 
+$$
+K_L=-T\Sigma^{-1} = \left[\begin{array}{ccc} p\beta /\gamma & p\beta/ \gamma & p\beta/\gamma \\ (1-p)\beta/\gamma & (1-p)\beta/\gamma & (1-p)\beta/\gamma \\ 0 & 0 & 0   \end{array} \right]
+$$
+
+Notice that the final row of $K_L$ is all zeros, this simply reflects the fact that the corresponding state ($I$) is not a state-at-infection. In this simple example, each element in row 1 is the same, and each element in row 2 is the same: all currently infected individuals, regardless of whether they are in $E_1$, $E_2$ or $I$, will transmit to an average of $\beta/\gamma$ infections, of which a proportion $p$ will have state-at-infection $E_1$ and $1-p$ will have state-at-infection $E_2$. 
+
+The basic reproduction number $\R_0$ is
+$$
+\R_0 = \rho(K_L) = \frac{p\beta}{\gamma} + \frac{(1-p)\beta}{\gamma} = \frac{\beta}{\gamma}
+$$
+which is of course the same as for the unstructured SEIR model (see Topic 4). This is a consequence of the fact that we have assumed there is no difference in the probability of type 1 and type 2 individuals progressing from the exposed to the infectious compartment, and no difference between them once they get there. 
+
+Dieckmann et al. consider a more general example in which a constant death rate $\mu$ applies to all compartments. That means that the individuals with the longer latent period (smaller $\alpha$) have a lower probability of reaching the infectious stage before dying, and hence have a lower expected transmission potential. In this case, the same analysis leads to
+$$
+\R_0 = \rho(K_L) = \left(\frac{p\alpha_1}{\alpha_1+\mu} + \frac{(1-p)\alpha_2}{\alpha_2+\mu}\right) \frac{\beta}{\gamma+\mu}
+$$
+
+## Next generation matrix
+
+The same analysis that we have carried out on the large-domain NGM $K_L$ can be calculated on the NGM $K$ that only considers the state-at-infection. This simply ignores the rows of $T$ that do not correspond to a state-at-infection (in this case the third row), which by definition will be all zeros, and the columns of $\Sigma^{-1}$ that do not correspond to a state-at-infection. This simplifies the linear algebra for $K=-T\Sigma^-1$:
+$$
+K = \left[\begin{array}{ccc} 0 & 0 & p\beta \\ 0 & 0 & (1-p)\beta   \end{array} \right]  \left[\begin{array}{cc} 1/\alpha_1 & 0 \\ 0 & 1/\alpha_2 \\ 1/\gamma & 1/\gamma \end{array} \right]  =  \left[\begin{array}{cc} p\beta /\gamma & p\beta/ \gamma \\ (1-p)\beta/\gamma & (1-p)\beta/\gamma \end{array} \right]
+$$
+
+Recall for a $2\times 2$ matrix, the dominant eigenvalue satisfies $2\rho(K)=\mathrm{tr}(K) + \sqrt{\mathrm{tr}(K)^2-4\mathrm{det}(K)}$. In this example (and in the more general example with non-zero death rate), $\mathrm{det}(K)=0$ and so we have $\R_0 = \mathrm{tr}(K)$, which leads to the same expression as above. 
+
+
+## Small-domain next generation matrix
+
+In this example, we have seen that the NGM has zero determinant. This happens because the state-at-infection  (in this case $E_1$ and $E_2$) always occur in a fixed ratio. In models where $\mathrm{det}(K)=0$, the dimension of the NGM can be further reduced.
+
+In this example, note that each new infection has probability $p$ of being type 1 and probability $1-p$ of being type 2. Type $i$ individuals will spend time $(-\Sigma^{-1})_{3i}=1/\gamma$ in the infectious state ($i=1,2$) and whilst there will cause new infections at rate $\beta$ per unit time. Summing over both types, we obtain the small-domain NGM $K_S$ as a $1\times 1$ "matrix"
+$$
+K_S = p \frac{1}{\gamma}\beta + (1-p) \frac{1}{\gamma}\beta = \frac{\beta}{\gamma}
+$$
+
+In the more general example with death rate $\mu$, the same reasoning applies. The difference is that a state $E_i$ individual now has probability $\alpha_i/(\alpha_i+\mu)$ of reaching state $I$ and the waiting time in state $i$ is $1/(\gamma+\mu)$. This leads to
+$$
+K_S = p \left( \frac{\alpha_1}{\alpha_1+\mu}\frac{1}{\gamma+\mu}\right) \beta + (1-p) \left(\frac{\alpha_2}{\alpha_2+\mu}\frac{1}{\gamma+\mu}\right) \beta
+$$
+
+which leads to an equivalent expression for $\R_0$ as above.
+
+See [Dieckmann et al. (2010)](https://doi.org/10.1098/rsif.2009.0386) for general recipes for calculating $K_L$, $K$ and $K_S$.
+
+
+
+# Example 2: two host types
+
+In this example, we again suppose there are two types of individual in fixed proportions, but that these may have differences in contact rates and infectious periods, as well as the differences in latent periods considered above. 
+
+Let $C_{ij}$ denote the average number of individuals of type $i$ that an individual of type $j$ has contact with per unit time. The total of number of contacts that all type $j$ individuals have with $i$ individuals per unit time is $C_{ij}N_j$. Since this must be the same as the total of number of contacts that all type $i$ individuals have with $j$ individuals per unit time, we have the following condition on the matrix $C$
+
+::: {.callout-tip}
+### Detailed balanced condition
+
+If $C_{ij}$ is the average number of contacts that an individual of type $j$ has with individuals of type $i$ per unit time, then the following detailed balance condition must be satisfied:
+$$
+C_{ij}N_j = C_{ji}N_i
+$$
+:::
+
+Suppose the probability of transmission given contact between an infective and a susceptible is a constant $p$. Without loss of generality, we may absorb this into the contact matrix $C$, so that $C$ represents the number of *transmission-sufficient contacts* per unit time, i.e. the number of contacts that would result in transmission if they were between a susceptible and an infective.
+
+Since $S_i+E_i+I_i+R_i=N_i$ where $N_i$ is the total number of individuals of type $i$ ($i=1,2$), we may omit the equations for the $R_i$, giving a system of six ODEs:
+$$
+\begin{align}
+\dot{S}_i &= - S_i \sum_{j=1}^2 C_{ji} \frac{I_j}{N_j}  \\
+\dot{E}_i &= S_i \sum_{j=1}^2 C_{ji} \frac{I_j}{N_j} - \alpha_i E_i \\
+\dot{I}_i &= \alpha_i E_i - \gamma_i E_i 
+\end{align}
+$$
+
+We proceed as before by linearising around the DFE, which in this example has $S_1=N_1$ and $S_2=N_2$. Here there are four infected states ($E_1$, $E_2$, $I_1$ and $I_2$) so the transmission matrix $T$ and transition matrix $\Sigma$ are $4\times 4$ matrices:
+$$
+T = \left[ \begin{array}{cccc} 0 & 0 & C_{11} & C_{12} \\ 0 & 0 & C_{21} & C_{22} \\ 0 & 0 & 0 & 0 \\ 0 & 0 & 0 & 0 \end{array} \right], \qquad 
+\Sigma = \left[ \begin{array}{cccc} -\alpha_1 & 0 & 0 & 0 \\ 0 &  -\alpha_2 & 0 & 0 \\ \alpha_1 & 0 &  -\gamma_1 & 0 \\ 0 & \alpha_2 & 0 &  -\gamma_2 \end{array} \right]
+$$
+noting that we have used the condition $C_{12}N_2=C_{21}N_1$ to replace $C_{21}(N_1/N_2)$ by $C_{12}$ in $T_{1,4}$ and similarly for $T_{2,3}$.
+
+Inverting $\Sigma$ gives
+$$
+-\Sigma^{-1}= \left[ \begin{array}{cccc} 1/\alpha_1 & 0 & 0 & 0 \\ 0 &  1/\alpha_2 & 0 & 0 \\ 1/\gamma_1 & 0 &  1/\gamma_1 & 0 \\ 0 & 1/\gamma_2 & 0 &  1/\gamma_2 \end{array} \right]
+$$
+with the same interpretation as before.
+
+We can make life easier by skipping the large-domain NGM $K_L$ and going straight to the $2\times 2$ NGM $K$ by considering only the first two rows of $T$ and first two columns of $\Sigma^{-1}$, corresponding to the states-at-infection $E_1$ and $E_2%$. This leads to 
+$$
+K = \left[ \begin{array}{cc} C_{11}/\gamma_1 & C_{12}/\gamma_2 \\ C_{21}/\gamma_1 & C_{22}/\gamma_2   \end{array} \right]
+$$
+Note the $(i,j)$ element of this NGM has a clear interpretation as the product of the contact rate $C_{ij}$ from type $j$ to type $i$ and the average infectious period of type $j$. 
+
+For general parameter choices, $\mathrm{det}(K)\neq 0$ so reduction to the small-domain NGM is not possible (though see below for a special case where it is possible).
+
+## Modelling different mixing patterns
+
+
+If we suppose that type $i$ individuals have total contact rate $c_i$ and mixing between the types is proportionate, then we would have the following definition of $C$
+
+::: {.callout-note}
+### Proportionate mixing matrix
+
+$$
+C_{ij}=\frac{N_i c_i c_j}{\sum_k N_k c_k}
+$$
+
+where the denominator is a normalising constant that ensure that $\sum_j C_{ji}= c_i$.
+:::
+
+With this definition of $C$, we get
+$$
+K = \frac{1}{\sum_k N_k c_k} \left[ \begin{array}{cc} N_1c_1^2/\gamma_1 & N_1 c_1 c_2/\gamma_2 \\ N_2 c_1 c_2/\gamma_1 & N_2 c_2^2/\gamma_2     \end{array} \right] 
+$$
+Note in this case $\mathrm{det}(K)=0$ so 
+$$
+\R_0=\mathrm{tr}(K) =  \frac{N_1c_1^2/\gamma_1 + N_2 c_2^2/\gamma_2}{N_1 c_1 + N_2c_2}
+$$ 
+
+Also, since $\mathrm{det}(K)=0$, reduction to the small-domain NGM $K_S$ is possible. A type $i$ individual will cause an average of $c_i$ total transmissions per unit time for a period $1/\gamma_i$. Both types of infector will infect individuals in the same fixed ratio, where the proportion of infections that are type $i$ is $N_i c_i/\sum_k N_kc_k$. Hence
+$$
+K_S = \frac { N_1 c_1 }{\sum_k N_k c_k}\frac{c_1}{\gamma_1} + \frac{ N_2 c_2}{\sum_k N_k c_k} \frac{c_2}{\gamma_2}
+$$
+which is equivalent to the expression for $\R_0$ obtained from $\mathrm{tr}(K)$.
+
+In the special case where $c_1=c_2$ and $\gamma_1=\gamma_2=\gamma$, we see that $\R_0=\mathrm{tr}(K)= c/\gamma$, which is consistent with the unstructured SIR/SEIR model with $c$ playing the role of the transmission coefficient $\beta$. 
+
+In the case where contact rates $c_1$ and $c_2$ differ, as intuited at the beginning of this Topic, $\R_0$ is not simply an average of the type-specific reproduction numbers $c_1/\gamma$ and $c_2/\gamma$ in proportion to their population sizes $N_1$ and $N_2$, but is weighted towards the reproduction number of whichever type has the higher contact rate. This is because that type accounts for a disproportionate fraction of infections, at least during the initial phase of the epidemic when the population is still close to fully susceptible.   
+
+Once again, we emphasise that $\R_0$ is the expected number of infections caused by an average infected individual, not by a randomly selected individual. 
+
+
+
+To model *assortative mixing*, where people preferentially contact others of the same type, we define $C$ as a weighted average of the proportionate mixing matrix above and a second matrix in which people *only* mix with other of the same type.
+
+::: {.callout-note}
+### Assortative mixing matrix
+
+$$
+C_{ij} =  (1-\epsilon) \frac{N_i c_i c_j}{\sum_k N_k c_k} + \epsilon c_i \delta_{ij}
+$$
+where $\delta$ is the Kronecker delta and $\epsilon\in[0,1]$ is a parameter determining the strength of assortativity. 
+:::
+
+If $\epsilon=0$ we have proportionate mixing; if $\epsilon=1$ we have strictly segregated mixing. Note $\epsilon$ could also be chosen to be negative to model disassortative mixing (i.e. people are more likely to mix with others of a different type), though care must be taken to ensure all matrix elements remain non-negative in this case.
+
+It is an interesting exercise to investigate numerically how the dominant eigenvalue of $K$ depends on the values of $c_1$, $c_2$, $N_1$ and $\epsilon$ (see @fig-two-type-model). Here we see thet greater heterogeneity tends to increase $\R_0$, and this is amplified by assortative mixing. However, notice that heterogeneity and assortativity also tend to reduce final epidemic size below what it would be in a homogeneous population, especiallly when the high-contact group (type 2) accounts for a reasonable fraction of the population. This happens because, when the final size for the homogeneous model is already close to $1$, the attack rate in the high contact rate group cannot increase much, whereas the attack rate in the low contact group falls significantly below the homogeneous value. 
+
+Although we have only consider the case with two types here, many of these ideas naturally extend to models with more than two types (and we will see some of these in the next Topic on age-structured models).
+
+
+![Properties of the two-type model with type-specific contact rates and assortative mixing:  basic reproduction number $\R_0$ relative to the basic reproduction number $\R_H$ of a homogenoeus model based on the average contact rate (top panels); final epidemic size (i.e. proportion of total population infected) (bottom panels). Each panel shows the relevant model property against the ratio of contact rates $c_2/c_1$ and assortativity $\epsilon$. Each column of panels shows a different split of population size across the type typres. The mean contact rate $N_1c_1 + N_2c_2$ is the same (0.6 per unit time) in all cases and $\gamma=0.2$ so $R_H=3$. The bottom left corner of each panel corresponds to a homogeneous population. ](figures/two_type_model.png){#fig-two-type-model}
+
+
+
+## Vaccination and assortative mixing
+
+Let us now consider the situation where the two groups represent unvaccinated and vaccinated individuals, with a leaky vaccine that reduces the susceptibility to infection by a factor $v_I\in[0,1]$. 
+Consider the situation where the two groups have equal contact rates and equal infectious periods, but mix assortatively with assortativity parameter $\epsilon$. 
+
+If the vaccine effectiveness were zero, substituting $c_1=c_2=c$ and $\gamma_1=\gamma_2=\gamma$ into the assortative contact matrix $C$ above gives
+$$
+K = \frac{1}{\gamma}C = \frac{c}{\gamma} \left( (1-\epsilon) \left[ \begin{array}{cc} N_1 & N_1 \\ N_2  & N_2 \end{array} \right] + \epsilon \left[ \begin{array}{cc} 1 & 0 \\ 0 & 1 \end{array} \right]  \right)
+$$
+
+Allowing for the reduction in infections of type 2 due to the vaccine, using $p_v=N_2$ and $1-p_v=N_1$ to denote the vaccinated and unvaccinated fractions respectively, we obtain the vaccinated NGM $K_v$
+$$
+K_v = \frac{c}{\gamma} \left( (1-\epsilon) \left[ \begin{array}{cc} 1-p_v & 1-p_v \\ (1-v_I)p_v  & (1-v_I)p_v \end{array} \right] + \epsilon \left[ \begin{array}{cc} 1 & 0 \\ 0 & 1-v_I \end{array} \right]  \right)
+$$
+
+We have taken some short cuts here, which are hopefully intuitive, but you should be able to derive this matrix from an appropriate set of ODEs using the same steps as we have seen above.
+
+Notice that if $\epsilon=1$, we the vaccinated reproduction number is $\R_v=\rho(K_v)=c/\gamma=\R_0$, showing that the vaccine has no effect on the reproduction number, no matter how effective it is nor how high the vaccine coverage is (provided $p_v<1$). 
+
+This may seem surprising, but makes sense when you remember that, when $\epsilon=1$, there are two non-interactive subpopulations and hence two independent epidemics. The reproduction is determined by the faster-growing epidemic, which is of course in the unvaccinated group. Put differently, the asymptotic, stable fraction of infections that are in the unvaccinated group, before any significant depletion of the susceptible population, is $1$ because they have a faster exponential growth rate. So the "average" infected individual is in the unvaccinated group.   
+
+If $\epsilon=0$, $\mathrm{det}(K_v)=0$, so $\rho(K_v)=\mathrm{tr}(K_v)=\R_0(1-p_v v_I)$, a result we have seen previously in Topic 3. For intermediate values of $\epsilon$, we obtain 
+$$
+\R_v = \R_0 \left( (1-\epsilon)(1-p_v v_I) + \epsilon \right) = \R_0 \left( 1 - (1-\epsilon)p_v v_I \right)
+$$
+This shows that increasing assortativity reduces the dampening effect that the vaccine has on the reproduction number, which happens because transmission is increasingly driven by high within-group contact rates in the unvaccinated group.
+
+
+# Example 3: sexually transmitted infection
+
+This example is based on [Dieckmann et al. (2010)](https://doi.org/10.1098/rsif.2009.0386). Let $S_1$, $E_1$ and $I_1$ denote the number susceptible, exposed and infectious females and $S_2$, $E_2$ and $I_2$ the corresponding number of males. Consider the following simple model for a sexually transmitted infection that transmits exclusively between opposite sexes:
+$$
+\begin{align}
+\dot{E}_1 &= \beta_1 S_1 \frac{I_2}{N_2} - (\alpha_1+\mu)E_1 \\
+\dot{I}_1 &= \alpha_1 E_1  - (\gamma_1+\mu)I_1 \\
+\dot{E}_2 &= \beta_2 S_2 \frac{I_1}{N_1} - (\alpha_2+\mu)E_2 \\
+\dot{E}_2 &= \alpha_2 E_2  - (\gamma_2+\mu)I_2 
+\end{align}
+$$
+
+The transmission matrix $T$ and transition matrix $\Sigma$ for this system are
+$$
+T = \left[ \begin{array}{cccc} 0 & 0 & 0 & \beta_1N_1/N_2 \\ 0 & 0 & 0 & 0 \\ 0 & \beta_2N_2/N_1 & 0 & 0 \\ 0 & 0 & 0 & 0  \end{array}\right], \qquad 
+\Sigma = \left[ \begin{array}{cccc} -(\alpha_1+\mu) & 0 & 0 & 0 \\ \alpha_1 & -(\gamma_1+\mu) & 0 & 0 \\ 0 & 0 & -(\alpha_2+\mu) & 0 \\ 0 & 0 & \alpha_2 & -(\gamma_2+\mu)   \end{array}\right]
+$$
+which leads to
+$$
+-\Sigma^{-1} = \left[ \begin{array}{cccc} \frac{1}{\alpha_1+\mu} & 0 & 0 & 0 \\ \frac{\alpha_1}{(\alpha_1+\mu)(\gamma_1+\mu)} & \frac{1}{\gamma_1+\mu} & 0 & 0 \\ 0 & 0 & \frac{1}{\alpha_2+\mu} & 0 \\ 0 & 0 & \frac{\alpha_2}{(\alpha_2+\mu)(\gamma_2+\mu)} & \frac{1}{\gamma_2+\mu}       \end{array}\right]
+$$
+
+
+As in example 2, we may go skip the large-domain NGM by noticing that there are only two non-zero rows of $T$ (corresponding to the states-at-infection $E_1$ and $E_2$). So by retaining only rows 1 and 3 of $T$ and columns 1 and 3 of $-\Sigma^{-1}$ we obtain
+$$
+K = \left[ \begin{array}{cc} 0 & \frac{\alpha_2 \beta_1 N_1}{(\alpha_2+\mu)(\gamma_2+\mu)N_2} \\ \frac{ \alpha_1 \beta_2 N_2}{(\alpha_1+\mu)(\gamma_1+\mu)N_1}  & 0   \end{array} \right]
+$$
+
+Since $\mathrm{tr}(K)=0$ (which is a consequence of the fact that transmission occurs only between types not within types), it follows that 
+$$
+\R_0 = \sqrt{-\det(K)} = \sqrt{\frac{\alpha_1 \alpha_2 \beta_1 \beta_2}{(\alpha_1+\mu)(\alpha_2+\mu)(\gamma_1+\mu)(\gamma_2+\mu)} }
+$$
+
+We note that it is possible to arrive at the entries of $K$ by direct epidemiological reasoning as follows. A newly infected female (i.e. in the exposed state $E_1$) has probability $\alpha_1/(\alpha_1+\mu)$ of reaching the infectious state $I_1$ before dying. If they reach the infectious state, they infect males at rate $\beta_2 N_2/N_1$ per unit time for a period of time $1/(\gamma_1+\mu)$. Taking the product of these three factors gives $K_{21}$ and a similar argument applies for $K_{12}$. 
+
+Note that $\beta_1$ represents the number of contacts that a female has with males per unit time that would result in transmission if the female were susceptible and the male infectious, and similarly for $\beta_2$. If male hosts have the same infectiousness and susceptibility as female hosts then the detailed balance condition seen above requires that $\beta_1 N_1 = \beta_2 N_2$, whereupon $K$ simplifies slightly to 
+$$
+K = \left[ \begin{array}{cc} 0 & \frac{\alpha_2 \beta_2 }{(\alpha_2+\mu)(\gamma_2+\mu)} \\ \frac{ \alpha_1 \beta_1}{(\alpha_1+\mu)(\gamma_1+\mu)}  & 0   \end{array} \right]
+$$
+
+
+# Example 4: vector-borne infection
+
+In this final example, we consider a simple model for a vector-borne infection. Let $S_h$ and $I_h$ denote the number of susceptible and infectious humans and let $S_v$, $E_v$ and $I_v$ denote the number of susceptible, exposed and infectious vectors respectively. Assume the total human population size $N_h=S_h+I_h$ and total vector population size $N_v=S_v+E_v+I_v$ are both constants. If we assume an SIS mechanism for humans and an SEI mechanism with constant natural mortality rate $\mu_v$ for vectors, we obtain the following ODE model:
+$$
+\begin{align}
+\dot{S_h} &=  -b p_h I_v \frac{S_h}{N_h} + \gamma_h I_h \\
+\dot{I_h} &= b p_h I_v \frac{S_h}{N_h} - \gamma_h I_h \\
+\dot{S_v} &= -b p_v S_v \frac{I_h}{N_h} +\mu_v(I_v+E_v) \\
+\dot{E_v} &= b p_v S_v \frac{I_h}{N_h} - (\alpha_v+\mu_v) E_v \\
+\dot{I_v} &= \alpha_v E_v - \mu_v I_v \\
+\end{align}
+$$
+where $b$ is the vector biting rate (i.e. number of times an individual vector bites a human per unit time), $p_h$ is the probability of transmission when an infectious vector bites a susceptible human, and $p_v$ is the probability of transmission when a susceptible vector bites an infectious human.
+
+This is a type of *Ross-Macdonald model*. The particular version of Ross-Macdonald model seen above neglects latency and mortality for humans, and assumes there is no immunity following recovery from infection. Alternative assumptions are of course possible (see [Simoy and Aparicio 2020](https://doi.org/10.1016/j.actatropica.2020.105452) for a nice overview), though it is worth thinking about whether these assumptions affect the following estimate of $\R_0$, and why it might be particularly important to include latency for vectors. 
+
+Following the by-now familiar procedure, the linearised infection subsystem considers only the compartments $I_h$, $E_v$ and $I_v$ and sets $S_h=N_h$ and $S_v=N_v$:
+$$
+\begin{align}
+\dot{I_h} &= bp_h I_v  - \gamma_h I_h \\
+\dot{E_v} &= \frac{bp_v N_v}{N_h} I_h  - (\alpha_v+\mu_v) E_v \\
+\dot{I_v} &= \alpha_v E_v - \mu_v I_v \\
+\end{align}
+$$
+
+From this we can write down the $3\times 3$ transmission and transition matrices:
+$$
+T = \left[ \begin{array}{ccc} 0 & 0 & bp_h \\ bp_vN_v/N_h & 0 & 0 \\ 0 & 0 & 0  \end{array}\right], \qquad  
+\Sigma = \left[ \begin{array}{ccc} -\gamma_h & 0 & 0 \\ 0 & -(\alpha_v+\mu_v) & 0 \\ 0 & \alpha_v & -\mu_v  \end{array}\right]
+$$
+Inverting the transition matrix gives
+$$
+-\Sigma^{-1} = \left[ \begin{array}{ccc} 1/\gamma_h & 0 & 0 \\ 0 & 1/(\alpha_v+\mu_v) & 0 \\ 0 & \frac{\alpha_v}{\mu_v(\alpha_v+\mu_v)} & 1/\mu_v  \end{array}\right]
+$$
+
+We see that only rows 1 and 2 of $T$ are non-zero (since only $I_h$ and $E_v$ are states-at-infection) so we retain only rows 1 and 2 of $T$ and columns 1 and 2 of $\Sigma^{-1}$ to obtain
+$$
+K = \left[ \begin{array}{cc} 0 & \frac{bp_h \alpha_v}{\mu_v(\alpha_v+\mu_v)} \\ \frac{bp_v N_v}{\gamma_h N_h} & 0  \end{array}\right]
+$$
+
+Since $\mathrm{tr}(K)=0$ we end up with
+$$
+\R_0 = \sqrt{-\det(K)} = b \sqrt{\frac{p_h p_v \alpha_v N_v}{\gamma_h \mu_v(\alpha_v+\mu_v)N_h} }
+$$
+
+As in the previous example, the entries of $K$ have intuitive epidemiological interpretation. An infectious human is bitten at rate $bN_v/N_h$ per unit time  for a period of time $1/\gamma_h$, with each bite having probability $p_v$ of infecting the vector. This follows from the fact that $b$ is the biting rate for an individual vector, so the total number of bites per unit time is $bN_v$ and the number of bites on an individual human is $bN_v/N_h$ (this is equivalent to the detailed balance condition). Hence we obtain $K_{21}= bp_v N_v/(\gamma_h N_h)$ as seen above. 
+
+Similarly, a newly exposed vector has probability $\alpha_v/(\alpha_v+\mu_v)$ of surviving the latent stage. If it does survive latency to reach the infectious stage, it bites humans at rate $b$ per unit time for a period of time $1/\mu_v$, with each bite having probability $p_h$ of infecting the human. This leads to the expression seen above for $K_{21}$.
+
+Note, sometimes the basic reproduction number for vector-borne disease models is defined as $\rho(K)^2$ instead of $\rho(K)$. The quantity $\rho(K)^2$ represents two generations of transmission (i.e. human $\rightarrow$ vector $\rightarrow$ human). This therefore represents the number of *human* infections caused by a single infected *human* in a fully susceptible population (or equivalently the number of vector infections caused by a single infected vector). Both definitions have the same threshold requirement that $\R_0\ge 1$ for an epidemic to be possible.
+
+
+
+
+

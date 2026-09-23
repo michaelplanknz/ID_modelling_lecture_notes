@@ -1,0 +1,18 @@
+---
+title: "Lecture notes in infectious disease modelling"
+author: "Michael Plank"
+format: gfm
+---
+
+
+
+## Citation
+
+* Plank, M. J. (2026) Lecture notes in infectious disease modelling. 
+
+
+
+{{< include preliminaries.md >}}
+
+
+

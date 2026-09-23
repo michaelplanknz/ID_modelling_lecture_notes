@@ -1,0 +1,556 @@
+---
+title: "Topic 8. Model fitting and parameter inference"
+author: "Michael Plank"
+format:
+  html:
+    toc: true
+    number-sections: true
+    theme: cosmo
+---
+
+
+::: {.hidden}
+$$
+\newcommand{\vect}[1]{\boldsymbol{\mathbf{#1}}}
+\newcommand{\R}{\mathcal{R}}
+\newcommand{\Reff}{\mathcal{R}_\mathrm{eff}}
+\newcommand{\inc}{\mathrm{inc}}
+$$
+:::
+
+
+
+# Basics of parameter inference
+
+So far we have implicitly focused on what is called the *forward problem*, that is we take model parameters as fixed and solve the model to find state variables like prevalence or incidence over time.  In many situations, we are also interested in the *reverse problem*: we have some data about the epidemic and we want to try to estimate model parameters. This process is variously referred to as model fitting, parameter estimation or parameter inference. 
+In this Topic we will see some examples of this in action, though this is a large area in its own right and we can only scratch the surface here. 
+
+In general, we have a model that depends on some set of parameters, denoted by $\vect{\theta}$, and generates some observed data, denoted by ${\bf x}$. 
+We are used to running the model with fixed parameters and generating data, which in general will come from some distribution. If the model is deterministic, this will be a Dirac-delta distribution. In general it is some distribution with probability mass function (or probability density function in the case of continuous data)
+$$
+P({\bf x} \ | \ \vect{\theta})
+$$
+This is called the *likelihood function*: it gives the likelihood of the observed data ${\bf x}$ under given parameters $\vect{\theta}$.
+
+With parameter inference, the task is inverted: we are given some observed data ${\bf x_\mathrm{obs}}$ and wish to infer the parameters $\vect{\theta}$ (or possibly some subset of parameters, while treating other parameters as fixed). This is usually a more difficult problem.
+
+A standard method in frequentist statistics is *maximum likelihood estimation* (MLE), in which we look for the value of $\vect{\theta}$ that maximises $P({\bf x_\mathrm{obs}} \ | \ \vect{\theta})$. Methods such as *profile likelihood* may be used to quantify uncertainty in the parameter estimate.
+
+In Bayesian inference, we assume some *prior distribution* over the parameters $P(\vect{\theta})$, which encapsulates our knowledge about the system before we observe any new data. An application of Bayes' rule gives an expression for the *posterior distribution* over the parameters ${\vect{\theta}}$ given observed data ${\bf x_\mathrm{obs}}$:
+$$
+P(\vect{\theta} \ | \ {\bf x_\mathrm{obs}}) = \frac{P({\bf x_\mathrm{obs}} \ | \ \vect{\theta}) P(\vect{\theta})}{P(\bf x_\mathrm{obs})}
+$$
+In words, this says that the posterior density $P(\vect{\theta} \ | \ {\bf x_\mathrm{obs}})$ is equal to the likelihood function $P({\bf x_\mathrm{obs}} \ | \ \vect{\theta})$ multiplied by the prior density $P(\vect{\theta})$, divided by a normalising constant $P({\bf x_\mathrm{obs}})$ which does not depend on ${\vect{\theta}}$.
+
+Computational methods such as Markov chain Monte Carlo (MCMC) and sequential Monte Carlo (SMC) aim to produce *samples* $\theta^*$ from the posterior distribution $P(\vect{\theta} \ | \ {\bf x_\mathrm{obs}})$.
+
+There are various approaches to defining a likelihood function depending on the type of model. Here we will focus on one of the simplest methods, which is to use a deterministic model and assume that we have noisy observations from this model where the noise at each observation time is independent. 
+
+
+
+# Deterministic model plus observation noise
+
+One of the simplest approaches conceptually and computationally is to take a deterministic epidemic model and couple it with a stochastic observation model, which assumes independent noise at each observation point. 
+
+We should remember that it is is not always an appropriate to use a deterministic epidemic model. In addition, the assumption that noise at different observation times is independent introduces an approximation that could cause bias in the parameter estimates. Nevertheless, it is sufficient to illustrate the underlying concept. 
+
+As an example, consider a compartment-based ODE model with infectious fraction $I(t)$ at time $t$. Let us assume that we make observations at time $t_i$ by testing a random sample of $n$ individuals with a test that is perfectly accurate (i.e. has 100% sensitivity and 100% specificity for being in the infectious stage). Then we obtain data on the number of individuals $x_i$ who test positive at each observation time $t_i$:
+$$
+x_i \sim \mathrm{Bin}\left(n, I(t_i) \right)
+$$
+If we wanted to allow for more noise than is in a binomial distribution, we could use a negative binomial with the same mean (at the cost of introduction one additional unknown parameter $\kappa$). 
+
+Note that assuming Gaussian noise, as is common in some applications, is not appropriate for count data, where a non-negative integer valued distribution should be used. Continuous non-negative data (e.g. measurements of wastewater concentration) should use a non-negative continuous distribution such as the gamma, log-normal or Weibull distribution.
+
+If we further assume that each observation is independent (given the underlying model solution $I(t)$) then the likelihood function is
+$$
+P({\bf x} \ | \ \vect{\theta}) = \prod_{i=1}^m F\left(x_i; n, I(t_i)  \right)
+$$ 
+where $m$ is the number of observations and $F(x;n,p)$ is the PMF for a binomial distribution (or other specified distribution) with $n$ trials and success probability $p$ evaluated at $x$. 
+
+It is often more convenient to work with the log-likelihood $l(\theta)=\ln\left( P({\bf x} \ | \ \vect{\theta})\right)$, which in this example is given by
+$$
+l(\vect{\theta}) = \sum_{i=1}^m f\left(x_i; n, I(t_i)  \right)
+$$ {#eq-example-likelihood}
+where $f(x;n,p) = \ln F(x;n,p)$.
+
+This likelihood function may be easily evaluated numerically for any given ${\vect \theta}$:
+
+1. Solve the deterministic model to obtain $I(t)$.
+1. Calculate $I(t_i)$ for each observation time $t_i$ ($i=1,\ldots, m$).
+1. Compute the log-likelihood via @eq-example-likelihood.
+
+This provides the basis for either MLE (using standard numerical optimisation methods) or Bayesian inference, e.g. via Markov chain Monte Carlo (MCMC). 
+
+We will have a look at some likelihood functions for some specific examples below. But before we dive in, it is important to think about when it is even possible to estimate model parameters from a specific data set. This leads us to a brief discussion of *parameter identifiability*.
+
+
+
+
+# Parameter identifiability
+
+Identifiability refers to the ability to reliably estimate model parameters from data. Here, "reliably" does not mean with 100% accuracy (which would be impossible when the data is affected by noise) but means that statistical inferences can be made that are consistent with true values. 
+
+
+::: {.callout-note}
+### Parameter non-identifiability
+*Non-identifiability* arises when different combinations of model parameters lead to the same or similar observed data. There are two types of non-identifiability:
+
+1. *Structural* non-identifiability means that different combinations of model parameters lead to identical model solutions. Structural identifiability is a property of the model only: no amount of data will be able to identify parameters that are structurally non-identifiable.
+1. *Practical* non-identifiability means that different combinations of model parameters lead to outputs that cannot reliably be distinguished with limited, noisy data. Practical identifiability is a joint property of the model and the data. 
+
+:::
+
+
+Non-identifiability is a common issue with mathematical models in general, and infectious disease models in particular.
+We will focus primarily on practical identifiability here as we are always working with incomplete and noisy data.
+
+
+::: {.callout-tip}
+### Living with non-identifiability
+
+Non-identifiability is a common issue with infectious disease models and it is important to be aware of any non-identifiability issues and how these may affect estimates. 
+
+However, just because a particular parameter is non-identifiable does *not* mean that the model is useless! It just means that uncertainty in parameter estimates needs to be accounted for and propagated into any downstream model outputs, for example estimates of the effect of a particular intervention.
+
+:::
+
+
+In the following sections, we will see some examples of non-identifiability in simple compartment-based ODE models. 
+
+
+# Effective reproduction number and generation interval 
+
+Firstly, suppose we have not observed an entire epidemic, only the early stages. This is particularly relevant if we are interested in modelling interventions: there is no point waiting until the epidemic is over to make our parameter estimates! From Topic 2, we know that when the population is largely susceptible, the epidemic grows as 
+$$
+I(t) = I(0)e^{rt}
+$$
+where the epidemic growth rate is $r=\beta-\gamma$. So, although we should be able to infer $r$ from data on $I(t)$, there is no way we will be able to individually infer $\beta$ and $\gamma$. We will get exactly the same behaviour with say $\beta=0.5$ day$^{-1}$ and $\gamma=0.2$ day $^{-1}$ as we would with $\beta=1$ day$^{-1}$ and $\gamma=0.7$ day$^{-1}$. In both cases, we will observe an epidemic doubling every $t_d=\ln(2)/r\approx 2.3$ days. However, in the first case $\R_0=2.5$, while in the second $\R_0=1.4$. 
+
+This principle applies more broadly than just in the early stages. If we have observations (whether of prevalence or incidence) that are local in time, we can estimate the current epidemic growth rate $r$. However, recall that in the SIR model, $r$ and $\Reff$ are related via
+$$
+\Reff = 1 + \frac{r}{\gamma}
+$$
+which is a special case of the more general relationship
+$$
+\Reff = \frac{1}{M_g(-r)}
+$$ 
+where $M_g(s)$ is the moment generating function for the generation interval distribution. 
+
+So because the relationship between $\Reff$ and $r$ depends on the generation interval, there is no way to infer both $\Reff$ and the generation interval distribution from the data. This illustrates an important general point.
+
+
+::: {.callout-tip}
+### Non-identifiability of $\R_\mathrm{eff}$ and generation interval
+
+Given observations of an epidemic in a limited time window, it is not possible to separately identify the effective reproduction number $\Reff$ and the generation interval.
+
+In order to estimate $\Reff$ for such data, it is necessary to have an independent estimate of the generation interval distribution.
+An incorrect estimate of the generation interval distribution will lead to biased estimates of $\Reff$.
+
+:::
+
+We will see explicit examples of this last point in the next Topic on reproduction number estimation.
+
+
+
+
+
+# Identifiability in the SIR model
+
+As we saw in Topic 2, the epidemic growth rate in the SIR model is $r=\beta-\gamma$ and its final size is an increasing function of $\R_0=\beta/\gamma$. This tells us that the parameters $\beta$ and $\gamma$ should be structurally identifiable: if we have perfect information about the model solution, we can calculate $r$ and final size and hence infer $\beta$ and $\gamma$.
+
+What about practical identifiability? This depends on the type, volume and quality of the data available. 
+
+We will look at a series of examples with in increasingly poor data quality.  In each case, we will take a model where we know the "true" parameter values, generate some synthetic data from that model, and then pretend we don't know the true values and see how well can estimate them from the data. 
+
+This is a useful technique called a *simulation-estimation* study, with the idea being that if we can't reliably recover known parameters with data generated from the "correct" model then we probably don't stand a chance of making reliable estimates using real-world data.
+
+In each case, we will see how to define and calculate the likelihood function. In practice, we would use the likelihood function within an inference procedjure such as profile likelihood or MCMC.  However, here we will see what we can learn from simply plotting the likelihood function over a grid of parameter values.
+
+
+## Example 1: Data on prevalence and susceptible population size
+
+Firstly, suppose we have data on both the size of the susceptibles population $S(t)$ and the prevalence of infection $I(t)$. Suppose that we make daily observations and that on day $t_i$, our data is drawn from indpendent Poisson distributions, such that
+$$
+x_i \sim \mathrm{Poisson}( I(t_i)), \qquad y_i \sim \mathrm{Poisson}( S(t_i))
+$$
+
+
+The model solution and synthetic data for $\beta=0.2$ day$^{-1}$, $\gamma=0.1$ day$^{-1}$ are shown in @fig-SIR-sim-est
+
+```{r}
+#| fig-width: 6
+#| fig-height: 6
+#| label: fig-SIR-sim-est
+#| fig-cap: "Solution of the SIR model beta=0.2 /day, gamma=0.1 /day (blue curves) alongside synthetic data drawn from independent Poisson distributions each day (green points). Population size N = 10^4, initial condition I(0)=0.001*N, S(0)=N-I(0)."
+#| warning: false
+#| echo: false
+library(deSolve)
+library(ggplot2)
+library(patchwork) 
+
+# Parameters
+beta <- 0.2
+gamma <- 0.1
+
+i0 = 0.001
+N = 1e4
+
+# Time points
+times <- seq(0, 200, by = 1)
+
+params <- c(beta = beta,
+            gamma = gamma,
+            N = N)
+
+
+# Initial conditions
+init <- c(
+  S = N*(1-i0),
+  I = N*(i0)
+)
+
+
+# SIR model function
+sir_model <- function(t, state, parameters) {
+
+  with(as.list(c(state, parameters)), {
+
+    dS <- -beta * S * I / N
+    dI <- beta * S * I / N - gamma * I
+
+    list(c(dS, dI))
+  })
+}
+
+# Numerical solution
+out <- ode(y = init,
+           times = times,
+           func = sir_model,
+           parms = params)
+out <- as.data.frame(out)
+
+# Generate synthetic data
+out$Sobs = rpois(length(out$S), lambda = out$S)
+out$Iobs = rpois(length(out$I), lambda = out$I)
+
+
+# Plot
+plt1 <- ggplot()+
+  geom_line(data = out, aes(x=time, y=S), color="blue")+
+  geom_point(data=out, aes(x=time, y=Sobs), color="darkgreen", size = 0.5)+
+  xlab("Time (days)")+
+  ylab("Number susceptible")
+
+plt2 <- ggplot()+
+  geom_line(data = out, aes(x=time, y=I), color="blue")+
+  geom_point(data=out, aes(x=time, y=Iobs), color="darkgreen", size = 0.5)+
+  xlab("Time (days)")+
+  ylab("Number infectious")
+
+
+plt1 + plt2 + plot_layout(nrow=2)
+
+```
+
+
+
+
+
+This is a better dataset than you could ever hope for in reality: we are regularly observing both variables in the SIR model and the noise is relatively low (as the Poisson distribution has relatively small variance). 
+
+The parameters of interest are the two parameters of the SIR model: $\vect{\theta}=(\beta,\gamma)$. However, since we know that $\R_0=\beta/\gamma$ is a key model parameter, it makes sense to reparameterise and treat the parameters as $\vect{\theta}=(\R_0,\gamma)$. 
+
+Similar to the example seen above, the log-likelihood function $l(\vect{\theta})$ is given by
+$$
+l(\vect{\theta}) = \sum_{i=1}^m \left( f(x_i; I(t_i) ) + f(y_i; S(t_i) ) \right) 
+$$ 
+where $f(x;\mu)$ is the log of the PMF of a Poisson distribution with mean $\mu$ evaluated at $x$. 
+
+It is convenient to work with the normalised log-likelihood function $l_n(\vect{\theta})=l(\vect{\theta})- \max_\vect{\theta} l(\vect{\theta})$, which has maximum value $0$ and is plotted against the two parameters $\R_0$ and $\gamma$ in @fig-likelihoods(a). The plot shows the true values of $\R_0$ and $\gamma$ (black circle) and the values where $l_n(\vect{\theta})$ is maximal (red circle), which is the maximum likelihood estimate (MLE) of $\R_0$ and $\gamma$. 
+
+In the plot, we have shaded regions of parameter space where $l_n(\vect{\theta}) \ge l^* = -3.0$. According to *Wilks' theorem*, this region forms an asymptotic 95% confidence set for the two-parameter combination $(\R_0,\gamma)$. The dark blue region shows parameter combinations for which $l_n(\vect{\theta})<l^*$ and which are therefore outside the 95% confidence set. 
+
+The MLE is very close to the true parameter values and the shaded region is narrowly concentrated around the MLE. This shows that we are able to recover the true parameter values accurately and with a high level of precision (the 95% confidence intervals on each parameter are quite narrow - around $\pm 1$% of the true value). 
+
+This is perhaps not surprising given that we expect $\R_0$ and $\gamma$ to be structurally identifiable and we have very good data quality in this example so they are practically identifiable as well. 
+
+
+
+![Likelihood surfaces for the SIR model with four different types of data: (a) daily observations of $S(t)$ and $I(t)$; (b) daily observations of $I(t)$ only; (c) daily observations of infection incidence $\inc(t)$; (d) daily observations of infection incidence $p_\mathrm{det} \inc(t)$ with incomplete ascertainment. (a)-(c) show the normalised log-likelihood $l_n(\R_0,\gamma)$; (d) shows the normalised profile log-likelihood $l_p(\R_0,\gamma)$ after optimising the value of $p_\mathrm{det}$. Note the ranges for $\R_0$ and $\gamma$ are wider in panel (d) than in panel (a)-(c), as indicated by the white box in panel (d). In each case, regions of parameter space for which the log-likelihood function is less than $l^*=-3.0$ are shaded dark blue and are outside the 95% confidence set. 'True' parameter values are marked with a black cirlce; MLE is marked with a red circle. ](figures/likelihoods.png){#fig-likelihoods}
+
+
+
+## Example 2: Data on prevalence only
+
+Now suppose we only have data on infection prevalence $I(t)$ and not on $S(t)$. Following the same procedure as above results in the plot shown in @fig-likelihoods(b).
+
+Here we see that the shaded region is somewhat larger and has a noticeably diagonal shape. This indicates there will be some correlation between the estimate of $\R_0$ and the estimate of $\gamma$. What's happening here is that it's possible to compensate for an overestimate of $\R_0$ (which makes the epidemic happen faster) with an underestimate of $\gamma$ (which makes it happen slower). 
+
+Nevertheless, the MLE is still close to the true values and the 95% confidence set is quite narrowly concentrated around the MLE. This shows that the parameters still have a reasonably good level of practical identifiability in this case. 
+
+
+
+## Example 3: Data on incidence
+
+Now suppose that instead of measuring prevalence $I(t)$, we measure the daily incidence of new infections. Recall that in the incidence in the time interval $[t,t+\delta t]$ is $\inc(t) = S(t)-S(t+\delta t)$. As before, let's assume that our observations are independent draws from a Poisson distribution with mean $\inc(t_i)$:
+$$
+x_i \sim \mathrm{Poiss}\left( S(t_i)-S(t_{i+1}) \right )
+$$
+
+Again following the same procedure as before, we get the plot shown in @fig-likelihoods(c). This time we can see there is a problem. The MLE is substantially different from the true parameter values. And the situation described above where an overestimate of one parameter can be compensated for with an underestimate of the other -- a hallmark of non-identifiability -- is much more severe. 
+
+The confidence intervals on $\R_0$ and $\gamma$ are now much wider: more like $\pm 10$% and the $\pm 1$% we saw previously. This is not great, but it's not necessarily the end of the world either. We need to bear in mind that we don't have good ability to separately infer $\R_0$ and $\gamma$, but it's possible we are interested in some model quantity that does not vary enormously over the confidence set seen in @fig-likelihoods(c). How serious a problem the non-identifiability is in practice will depend on the purpose of the model.
+
+
+
+## Example 4: Data on incidence with unknown case ascertainment
+
+Up to now, we have assumed we are able to observe 100% of infections. This is often not the case in reality: some infections may be asymptomatic, some may be false negatives when tested, or simply remain untested for a variety of reasons. 
+
+Let us now suppose that some fraction $p_\mathrm{det}\in(0,1]$ of incident infections are detected ($p_\mathrm{det}$ is sometimes called the *case ascertainment rate*) so our observed data is 
+$$
+x_i \sim \mathrm{Poiss}\left( p_\mathrm{det}\left( S(t_i)-S(t_{i+1})\right) \right )
+$$
+
+If $p_\mathrm{det}$ is known, we can simply account for this in our likelihood function and the situation will be similar to the previous example (albeit with wider confidence intervals if $p_\mathrm{det}$ is small because the data will be noisier). However, in reality $p_\mathrm{det}$ is usually unknown and so now there are three unknown parameters to infer $\vect{\theta} = (\R_0,\gamma,p_\mathrm{det})$.
+
+With three parameters, it is harder to simply visualise the log-likelihood function $l(\theta)$ over a pre-defined grid of parameter values. Instead, we use a method called [profile likelihood](https://doi.org/10.1177/1536867X0700700305). We do not have time to cover this in great detail, but briefly outline what this involves. For each combination of $(\R_0,\gamma)$, we optimise $p_\mathrm{det}$ by calculating the value of $p_\mathrm{det}$ that maximises $l(\R_0,\gamma,p_\mathrm{det})$ for fixed $\R_0$ and $\gamma$. This defines a profile log-likelihood function $l_p(\R_0,\gamma)$, which represents the likelihood of $(\R_0,\gamma)$ once $p_\mathrm{det}$ has been set to its opimtal (i.e. most likely) value. 
+
+Again, we can use Wilks' theorem to plot a 95% confidence set from this profile likelihood function, and this is shown in @fig-likelihoods(d). Noting the wider range of both axes compared to @fig-likelihoods(a)-(c), the identifiability problem is now very bad: the best we can say is that $\R_0$ is somewhere between around 1.8 and around 2.6, and $\gamma$ somewhere betwen aorund $0.06$ day$^{-1}$ and $0.13$ day$^{-1}$. As before, there is a strong negative correlation between the estimates of $\R_0$ and $\gamma$. Furthermore, although it is not shown in this plot, there is also a strong correlation with the estimate of $p_\mathrm{det}$. The same compensation issue described above is occurring, though it is now more pronounced: it is possible to compensate for an overestimate of $\R_0$ (which makes the epidemic both larger and faster) with an underestimate of $\gamma$ (which makes it slower) and an underestimate of $p_\mathrm{det}$ (which makes it *appear* smaller). 
+
+This can be understood by looking at the synthetic data alongside model solutions for different parameter combinations. @fig-SIR-identifiability shows the expected daily observed incidence in the SIR model with the correct parameter values ($\R_0=2$, $\gamma=0.1$ day$^{-1}$ and $p_\mathrm{det}=0.4$) alongside synthetic daily incidence data from that model. It also shows an expected daily observed incidence with alternative parameter values chosen from with the 95% confidence set seen in @fig-likelihoods(d) ($\R_0=2.6$, $\gamma=0.065$ day$^{-1}$, $p_\mathrm{det}=0.33$). We see that these alternative parameters lead to a very similar model solution as the true parameters: given the data, it is impossible to distinguish which parameter combination is more likely. In other words, the parameters are practically non-identifiable with this data. 
+
+
+
+
+
+```{r}
+#| fig-width: 6
+#| fig-height: 4
+#| label: fig-SIR-identifiability
+#| fig-cap: "Solution of the SIR model with the 'true' parameter values (R_0=2, gamma=0.1 /day and p_{det}=0.4, blue) and alternative parameter values that produce a very similar solution (R0=2.6, gamma=0.065 /day and p_{det}=0.33, red). Population size N = 10^4, initial conditions chosen so that p_{det}*I(0)=0.001 for both models. Both curves show the expected incidence in the model multiplied by p_{det} to account for underascertainment. Synthetic daily incidence data generated from the model with the true parameter values are shown as green points."
+#| warning: false
+#| echo: false
+library(deSolve)
+
+# Parameters
+beta1 <- 0.2
+gamma1 <- 0.1
+p1 <- 0.4
+
+# Parameters
+beta2 <- 0.17
+gamma2 <- 0.065
+p2 <- 0.33
+
+i0 = 0.001
+N = 1e4
+
+# Time points
+times <- seq(0, 200, by = 1)
+
+params1 <- c(beta = beta1,
+            gamma = gamma1,
+            N = N)
+
+params2 <- c(beta = beta2,
+            gamma = gamma2,
+            N = N)
+
+# Initial conditions
+init1 <- c(
+  S = N*(1-i0/p1),
+  I = N*(i0/p1)
+)
+
+init2 <- c(
+  S = N*(1-i0/p2),
+  I = N*(i0/p2)
+)
+
+# SIR model function
+sir_model <- function(t, state, parameters) {
+
+  with(as.list(c(state, parameters)), {
+
+    dS <- -beta * S * I / N
+    dI <- beta * S * I / N - gamma * I
+
+    list(c(dS, dI))
+  })
+}
+
+# Numerical solution
+out1 <- ode(y = init1,
+           times = times,
+           func = sir_model,
+           parms = params1)
+out1 <- as.data.frame(out1)
+out1$inc = p1*beta1*out1$S*out1$I/N
+
+out2 <- ode(y = init2,
+           times = times,
+           func = sir_model,
+           parms = params2)
+out2 <- as.data.frame(out2)
+out2$inc = p2*beta2*out2$S*out2$I/N
+
+
+obs <- rpois(length(out1$inc), lambda = out1$inc)
+
+# Plot
+matplot(out1$time, out1$inc,
+        type = "l",
+        lty = 1,
+        lwd = 2,
+        xlab = "Time (days)",
+        ylab = "Daily infection incidence",
+        col = "blue")
+
+lines(out2$time, out2$inc,
+        lwd = 2,
+        col = "red")
+
+points(out1$time, obs, pch = 16, col = "darkgreen")
+
+```
+
+
+
+
+
+
+# Latent and infectious periods 
+
+Recall that the SIR model has generation interval $t_g=1/\gamma$ while the SEIR model has generation interval $t_g= 1/\alpha+1/\gamma$. Both models have $\R_0=\beta/\gamma$, so there will be a range of values of $\alpha$, $\gamma$ and $\beta$ for which the SEIR model has the same values of $\R_0$ and $t_g$ as the SIR model. If the behaviour of the models is mainly determined by $\R_0$ and $t_g$ then we might expect the individual parameters $\beta$, $\gamma$ and $\alpha$ of the SEIR model to be non-identifiable. 
+
+@fig-SEIR-identifiability shows the solutions for two models, both with $\R_0=1.5$ and $t_g=10$ days, but one with no latent period (i.e. a SIR model), and one with latent period 5 days. We see that the models have different solutions for prevalence. This happens because although, in the SEIR model, there are fewer individuals in the $I$ compartment at any given time, they are more infectious whilst there (i.e. higher $\beta$) and hence $\R_0$ is the same for both models. 
+
+However, the models have very similar solutions for incidence. So although it may be possible to infer the generation interval from incidence data (subject to the limitations seen above in @fig-likelihoods(c)), it is likely to be impossible to separately infer the latent period and infectious period. 
+
+Here we have assumed 100% of incident infections are observed (i.e, complete ascertainment). The identifiability issues seen above when we have an unknown case ascertainment rate will also occur here. In other words, with unknown ascertainment, we know we cannot even infer the generation time, let alone the latent and infectious periods separately. 
+
+
+
+```{r}
+#| label: fig-SEIR-identifiability
+#| fig-cap: "Numerical solution of the SIR model with beta=0.15 /day, gamma=0.1 /day (blue) and SEIR model with beta=0.3 /day, gamma=0.2 /day, alpha=0.2 /day (red). Both models have R0=1.5 and generation interval of 10 days. Population size N = 10^4, initial condition for SIR model I(0)=0.001N, S(0)=N-I(0) and for SEIR model E(0)=0.0005N, I(0)=0.0005N, S(0)=N-E(0)-I(0)."
+#| fig-subcap:
+#|   - "Prevalence"
+#|   - "Incidence"
+#| layout-ncol: 2
+#| echo: false
+#| warning: false
+library(deSolve)
+
+# Parameters
+beta1 <- 0.15
+gamma1 <- 0.1
+
+# Parameters
+beta2 <- 0.3
+gamma2 <- 0.2
+alpha2 <- 0.2
+
+N = 1e4
+i0 = 0.001
+
+# Time points
+times <- seq(0, 250, by = 1)
+
+params1 <- c(beta = beta1,
+            gamma = gamma1,
+            N = N)
+
+params2 <- c(beta = beta2,
+            gamma = gamma2,
+            alpha = alpha2,
+            N = N)
+
+
+# Initial conditions
+init1 <- c(
+  S = N*(1-i0),
+  I = N*i0
+)
+
+init2 <- c(
+  S = N*(1-i0),
+  E = N*i0/2,
+  I = N*i0/2
+)
+
+# SIR model function
+sir_model <- function(t, state, parameters) {
+
+  with(as.list(c(state, parameters)), {
+
+    dS <- -beta * S * I / N
+    dI <- beta * S * I / N - gamma * I
+
+    list(c(dS, dI))
+  })
+}
+
+seir_model <- function(t, state, parameters) {
+
+  with(as.list(c(state, parameters)), {
+
+    dS <- -beta * S * I / N
+    dE <- beta * S * I / N - alpha * E
+    dI <- alpha * E - gamma * I
+
+    list(c(dS, dE, dI))
+  })
+}
+
+
+# Numerical solution
+out1 <- ode(y = init1,
+           times = times,
+           func = sir_model,
+           parms = params1)
+out1 <- as.data.frame(out1)
+
+out2 <- ode(y = init2,
+           times = times,
+           func = seir_model,
+           parms = params2)
+out2 <- as.data.frame(out2)
+
+
+# Plot
+matplot(out1$time, out1$I,
+        type = "l",
+        lty = 1,
+        lwd = 2,
+        xlab = "Time (days)",
+        ylab = "I(t)",
+        col = "blue")
+
+lines(out2$time, out2$I,
+        lwd = 2,
+        col = "red")
+
+matplot(out1$time, beta1*out1$S*out1$I/N,
+        type = "l",
+        lty = 1,
+        lwd = 2,
+        xlab = "Time (days)",
+        ylab = "Daily infection incidence",
+        col = "blue")
+
+lines(out2$time, beta2*out2$S*out2$I/N,
+        lwd = 2,
+        col = "red")
+
+
+```
+
+
+
+
+
+

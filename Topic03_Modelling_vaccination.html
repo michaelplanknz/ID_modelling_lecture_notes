@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.553">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Michael Plank">
+
+<title>Topic 3. Modelling vaccination</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="Topic03_Modelling_vaccination_files/libs/clipboard/clipboard.min.js"></script>
+<script src="Topic03_Modelling_vaccination_files/libs/quarto-html/quarto.js"></script>
+<script src="Topic03_Modelling_vaccination_files/libs/quarto-html/popper.min.js"></script>
+<script src="Topic03_Modelling_vaccination_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="Topic03_Modelling_vaccination_files/libs/quarto-html/anchor.min.js"></script>
+<link href="Topic03_Modelling_vaccination_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="Topic03_Modelling_vaccination_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="Topic03_Modelling_vaccination_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="Topic03_Modelling_vaccination_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="Topic03_Modelling_vaccination_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body>
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#vaccine-modelling-considerations" id="toc-vaccine-modelling-considerations" class="nav-link active" data-scroll-target="#vaccine-modelling-considerations"><span class="header-section-number">1</span> Vaccine modelling considerations</a></li>
+  <li><a href="#all-or-nothing-vaccine-model" id="toc-all-or-nothing-vaccine-model" class="nav-link" data-scroll-target="#all-or-nothing-vaccine-model"><span class="header-section-number">2</span> All-or-nothing vaccine model</a></li>
+  <li><a href="#a-simple-leaky-vaccine-model" id="toc-a-simple-leaky-vaccine-model" class="nav-link" data-scroll-target="#a-simple-leaky-vaccine-model"><span class="header-section-number">3</span> A simple leaky vaccine model</a></li>
+  <li><a href="#modelling-a-dual-effect-vaccine" id="toc-modelling-a-dual-effect-vaccine" class="nav-link" data-scroll-target="#modelling-a-dual-effect-vaccine"><span class="header-section-number">4</span> Modelling a dual-effect vaccine</a></li>
+  <li><a href="#a-leaky-vaccine-model-with-assortative-mixing" id="toc-a-leaky-vaccine-model-with-assortative-mixing" class="nav-link" data-scroll-target="#a-leaky-vaccine-model-with-assortative-mixing"><span class="header-section-number">5</span> A leaky vaccine model with assortative mixing</a></li>
+  <li><a href="#modelling-vaccine-protection-against-severe-disease-and-death" id="toc-modelling-vaccine-protection-against-severe-disease-and-death" class="nav-link" data-scroll-target="#modelling-vaccine-protection-against-severe-disease-and-death"><span class="header-section-number">6</span> Modelling vaccine protection against severe disease and death</a>
+  <ul class="collapse">
+  <li><a href="#aggregate-vaccine-effectiveness-against-death" id="toc-aggregate-vaccine-effectiveness-against-death" class="nav-link" data-scroll-target="#aggregate-vaccine-effectiveness-against-death"><span class="header-section-number">6.1</span> Aggregate vaccine effectiveness against death</a></li>
+  <li><a href="#proportion-of-deaths-that-occur-in-the-vaccinated-population" id="toc-proportion-of-deaths-that-occur-in-the-vaccinated-population" class="nav-link" data-scroll-target="#proportion-of-deaths-that-occur-in-the-vaccinated-population"><span class="header-section-number">6.2</span> Proportion of deaths that occur in the vaccinated population</a></li>
+  <li><a href="#apparent-death-rate" id="toc-apparent-death-rate" class="nav-link" data-scroll-target="#apparent-death-rate"><span class="header-section-number">6.3</span> Apparent death rate</a></li>
+  </ul></li>
+  </ul>
+</nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Topic 3. Modelling vaccination</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Michael Plank </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="hidden">
+<p><span class="math display">\[
+\newcommand{\vect}[1]{\boldsymbol{\mathbf{#1}}}
+\newcommand{\R}{\mathcal{R}}
+\newcommand{\Reff}{\mathcal{R}_\mathrm{eff}}
+\]</span></p>
+</div>
+<section id="vaccine-modelling-considerations" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> Vaccine modelling considerations</h1>
+<p>There various ways in which vaccination can be included in a compartment-based model. In the real-world, vaccines are not 100% effective, so it is usually important to model partially effective vaccines.</p>
+<p>There are many considerations in including vaccination in infectious disease models. For example:</p>
+<ul>
+<li>Does the vaccine reduce susceptibility to infection, does it reduce the likelihood of onward transmission, does it reduce the risk of severe disease or death, or does it do all three to varying degrees?</li>
+<li>Does the vaccine reduce everyone’s infection hazard by some factor <span class="math inline">\(a\)</span> (called a leaky vaccine), or does it provide perfect immunity for some proportion <span class="math inline">\(a\)</span> of people, while leaving the remaining proportion unprotected (called an all-or-nothing vaccine)? Or something in between?</li>
+<li>Is some fixed proportion of the population vaccinated before the epidemic begins, or is the epidemic occurring simultaneously with vaccinations?</li>
+<li>Is vaccine-induced immunity permanent (or long-lasting enough for the time period under consideration) or does it wane over time?</li>
+<li>What happens if people can have multiple doses of the same vaccine?</li>
+<li>How are vaccines distributed by age?</li>
+</ul>
+</section>
+<section id="all-or-nothing-vaccine-model" class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> All-or-nothing vaccine model</h1>
+<p>These are all important questions to consider when modelling vaccination. For now, we will take a very simplified approach of assuming that some fraction <span class="math inline">\(p_v\in[0,1]\)</span> of the population is vaccinated at <span class="math inline">\(t=0\)</span>, and that the vaccine perfectly immunises some fraction <span class="math inline">\(v_I\in[0,1]\)</span> (for vaccine effectiveness against infection) of people and has no effect in the remainder.</p>
+<p>This can be modelled by the standard SIR model <span id="eq-SIR"><span class="math display">\[
+\begin{align*}
+\dot{S} &amp;= -\frac{\beta SI}{N} \\
+\dot{I} &amp;= \frac{\beta SI}{N} - \gamma I
+\end{align*}
+\tag{1}\]</span></span> the only difference being that the initially susceptible fraction <span class="math inline">\(S(0)\)</span> is <span class="math inline">\(1-p_v v_I\)</span> instead of close to <span class="math inline">\(1\)</span>. This means that the reproduction number with vaccination, denoted <span class="math inline">\(\R_v\)</span>, is equal to <span class="math inline">\(\R_0(1-p_v v_I)\)</span>.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Vaccinated reproduction number
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The vaccinated reproduction number <span class="math inline">\(\R_v\)</span> in a homogeneous population with vaccine coverage <span class="math inline">\(p_v\)</span> and vaccine effectiveness against infection <span class="math inline">\(v_I\)</span> is <span class="math display">\[
+\R_v = \R_0(1-p_vv_I)
+\]</span></p>
+</div>
+</div>
+<p>Note that <span class="math inline">\(\R_v\le\R_0\)</span> and increasing either vaccine coverage <span class="math inline">\(p_v\)</span> or vaccine effectiveness <span class="math inline">\(v_I\)</span> reduces <span class="math inline">\(\R_v\)</span>.</p>
+<p>We can also infer that the vaccine has a dual effect on the size of the epidemic (see previous section on Final Size): a smaller fraction of the susceptible population is infected (because the reproduction number is lower), and the susceptible population itself is also smaller.</p>
+<p>We can calculate the minimum coverage <span class="math inline">\(p_v^*\)</span> required to reduce <span class="math inline">\(\R_v\)</span> below <span class="math inline">\(1\)</span> and hence prevent an epidemic:</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Minimum vaccine coverage for herd immunity
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><span class="math display">\[
+p_v^* = \frac{1 - \frac{1}{\R_0}}{v_I}
+\]</span></p>
+</div>
+</div>
+<p>Note that the required vaccine coverage increases as <span class="math inline">\(\R_0\)</span> increases or as <span class="math inline">\(v_I\)</span> decreases: if the disease is more transmissible or the vaccine is less effective then need more people to be vaccinated to reach herd immunity.</p>
+<p>And of course if <span class="math inline">\(p_v^*&gt;1\)</span> (which is true if and only if <span class="math inline">\(v_I&lt; 1-1/\R_0\)</span> ), then herd immunity cannot be achieved by vaccination: even if the entire population is vaccinated, the vaccine is not effective enough to prevent an epidemic.</p>
+</section>
+<section id="a-simple-leaky-vaccine-model" class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> A simple leaky vaccine model</h1>
+<p>Now suppose the vaccine is leaky, meaning nobody is perfectly protected but instead the vaccine reduces people’s infection hazard by a factor <span class="math inline">\(v_I\)</span>. This can be modelled by a modified version of the SIR equations in which we use <span class="math inline">\(S_U\)</span> and <span class="math inline">\(S_V\)</span> to denote the unvaccinated and vaccinated susceptible compartments respectively (and similarly for the other compartments): <span class="math display">\[
+\begin{align*}
+\dot{S_U} &amp;= -\lambda S_U \\
+\dot{S_V} &amp;= -(1-v_I)\lambda S_V \\
+\dot{I_U} &amp;= -\lambda S_U - \gamma I_U \\
+\dot{I_V} &amp;= -(1-v_I)\lambda S_V - \gamma I_V \\
+\end{align*}
+\]</span> where the force of infection (or infection hazard) on fully susceptible (i.e.&nbsp;unvaccinated) individuals <span class="math inline">\(\lambda\)</span> is defined by <span class="math display">\[
+\lambda(t) = \beta \left( I_U(t)+I_V(t) \right)
+\]</span> The reproduction number for models of this type can be calculated using the <em>next generation matrix</em> <span class="math inline">\(K\)</span>, which is a matrix whose <span class="math inline">\((i,j)\)</span> element denotes the expected number of infections of type <span class="math inline">\(j\)</span> caused by a single infectious individual of type <span class="math inline">\(i\)</span> in a fully susceptible population. In Topic 10, we will see a method for rigorously deriving the next generation matrix from the model equations, but for now an informal argument will suffice.</p>
+<p>By assumption, the vaccine does not affect transmission once someone has got infected, so all infected individuals are essentially identical. Because we assume the population is well-mixed, the proportion of an individual’s contacts that are with vaccinated people is <span class="math inline">\(p_v\)</span> and the remainder are with unvaccinated people (we will explore the conseqeucnes of relaxing this assumption below).</p>
+<p>Hence, an infected individual will infect <span class="math inline">\((\beta/\gamma) (1-p_v)\)</span> unvaccinated individuals, on average. If the vaccine had no effect, they would also infect <span class="math inline">\((\beta/\gamma)  p_v\)</span> vaccinated individuals. But since the vaccine the susceptibility, they actually only infect <span class="math inline">\((\beta/\gamma) p_v (1-v_I)\)</span> vaccinated individuals on average.</p>
+<p>Hence, the vaccinated reproduction number is <span class="math display">\[
+\R_v = \frac{\beta}{\gamma} \left(1 - p_v + p_v(1-v_I)\right) =  \R_0 \left(1 - p_v v_I\right)
+\]</span> Note that <span class="math inline">\(\R_v\)</span> for this simple leaky vaccine model is the same as for the all-or-nothing model (and hence the vaccine coverage required for herd immunity is the same as well).</p>
+<p>However, when an epidemic occurs (i.e.&nbsp;when <span class="math inline">\(\R_v&gt;1\)</span>), its final size is larger in the leaky vaccine than in the all-or-nothing vaccine. To see this, consider the respective reproduction numbers of the the models after there have been <span class="math inline">\(C\)</span> cumulative infections (relative to population size). For the all-or-nothing model, the susceptible compartment is depleted by an amojunt <span class="math inline">\(C\)</span> and so we have <span class="math display">\[
+\R_\mathrm{eff} = \R_0\left(1 - p_v v_I - C\right)
+\]</span> For the leaky vaccine model, the <span class="math inline">\(C\)</span> infections are made up of <span class="math inline">\(C_U\)</span> unvaccinated people and <span class="math inline">\(C_V\)</span> vaccinated people with <span class="math inline">\(C=C_U+C_V\)</span>. The <span class="math inline">\(S_U\)</span> and <span class="math inline">\(S_V\)</span> compartments are depleted by <span class="math inline">\(C_U\)</span> and <span class="math inline">\(C_V\)</span> respectively, and so we find that <span class="math display">\[
+\begin{align*}
+\R_\mathrm{eff} &amp;= \R_0\left(1 - p_v - C_u + (1- v_I)(p_v - C_v) \right) \\
+&amp;= \R_0\left(1 - p_v v_I - C_u - (1-v_I) C_v \right)
+\end{align*}
+\]</span> Provided <span class="math inline">\(0&lt;v_I&lt;1\)</span>, we can see that, for any given <span class="math inline">\(C&gt;0\)</span>, the effective reproduction number for the leaky vaccine model is always higher than for the all-or-nothing model.</p>
+<p>One way to understand this is to consider the immunity gained as a result of a single infection. In the all-or-nothing model, the infected person always goes from zero immunity (whether unvaccinated or vaccinated but with vaccine failure) to full immunity. In the leaky model, when a unvaccinated person is infected, they go from zero to full immunity, but when a vaccinated person is infected, they already have partial immunity so the net increase in immunity is smaller. Hence it takes more infections to reach the same level of population immunity as in the all-or-nothing model.</p>
+</section>
+<section id="modelling-a-dual-effect-vaccine" class="level1" data-number="4">
+<h1 data-number="4"><span class="header-section-number">4</span> Modelling a dual-effect vaccine</h1>
+<p>Now suppose that, in addition to reducing the force of infection by <span class="math inline">\(v_I\)</span>, the vaccine also reduces the transmission rate from infected vaccinated individuals by <span class="math inline">\(v_T\)</span> (vaccine effectiveness against transmission).</p>
+<p>We can include this in the model using the same system of ODEs but with a small modification to the force of infection <span class="math inline">\(\lambda\)</span>: <span class="math display">\[
+\lambda(t) = \beta \left( I_U + (1-v_T)I_V  \right)
+\]</span></p>
+<p>Now we need to write down the next generation matrix <span class="math inline">\(K\)</span>: <span class="math display">\[
+K = \R_0 \left[\begin{array}{ll} 1-p_v &amp;  (1-p_v)(1-v_T)  \\  p_v(1-v_I)  &amp; p_v(1-v_I)(1-v_T)   \end{array}   \right]
+\]</span> where <span class="math inline">\(K_{11}\)</span> is the average number of unvaccinated individuals infected by a single unvaccinated infectious person, <span class="math inline">\(K_{21}\)</span> is the average number of vaccinated individuals infected by an unvaccinated infectious person, and so on. We will see a rigorous method for deriving next generation matrices for models such as this in Topic 10.</p>
+<p>If the number of new infections in generation <span class="math inline">\(n\)</span> in the unvaccniated and vaccinated populations is given by some vector <span class="math inline">\({\bf v}\)</span>, then corresponding number of new infections in generation <span class="math inline">\(n+1\)</span> is given by <span class="math inline">\(K{\bf v}\)</span>. Recall from linear algebra that, under fairly general conditions, the matrix-vector product <span class="math inline">\(K^n{\bf v}\)</span> tends towards <span class="math inline">\(\rho(K)^n {\bf v^*}\)</span> as <span class="math inline">\(n\)</span> becomes large, where <span class="math inline">\(\rho(K)\)</span> is the dominant eigenvalue of <span class="math inline">\(K\)</span> and <span class="math inline">\(v^*\)</span> is the corresponding eigenvector. Thus the number of new infections at generation <span class="math inline">\(n+1\)</span> is <span class="math inline">\(\rho(K)\)</span> times the number at generation <span class="math inline">\(n\)</span>, and so the reproduction number is equal to <span class="math inline">\(\rho(K)\)</span>.</p>
+<p>The eigenvalues for the matrix <span class="math inline">\(K\)</span> above are <span class="math inline">\(\lambda_1=0\)</span> and <span class="math inline">\(\lambda_2= \R_0\left(1-p_v+p_v(1-v_I)(1-v_T)\right)\)</span>. <span class="math inline">\(\lambda_2\)</span> is the dominant eigenvalue and so we obtain the following result.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Vaccinated reproduction number for a dual-effect vaccine
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The vaccinated reproduction number <span class="math inline">\(\R_v\)</span> in a homogeneous population with vaccine coverage <span class="math inline">\(p_v\)</span>, vaccine effectiveness against infection <span class="math inline">\(v_I\)</span> and vaccine effectiveness against transmission conditional on infection <span class="math inline">\(v_T\)</span> is</p>
+<p><span class="math display">\[
+\R_v = \R_0\left(1 - p_v(v_I+v_T-v_I v_T) \right)
+\]</span></p>
+</div>
+</div>
+<p>Note that this would be the same <span class="math inline">\(R_v\)</span> as a different vaccine with <span class="math inline">\(v_T'=0\)</span> and <span class="math inline">\(v_I'=v_I+v_T-v_I v_T\)</span>. We say that the combined vaccine effectiveness against transmission is <span class="math inline">\(v_I+v_T-v_Iv_T\)</span>. This shows that the effectiveness against infection and effectiveness against transmission are sub-additive. For example, a vaccine with <span class="math inline">\(v_I=0.4\)</span> and <span class="math inline">\(v_T=0.4\)</span> has the same effect on the reproduction number as a vaccine with <span class="math inline">\(v_I=0.64\)</span> and <span class="math inline">\(v_T=0\)</span>.</p>
+</section>
+<section id="a-leaky-vaccine-model-with-assortative-mixing" class="level1" data-number="5">
+<h1 data-number="5"><span class="header-section-number">5</span> A leaky vaccine model with assortative mixing</h1>
+<p>The models above assume that, if a fraction <span class="math inline">\(p_v\)</span> of the population is vaccinated, then the fraction of any individual’s contacts who are vaccinated is also <span class="math inline">\(p_v\)</span>, regardless of whether that person is themself vaccinated or not. This is called a <em>proportionate mixing</em> model.</p>
+<p>In some cases, it may be that people are more likely to mix with others who have the same vaccination status. This is known as <em>assortative mixing</em> and we will see more on this in Topics 10 and 11. For now, let us suppose that the fraction of a vaccinated person’s contacts who are also vaccinated is <span class="math inline">\((1-\epsilon)p_v + \epsilon\)</span> for some constant <span class="math inline">\(\epsilon\in[0,1]\)</span>. Similarly, suppose that the fraction of an unvaccinated person’s contacts who are vaccinated is <span class="math inline">\((1-\epsilon)p_v\)</span>.</p>
+<p>Note that when <span class="math inline">\(\epsilon=0\)</span> this reduces to the proportionate mixing model, while when <span class="math inline">\(\epsilon=1\)</span> people <em>only</em> mix with other people of the same vaccination status (an extreme example of assortative mixing).</p>
+<p>For simplicity, we will focus on the case where the only effect of the vaccine is to reduce susceptibility (i.e.&nbsp;<span class="math inline">\(v_T=0\)</span>). Then the next generation matrix <span class="math inline">\(K\)</span> is <span class="math display">\[
+K = \R_0 (1-\epsilon)   \left[\begin{array}{ll} 1-p_v &amp; 1-p_v \\ p_v(1-v_I) &amp; p_v(1-v_I)      \end{array}   \right]  + \R_0\epsilon \left[\begin{array}{ll} 1 &amp; 0 \\ 0 &amp; 1-v_I    \end{array}   \right]
+\]</span></p>
+<p>Note that when <span class="math inline">\(\epsilon=0\)</span>, the NGM reduces to the matrix seen in the proportionate mixing model above (with <span class="math inline">\(v_T=0\)</span>) and we recover the same expression for the reproduction number <span class="math inline">\(\R_v = \R_0(1-p_v v_I)\)</span>.</p>
+<p>When <span class="math inline">\(\epsilon=1\)</span>, unvaccinated individuals transmit to an average of <span class="math inline">\(\R_0\)</span> other unvaccinated individuals, while vaccinated individuals transmit to an average of <span class="math inline">\(\R_0(1-v_I)\)</span> other vaccinated individuals. This leads to a reproduction number of <span class="math inline">\(\R_v=\R_0\)</span>, i.e.&nbsp;vaccination does not change the reproduction number! This is because, in the <span class="math inline">\(\epsilon=1\)</span> case, there are two independent epidemics happening: one in the vaccinated population and one in the unvaccinated population. Because the latter has a faster epidemic growth rate, the fraction of infections that are in the unvaccinated group tends towards <span class="math inline">\(1\)</span> and so the reproduction number reflects the average number of people infected by an unvaccinated individual, which is <span class="math inline">\(\R_0\)</span>.</p>
+<p>For the more realistic case where the value of <span class="math inline">\(\epsilon\)</span> is intermediate between <span class="math inline">\(0\)</span> and <span class="math inline">\(1\)</span>, the dominant eigenvalue of <span class="math inline">\(K\)</span> has a more complicated algebraic expression. However, the special case where <span class="math inline">\(v_I=1\)</span> (i.e.&nbsp;a perfect vaccine) is instructive: here the dominant eigenvalue is given by <span class="math display">\[
+\R_v = \R_0\left(  1- p(1-\epsilon)  \right)
+\]</span> In other words, increasing levels of assortative mixing (i.e.&nbsp;increasing <span class="math inline">\(\epsilon\)</span>) linearly reduces the effect of vaccination on the reproduction number. This statement should not be misconstrued as saying that the vaccine has less benefit when mixing is assortative: the size of the epidemic may still be substantially reduced by the vaccine even if the effect on the reproduction number is relatively small.</p>
+<p><a href="#fig-assortative-mixing" class="quarto-xref">Figure&nbsp;1</a> shows that, while assortativity always increases the reproduction number, its effect on final epidemic size is more complicated. For low to moderate values of the vaccine effectivness, where <span class="math inline">\(\R_v\)</span> is well above <span class="math inline">\(1\)</span>, assortativity either has no effect on final size, or slightly reduces it. When vaccine effectiveness is high, assortativity can be enough to tip the reproduction number from below 1 to above 1 (e.g.&nbsp;<span class="math inline">\(v_I=0.9\)</span> and <span class="math inline">\(1.0\)</span> in <a href="#fig-assortative-mixing" class="quarto-xref">Figure&nbsp;1</a>).</p>
+<p>When the reproduction number without assortativity is only just above 1 (e.g.&nbsp;<span class="math inline">\(v_I=0.8\)</span> curve in <a href="#fig-assortative-mixing" class="quarto-xref">Figure&nbsp;1</a>), the effect of assortativity is non-monotonic, with the largest epidemics occurring for intermediate values of <span class="math inline">\(\epsilon\)</span>. The reason this happens is that although assortativity increases the reproduction number, when assortativity is very high, the epidemic effectively cannot spread in the vaccinated population so the final size is limited by the size of the unvaccinated population.</p>
+<div id="fig-assortative-mixing" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-assortative-mixing-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figures/vaccine_assortative_mixing.png" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-assortative-mixing-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Effect of assortative mixing on: (a) the vaccinated reproduction number <span class="math inline">\(R_v\)</span> and (b) the final epidemic size for a range of value of vaccine effectiveness against infection <span class="math inline">\(v_I\)</span>. <span class="math inline">\(\R_0=4\)</span> and vaccine coverage <span class="math inline">\(p_v\)</span> is 0.9 in all cases.
+</figcaption>
+</figure>
+</div>
+</section>
+<section id="modelling-vaccine-protection-against-severe-disease-and-death" class="level1" data-number="6">
+<h1 data-number="6"><span class="header-section-number">6</span> Modelling vaccine protection against severe disease and death</h1>
+<p>Many vaccines provide a higher level of protection against severe disease or death than against infection and transmission. There are different ways to model this kind of situation. For example, we could explicitly include compartments for cases that are relatively mild and cases that are sick enough to need a given level of healthcare such as hospital treatment.</p>
+<p>If progression to more severe outcomes does not affect the likelihood of transmission, a simpler approach is possible and we illustrate this here.</p>
+<p>Suppose that, in the unvaccinated group, the epidemic dynamics are governed by <span class="math display">\[
+\begin{align*}
+\dot{S_U} &amp;= -\lambda S_U \\
+\dot{I_U} &amp;= \lambda S_U - \gamma I_U \\
+\end{align*}
+\]</span></p>
+<p>Suppose also that, in the absence of vaccination, the proportion of infections that cause death (known as the <em>infection fatality ratio</em>) is <span class="math inline">\(p_d\)</span>. Then, assuming for simplicity that the average time from infection to death is the same as the average time from infection to recovery, the cumulative number of deaths in the unvaccinated group <span class="math inline">\(D_U\)</span> satisfies <span class="math display">\[
+\dot{D_U} = p_d \gamma I_U
+\]</span></p>
+<p>Suppose that, conditional on infection, the vaccine reduces the risk of death by a factor <span class="math inline">\(v_S\in[0,1]\)</span>. Then we have a similar set of equations for the vaccinated group, but with a proportion <span class="math inline">\(p_d(1-v_S)\)</span> of infections resulting in death: <span class="math display">\[
+\begin{align*}
+\dot{S_V} &amp;= -\lambda(1-v_I) S_V \\
+\dot{I_V} &amp;= \lambda(1-v_I) S_V - \gamma I_V \\
+\dot{D_V} &amp;= p_d(1-v_S)\gamma I_V
+\end{align*}
+\]</span></p>
+<p>Assuming unvaccinated and vaccinated individuals have the same transmission rate, we have <span class="math display">\[
+\lambda(t) = \beta\left( I_U+I_V\right)
+\]</span> Note technically this is a density-dependent model for <span class="math inline">\(\lambda(t)\)</span> because we have not accounted for the fact that deaths deplete the total population size and thus, for a given value of <span class="math inline">\(I_U+I_V\)</span>s, increase the likelihood of contact with an infective – see Topic 2. However provided <span class="math inline">\(p_d\)</span> is not too large the difference is likely to be negligible.</p>
+<p>As before, we could model a vaccine effectiveness against transmission by multiplying all the vaccinated compartments by <span class="math inline">\(1-v_T\)</span> in the expression for <span class="math inline">\(\lambda(t)\)</span>, but we omit this for simplicity.</p>
+<section id="aggregate-vaccine-effectiveness-against-death" class="level2" data-number="6.1">
+<h2 data-number="6.1" class="anchored" data-anchor-id="aggregate-vaccine-effectiveness-against-death"><span class="header-section-number">6.1</span> Aggregate vaccine effectiveness against death</h2>
+<p>Unvaccinated individuals get infected at rate <span class="math inline">\(\lambda\)</span> and, if infected, have risk <span class="math inline">\(p_d\)</span> of death. In contrast, vaccinated individuals get infected at rate <span class="math inline">\((1-v_I)\lambda\)</span> and, if infected, have risk <span class="math inline">\((1-v_S)p_d\)</span> of death. So the overall risk of death for vaccinated individuals relative to unvaccinated individuals is <span class="math inline">\((1-v_I)(1-v_S)\)</span>.</p>
+<p>Hence the aggregate vaccine effectiveness against death is: <span class="math display">\[
+\begin{align*}
+\textrm{VE against death} &amp;= 1-\frac{\textrm{risk for vaccinated}}{\textrm{risk for unvaccniated}} \\
+&amp;= 1- (1-v_I)(1-v_S) \\
+&amp;= v_I + v_S - v_Iv_S
+\end{align*}
+\]</span></p>
+</section>
+<section id="proportion-of-deaths-that-occur-in-the-vaccinated-population" class="level2" data-number="6.2">
+<h2 data-number="6.2" class="anchored" data-anchor-id="proportion-of-deaths-that-occur-in-the-vaccinated-population"><span class="header-section-number">6.2</span> Proportion of deaths that occur in the vaccinated population</h2>
+<p>The rate at which fatal infections occur in unvaccinated individuals is <span class="math inline">\(p_d \lambda  S_U\)</span>, while for vaccinated individuals this is <span class="math inline">\(p_d (1-v_I)(1-v_S)\lambda S_V\)</span>. It follows that the proportion of deaths that occur in vaccinated individuals is <span class="math display">\[
+\textrm{proportion vaccinated} = \frac{(1-v_I)(1-v_S) q_v}{(1-v_I)(1-v_S)q_v + 1-q_v}  
+\]</span></p>
+<p>where <span class="math inline">\(q_V(t)=S_V(t)/(S_U(t)+S_V(t))\)</span> is the fraction of the susceptible population at time <span class="math inline">\(t\)</span> that is vaccinated. This fraction will vary over the course of the epidemic. At the beginning of the epidemic, when the cumulative number of infections is negligible, we have <span class="math inline">\(q_v=p_v\)</span> (i.e.&nbsp;<span class="math inline">\(q_v\)</span> is the same as the vaccine coverage).</p>
+<p>However, as the epidemic progresses, unvaccinated people are infected at a higher rate (provided <span class="math inline">\(v_I&gt;0\)</span>), meaning that the <span class="math inline">\(S_U\)</span> compartment is depleted faster than the <span class="math inline">\(S_V\)</span> compartment. As a result, <span class="math inline">\(q_v\)</span> increases with time, and therefore so too does the proportion of deaths that are in the vaccinated population.</p>
+<p>Note: the above shows that it is impossible to gauge vaccine effectiveness just by looking at the fraction of deaths that are in vaccinated people. If <span class="math inline">\(p_v\)</span> is very high, this fraction will also be high (and increasing over time), even if the vaccine is highly effective.</p>
+</section>
+<section id="apparent-death-rate" class="level2" data-number="6.3">
+<h2 data-number="6.3" class="anchored" data-anchor-id="apparent-death-rate"><span class="header-section-number">6.3</span> Apparent death rate</h2>
+<p>Because vaccines affect who is getting infected as well as their risk of death, they can change the <em>apparent severity</em> (i.e.&nbsp;the proportion of infections that cause death) in different ways.</p>
+<p>Infections occur at total rate <span class="math inline">\(\lambda \left(S_U + (1-v_I)S_V\right)\)</span>, while fatal infections occur at rate <span class="math inline">\(p_d \lambda  \left( S_U + (1-v_I)(1-v_S)S_V\right)\)</span>.</p>
+<p>It follows that the overall fraction of infections that cause death is: <span class="math display">\[
+\textrm{proportion of infections that cause death} = p_d \frac{1-q_v( v_I +v_S - v_I v_S) }{1-q_v v_I }
+\]</span></p>
+<p>Notice that when <span class="math inline">\(v_I=1\)</span>, this proportion is equal to <span class="math inline">\(p_d\)</span> (the same as in the absence of a vaccine) because only unvaccinated people get infected. On the other hand, when <span class="math inline">\(v_I=0\)</span>, the proportion is <span class="math inline">\(p_d(1-q_v v_S)\)</span>. So counterinitivitvely, the more effective the vaccine is against infection, the greater the proportion of infections that will cause death (i.e.&nbsp;the larger the apparent infection fatality ratio) because a larger fraction of infections occur in unvaccinated people.</p>
+<p>In this section we have considered deaths, but a similar argument could be applied to other defined outcomes such as hospitalisation or ICU admission.</p>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
