@@ -86,3 +86,8 @@ selectively.
 10. Multi-type models.
 11. Age-structured models.
 12. Network models.
+
+## How to use
+
+Each Topic is available as a quarto markdown (.qmd) file, which will
+compile to produce an HTML webpage that may be viewed in a web browser.
