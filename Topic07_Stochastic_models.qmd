@@ -382,7 +382,7 @@ It is possible to do this with a compartment-based model, for example we could d
 1. Each infected individual has probability $p_+\in[0,1]$ of ever testing positive, independent of other individuals.
 1. In the absence of case isolation, the GI follows some specified distribution with probability mass function $g_t$.
 1. The time from infection to positive test follows some specified distribution with probability mass function $u_t$..
-1. After an individual has tested positive, their likelihood of transmitting is reduced by a factor $c_\mathrm{iso}\in[0,1]$ representing the effects of case isolation ($c_\mathrm{iso}=0$ corresponds to perfect case isolation; larger values of $c_\mathrm{iso}$ correspond to less effective case isolation).
+1. After an individual has tested positive, their likelihood of transmitting is reduced to a factor $c_\mathrm{iso}\in[0,1]$ representing the effects of case isolation ($c_\mathrm{iso}=0$ corresponds to perfect case isolation; larger values of $c_\mathrm{iso}$ correspond to less effective case isolation).
 
 :::
 

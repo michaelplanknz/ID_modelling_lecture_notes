@@ -31,6 +31,8 @@ There are many considerations in including vaccination in infectious disease mod
 * What happens if people can have multiple doses of the same vaccine? 
 * How are vaccines distributed by age?
 
+In applications of vaccine modelling, age is often a crucial variable either because people typically get vaccinated at a certain age (e.g. childhood immunisations), or because there is strong age-dependence in disease severity (and therefore in the benefit of vaccination). We will cover age-structured models in Topic 11, but for now we focus on the simple homogeneous population case.
+
 
 # All-or-nothing vaccine model
 
