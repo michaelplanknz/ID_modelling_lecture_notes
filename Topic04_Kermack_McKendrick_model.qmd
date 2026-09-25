@@ -58,6 +58,7 @@ Property                    | SIR model         | SEIR model              |
 ----------------------------|-------------------|-------------------------|
 $\R_0$                      | $\beta/\gamma$    | $\beta/\gamma$          |
 Final size $z$              | $1-z=e^{-\R_0 z}$ |  $1-z=e^{-\R_0 z}$      |
+Early epidemic growth rate $r$ | $\beta-\gamma$ | $\left(-\gamma-\alpha + \sqrt{(\gamma-\alpha)^2+4\alpha\beta} \right)/2$ |
 Mean infectious period      | $1/\gamma$        | $1/\gamma$              |
 Mean latent period          | 0                 | $1/\alpha$              |
 Mean generation interval    | $1/\gamma$        | $1/\alpha+1/\gamma$     |

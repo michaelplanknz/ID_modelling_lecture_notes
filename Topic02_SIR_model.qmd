@@ -563,7 +563,7 @@ If $S(t)<1/\R_0$  then $\dot{I}<0$ which means that the epidemic is shrinking.
 Notes:
 
 * When the system is at the herd immunity threshold, the effective reproduction number ($\Reff=\R_0 S(t)$) is equal to $1$.
-* The herd immunity threshold is the point at which *prevalence* $I(t)$ switches from growing to shrinking. *Incidence* peaks before prevalence does (we say that prevalence lags incidence): the rate of change of incidence is $\beta(\dot{S}I+S\dot{I})$ so, recalling that $\dot{S}<0$, by the time $\dot{I}=0$ incidence must already be falling.
+* The herd immunity threshold is the point at which *prevalence* $I(t)$ switches from growing to shrinking. *Incidence* peaks before prevalence does (we say that prevalence lags incidence): the rate of change of incidence is $\beta(\dot{S}I+S\dot{I})$ so, recalling that $\dot{S}$ is always negative, by the time $\dot{I}=0$ incidence must already be falling.
 
 By applying linear stability analysis above to all the equilibria of the SIR model, we obtain the following result
 
