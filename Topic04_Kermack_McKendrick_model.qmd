@@ -49,12 +49,14 @@ The SIR model is a limiting case of the SEIR model with $\alpha\to\infty$.
 
 ## Similarities and differences between SIR and SEIR
 
-The SEIR model has some difference from the SIR model, but also shares many of the same characteristics. For example, the SEIR model's basic reproduction number $\R_0$ and final epidemic size have the same dependence on the parameters $\beta/\gamma$ as for the SIR model. The main difference is that, because of the delay between being infected and becoming infectious, the time scale for the epidemic is correspondingly slower. However, for many purposes, the dynamics of the SEIR model will look very similar to those of a SIR model with the same value of $\R_0$ but smaller values of $\gamma$ and $\beta$. 
+The SEIR model has some difference from the SIR model, but also shares many of the same characteristics. For example, the SEIR model's basic reproduction number $\R_0$ and final epidemic size have the same dependence on the parameters $\beta/\gamma$ as for the SIR model.
+
+The main difference is that, because of the delay between being infected and becoming infectious, the epidemic growth rate is slower and hence the time scale for the epidemic is correspondingly longer. However, for many purposes, the dynamics of the SEIR model will look very similar to those of a SIR model with the same value of $\R_0$ but smaller values of $\gamma$ and $\beta$. 
 
 
 Property                    | SIR model         | SEIR model              |
 ----------------------------|-------------------|-------------------------|
-$\R_0$                      |$\beta/\gamma$     | $\beta/\gamma$          |
+$\R_0$                      | $\beta/\gamma$    | $\beta/\gamma$          |
 Final size $z$              | $1-z=e^{-\R_0 z}$ |  $1-z=e^{-\R_0 z}$      |
 Mean infectious period      | $1/\gamma$        | $1/\gamma$              |
 Mean latent period          | 0                 | $1/\alpha$              |
@@ -258,11 +260,12 @@ The Kermack-McKendrick model has an equivalent relationship between $r$ and $\Re
 $$
 \inc(t) = \R_0\frac{S(t)}{N} \int_0^\infty \inc(t) e^{-r\tau}  g(\tau) d\tau 
 $$
+
+
 Since $\R_0 S(t)/N=\Reff$, it follows that
 $$
 \Reff = \frac{1}{\int_0^\infty e^{-r\tau} g(\tau) d\tau } = \frac{1}{M_g(-r)}
 $$ {#Reff-r-relationship}
-
 where $M_g(r)$ is the *moment generating function* for the generation interval distribution, defined in terms of the PDF $g(\tau)$ by $M_g(s)=\int_0^\infty e^{s\tau} g(\tau) d\tau$.
 
 The equation above provides a general relationship between the epidemic growth rate, the effective reproduction number and the generation interval distribution. See [Wallinga and Lipsitch (2006)](https://doi.org/10.1098/rspb.2006.3754) for more details.

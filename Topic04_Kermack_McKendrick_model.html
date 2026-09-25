@@ -159,7 +159,8 @@ SEIR model
 <p>The SIR model is a limiting case of the SEIR model with <span class="math inline">\(\alpha\to\infty\)</span>.</p>
 <section id="similarities-and-differences-between-sir-and-seir" class="level2" data-number="2.1">
 <h2 data-number="2.1" class="anchored" data-anchor-id="similarities-and-differences-between-sir-and-seir"><span class="header-section-number">2.1</span> Similarities and differences between SIR and SEIR</h2>
-<p>The SEIR model has some difference from the SIR model, but also shares many of the same characteristics. For example, the SEIR model’s basic reproduction number <span class="math inline">\(\R_0\)</span> and final epidemic size have the same dependence on the parameters <span class="math inline">\(\beta/\gamma\)</span> as for the SIR model. The main difference is that, because of the delay between being infected and becoming infectious, the time scale for the epidemic is correspondingly slower. However, for many purposes, the dynamics of the SEIR model will look very similar to those of a SIR model with the same value of <span class="math inline">\(\R_0\)</span> but smaller values of <span class="math inline">\(\gamma\)</span> and <span class="math inline">\(\beta\)</span>.</p>
+<p>The SEIR model has some difference from the SIR model, but also shares many of the same characteristics. For example, the SEIR model’s basic reproduction number <span class="math inline">\(\R_0\)</span> and final epidemic size have the same dependence on the parameters <span class="math inline">\(\beta/\gamma\)</span> as for the SIR model.</p>
+<p>The main difference is that, because of the delay between being infected and becoming infectious, the epidemic growth rate is slower and hence the time scale for the epidemic is correspondingly longer. However, for many purposes, the dynamics of the SEIR model will look very similar to those of a SIR model with the same value of <span class="math inline">\(\R_0\)</span> but smaller values of <span class="math inline">\(\gamma\)</span> and <span class="math inline">\(\beta\)</span>.</p>
 <table class="table">
 <colgroup>
 <col style="width: 38%">
@@ -281,7 +282,7 @@ Kermack-McKendrick model
 <p>Note that the integral in this equation may be truncated at finite <span class="math inline">\(\tau\)</span> if the generation interval distribution has zero probability above some upper limit <span class="math inline">\(\tau_\mathrm{max}\)</span>.</p>
 <p>The SIR model is a special case of the Kermack-McKendrick model with <span class="math inline">\(f(\tau)=\beta e^{-\gamma \tau}\)</span>. To see this, note that taking the Laplace transform of the SIR model equation <span class="math inline">\(\dot{I}=\inc-\gamma I\)</span> shows that <span class="math display">\[
 I(t) = \int_0^\infty  \inc(t-\tau) e^{-\gamma \tau} d\tau
-\]</span> Hence, if <span class="math inline">\(f(\tau)=\beta e^{-\gamma \tau}\)</span>, <a href="#eq-KMK" class="quarto-xref">Equation&nbsp;2</a> reads <span class="math inline">\(\inc(t)=(\beta)/N S(t)I(t)\)</span>, which is the incidence equation for the SIR model.</p>
+\]</span> Hence, if <span class="math inline">\(f(\tau)=\beta e^{-\gamma \tau}\)</span>, <a href="#eq-KMK" class="quarto-xref">Equation&nbsp;2</a> reads <span class="math inline">\(\inc(t)=(\beta/N) S(t)I(t)\)</span>, which is the incidence equation for the SIR model.</p>
 <p>The SEIR model is also a special case of the Kermack-McKendrick model with <span class="math inline">\(f(\tau)\)</span> defined to be a function of the form shown in <a href="#fig-infectiousness-profiles" class="quarto-xref">Figure&nbsp;1</a>.</p>
 </section>
 <section id="properties-of-the-kermack-mckendrick-model" class="level1" data-number="4">
@@ -339,10 +340,10 @@ r=\gamma(\Reff-1)
 <p>where <span class="math inline">\(1/\gamma\)</span> is the mean generation interval.</p>
 <p>The Kermack-McKendrick model has an equivalent relationship between <span class="math inline">\(r\)</span> and <span class="math inline">\(\Reff\)</span> that depends not only on the mean generation interval, but on its entire distribution, as defined by <span class="math inline">\(g(\tau)\)</span>. Suppose that infection incidence is growing exponentially at rate <span class="math inline">\(r\)</span>, i.e.&nbsp;<span class="math inline">\(\inc(t)=\inc(t-\tau)e^{r\tau}\)</span>. Substituting this into the incidence equation in (<a href="#eq-KMK" class="quarto-xref">Equation&nbsp;2</a>) and recalling that <span class="math inline">\(f(\tau)=\R_0 g(\tau)\)</span> gives <span class="math display">\[
 \inc(t) = \R_0\frac{S(t)}{N} \int_0^\infty \inc(t) e^{-r\tau}  g(\tau) d\tau
-\]</span> Since <span class="math inline">\(\R_0 S(t)/N=\Reff\)</span>, it follows that <span class="math display">\[
+\]</span></p>
+<p>Since <span class="math inline">\(\R_0 S(t)/N=\Reff\)</span>, it follows that <span class="math display">\[
 \Reff = \frac{1}{\int_0^\infty e^{-r\tau} g(\tau) d\tau } = \frac{1}{M_g(-r)}
-\]</span> {#Reff-r-relationship}</p>
-<p>where <span class="math inline">\(M_g(r)\)</span> is the <em>moment generating function</em> for the generation interval distribution, defined in terms of the PDF <span class="math inline">\(g(\tau)\)</span> by <span class="math inline">\(M_g(s)=\int_0^\infty e^{s\tau} g(\tau) d\tau\)</span>.</p>
+\]</span> {#Reff-r-relationship} where <span class="math inline">\(M_g(r)\)</span> is the <em>moment generating function</em> for the generation interval distribution, defined in terms of the PDF <span class="math inline">\(g(\tau)\)</span> by <span class="math inline">\(M_g(s)=\int_0^\infty e^{s\tau} g(\tau) d\tau\)</span>.</p>
 <p>The equation above provides a general relationship between the epidemic growth rate, the effective reproduction number and the generation interval distribution. See <a href="https://doi.org/10.1098/rspb.2006.3754">Wallinga and Lipsitch (2006)</a> for more details.</p>
 <p>Since <span class="math inline">\(M_g(r)&gt;1\)</span> if and only if <span class="math inline">\(r&gt;0\)</span>, which implies that <span class="math inline">\(\Reff&gt;1\)</span> if and only if <span class="math inline">\(r&gt;0\)</span> as expected. Also in the special case where <span class="math inline">\(g(\tau)=\gamma e^{-\gamma \tau}\)</span>, the equation reduces to <span class="math inline">\(\Reff = 1+\frac{r}{\gamma}\)</span>, which we have seen previously is the correct relationship for a SIR model.</p>
 </section>
@@ -350,15 +351,16 @@ r=\gamma(\Reff-1)
 <h1 data-number="6"><span class="header-section-number">6</span> Modelling case-targeted interventions</h1>
 <p>Interventions such as case isolation and contact tracing aim to reduce transmission from infected or potentially infected individuals. This requires that those individuals are identified and placed in isolation or quarantine, which typically only happens some time after they get infected. The effectiveness of this intervention will depend heavily on the timing of isolation relative to the generation interval distribution (<a href="#fig-infectiousness-profiles" class="quarto-xref">Figure&nbsp;1</a>). If individuals are isolated relatively early in this distribution, the intervention may be highly effective, but if they are already into the tail of the distribution the intervention will have limit effect.</p>
 <p>So, to model this type of intervention accurately, we need a faithful representation of the generation interval distribution, which the Kermack-McKendrick model has the flexibility to include.</p>
-<p>As a simple assumption, suppose that some proportion <span class="math inline">\(p_\mathrm{iso}\)</span> of infected individuals are identified and isolated at time <span class="math inline">\(t_\mathrm{iso}\)</span> after being infected. Suppose also that isolated individuals transmission rate is <span class="math inline">\(c_\mathrm{iso}\in[0,1]\)</span> relative to unisolated indiviudals. This has the effect of reducing the “infectiousness” function <span class="math inline">\(f(\tau)\)</span> for <span class="math inline">\(\tau&gt;t_\mathrm{iso}\)</span>. If <span class="math inline">\(f(\tau)\)</span> is the infectiousness without intervention, then with intervention <span class="math display">\[
-f_\mathrm{iso}(\tau) = \left\{\begin{array}{ll} f(\tau), &amp; 0\le\tau&lt;t_\mathrm{iso} \\   c_\mathrm{iso} (1-p_\mathrm{iso}) f(\tau),&amp;  \tau\ge t_\mathrm{iso} \end{array}  \right.
+<p>As a simple assumption, suppose that some proportion <span class="math inline">\(p_\mathrm{iso}\)</span> of infected individuals are identified and isolated at time <span class="math inline">\(t_\mathrm{iso}\)</span> after being infected. Suppose also that isolated individuals’ transmission rate is <span class="math inline">\(c_\mathrm{iso}\in[0,1]\)</span> relative to unisolated indiviudals. This has the effect of reducing the “infectiousness” function <span class="math inline">\(f(\tau)\)</span> for <span class="math inline">\(\tau&gt;t_\mathrm{iso}\)</span>. If <span class="math inline">\(f(\tau)\)</span> is the infectiousness without intervention, then with intervention <span class="math display">\[
+f_\mathrm{iso}(\tau) = \left\{\begin{array}{ll} f(\tau), &amp; 0\le\tau&lt;t_\mathrm{iso} \\  \left(1-p_\mathrm{iso} + p_\mathrm{iso} c_\mathrm{iso} \right) f(\tau),&amp;  \tau\ge t_\mathrm{iso} \end{array}  \right.
 \]</span></p>
 <p>We may calculate the effect of this intervention on the reproduction number. Recalling that <span class="math inline">\(f(\tau)=\R_0g(\tau)\)</span> where <span class="math inline">\(g(\tau)\)</span> is the generation interval distribution, we find the control reproduction number <span class="math display">\[
 \begin{align}
-\R_c &amp;= \R_0 \left[ \int_0^{t_\mathrm{iso}} g(\tau) d\tau + c_\mathrm{iso} (1-p_\mathrm{iso})\int_{t_\mathrm{iso}}^\infty g(\tau) d\tau \right] \\
-&amp;= \R_0 \left[ F(t_\mathrm{iso}) + c_\mathrm{iso} (1-p_\mathrm{iso}) \left(1-F(t_\mathrm{iso})\right)  \right]
+\R_c &amp;= \R_0 \left[ \int_0^{t_\mathrm{iso}} g(\tau) d\tau +  (1-p_\mathrm{iso}+ p_\mathrm{iso}c_\mathrm{iso})\int_{t_\mathrm{iso}}^\infty g(\tau) d\tau \right] \\
+&amp;= \R_0 \left[ F(t_\mathrm{iso}) + (1-p_\mathrm{iso}+ p_\mathrm{iso}c_\mathrm{iso}) \left(1-F(t_\mathrm{iso})\right)  \right]
 \end{align}
 \]</span> where <span class="math inline">\(F(t)=\int_0^t g(\tau)d\tau\)</span> is the CDF of the generation interval distribution.</p>
+<p>In reality, <span class="math inline">\(t_\mathrm{iso}\)</span> may vary from one individual to another as opposed to be a fixed quantity. We will see how to model this in Topic 7.</p>
 </section>
 
 </main>
