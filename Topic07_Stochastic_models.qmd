@@ -444,11 +444,10 @@ $$
 &= \R_0\left( c_\mathrm{iso} + (1-c_\mathrm{iso}) \theta \right)
 \end{align}
 $$ {#eq-Rc}
-where we have used $\theta$ to denote $1-p_++p_+ E\left(F(T_{\mathrm{iso}})  \right)$.  The quantity $\theta\in[0,1]$ represents the average proportion of transmission (in the absence of case isolation measures)  that occurs from people who not yet tested positive (including those who will never test positive).
+where we have used $\theta$ to denote $1-p_++p_+ E\left(F(T_{\mathrm{iso}})  \right)$. The quantity $\theta\in[0,1]$ represents the average proportion of transmission (in the absence of case isolation measures) that occurs from people who not yet tested positive (including those who will never test positive).
 
-We can see from @eq-Rc that the control reproduction number $\R_c$ is an increasing function of $\theta$ (provided $c_\mathrm{iso}<1$, i.e. case isolation has some non-zero effect). This is what we should expect: the more transmission occurs from people who have not tested positive, the less impact case isolation measures will have.  
+We have come across @eq-Rc and the quantity $\theta$ previously in Topic 4 in the context of a deterministic incubation period. Here, we have generalised this to the more realistic situation where the incubation period is a random variable drawn from some specified distribution with PMF $u_t$. 
 
-Note that @eq-Rc can be re-arranged to obtain the maximum value of $\theta$ for which $\R_c<1$, or the maximum value of $c_\mathrm{iso}$ (corresponding to the minimum isolation effectiveness) for which $\R_c<1$. This is useful for assessing whether an outbreak is controllable with case isolation measures. [Fraser et al. 2004](https://doi.org/10.1073/pnas.0307506101) considered the situation where people are isolated at the time they develop symptoms, so $\tau$ represents the incubation period, and $\theta$ represents the proportion of transmission that occurs in the absence of symptoms (either from pre-symptomatic or asymptomatic infectors). 
 
 
 

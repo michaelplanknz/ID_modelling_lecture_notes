@@ -281,7 +281,7 @@ Interventions such as case isolation and contact tracing aim to reduce transmiss
 
 So, to model this type of intervention accurately, we need a faithful representation of the generation interval distribution, which the Kermack-McKendrick model has the flexibility to include.
 
-As a simple assumption, suppose that some proportion $p_\mathrm{iso}$ of infected individuals are identified and isolated at time $t_\mathrm{iso}$ after being infected. Suppose also that isolated individuals' transmission rate is $c_\mathrm{iso}\in[0,1]$ relative to unisolated indiviudals. This has the effect of reducing the "infectiousness" function $f(\tau)$ for $\tau>t_\mathrm{iso}$. If $f(\tau)$ is the infectiousness without intervention, then with intervention
+As a simple assumption, suppose that some proportion $p_\mathrm{iso}$ of infected individuals are identified and isolated at time $t_\mathrm{iso}$ after being infected. Suppose also that isolated individuals' transmission rate is $c_\mathrm{iso}\in[0,1]$ relative to unisolated individuals. This has the effect of reducing the "infectiousness" function $f(\tau)$ for $\tau>t_\mathrm{iso}$. If $f(\tau)$ is the infectiousness without intervention, then with intervention we have
 $$
 f_\mathrm{iso}(\tau) = \left\{\begin{array}{ll} f(\tau), & 0\le\tau<t_\mathrm{iso} \\  \left(1-p_\mathrm{iso} + p_\mathrm{iso} c_\mathrm{iso} \right) f(\tau),&  \tau\ge t_\mathrm{iso} \end{array}  \right.
 $$
@@ -295,7 +295,18 @@ $$
 $$
 where $F(t)=\int_0^t g(\tau)d\tau$ is the CDF of the generation interval distribution.
 
-In reality, $t_\mathrm{iso}$ may vary from one individual to another as opposed to be a fixed quantity. We will see how to model this in Topic 7.
+If everyone isolates as soon as they develop symptoms then $p_\mathrm{iso}$ is the fraction of infections that cause symptoms and $t_\mathrm{iso}$ is the incubation period. In this case, we may rewrite the above expression for $\R_c$ as
+$$
+\R_c= \R_0(\theta + c_\mathrm{iso}(1-\theta) )
+$$ {#eq-Rc}
+
+where $\theta = 1-p_\mathrm{iso} + p_\mathrm{iso}F(t_\mathrm{iso})$ is the proportion of transmission that occurs in the absence of symptoms (which is the fraction $1-p_\mathrm{iso}$ of infections that never develop symptoms, plus the fraction $p_\mathrm{iso}$ that do develop symptoms times the proportion $F(t_\mathrm{iso})$ of transmission that occurs prior to symptom onset).
+
+We can see from @eq-Rc that the control reproduction number $\R_c$ is an increasing function of $\theta$ (provided $c_\mathrm{iso}<1$, i.e. case isolation has some non-zero effect). This is what we should expect: the more transmission occurs from people without symptoms, the less impact isolation of symptomatic individuals will have.  
+
+Note that @eq-Rc can be re-arranged to obtain the maximum value of $\theta$ for which $\R_c<1$, or the maximum value of $c_\mathrm{iso}$ (corresponding to the minimum isolation effectiveness) for which $\R_c<1$. This is useful for assessing whether an outbreak is controllable with case isolation measures. See [Fraser et al. 2004](https://doi.org/10.1073/pnas.0307506101) for further reading.
+
+In this section we have assumed that $t_\mathrm{iso}$ is a fixed quantity whereas, in reality, it will usually vary from one individual to another. We will see how to model this in Topic 7.
 
 
 
