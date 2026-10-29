@@ -674,9 +674,9 @@ legend("topleft",
        lwd = 2)
 ```
 
-When $\R_0$ is only just above 1, a Taylor expansion of @eq-final-size reveals that
+When $\R_0$ is only just above 1, a Taylor expansion of @eq-final-size about $z=0$ reveals that
 $$
-z\approx \frac{2}{\R_0}\left(1-\frac{1}{\R_0}\right)
+z\approx 2\left(1-\frac{1}{\R_0}\right)
 $$
 which shows that the final size is just under double the HIT. This is because almost as many people get infected in the shrinking phase of the epidemic as in the growth phase. As $\R_0$ increases, final size is always greater than the HIT but the relative gap between them shrinks; and when $\R_0$ is very large both HIT and final size are close to $1$. 
 
@@ -687,18 +687,28 @@ which shows that the final size is just under double the HIT. This is because al
 
 In the more general case where some fraction $R(0)$ of the population is initially immune, we can obtain from (@eq-conserved-quantity) a more general version of the equation for the final size $z=S(0)+I(0)-S_\infty$:
 $$
-0 = z + \frac{1}{\R_0} \ln\left( 1+\frac{I(0)-z}{S(0)}  \right)
+0 = z + \frac{1}{\R_0} \ln\left( \frac{S(0)+I(0)-z}{S(0)}  \right)
 $$
+which we write as
+$$
+S(0)+I(0)-z = S(0)e^{-\R_0 z} 
+$$
+
 This equation allows the size of an SIR epidemic starting at an arbitrary initial condition $(S(0),I(0))$ to be calculated.
 
 Note that we can also write the above equation in terms of the effective reproduction number at the start of the epidemic $\R_\mathrm{eff}=\R_0 S(0)$. If we assume $I(0)$ is negligibly small, this leads to 
 $$
-0 = \frac{z}{S(0)} + \frac{1}{\R_\mathrm{eff}} \ln\left( 1-\frac{z}{S(0)}  \right)
+1 - \frac{z}{S(0)} = e^{-\Reff \frac{z}{S(0)}} 
 $$
+or equivalently 
+$$
+1 - \tilde{z} = e^{-\Reff \tilde{z} } 
+$$
+where $\tilde{z}=z/S(0)$ is the fraction of the susceptible population that is infected during the epidemic.
 
-From this we see that, for a given value of $\Reff$, $z/S(0)$ satisfies the same final size equation (@eq-final-size) as $z$ does in the case where there is no initial population immunity (i.e. $R(0)=0$) and $\Reff=\R_0$. This means that if we observe $\Reff$ in the early stages of an epidemic and use this to calculate the final size $z$, the actual size of the epidemic will be $zS(0)$. 
+From this we see that, for a given value of $\Reff$, $\tilde{z}$ satisfies the same final size equation (@eq-final-size) as $z$ does in the case where there is no initial population immunity (i.e. $R(0)=0$) and $\Reff=\R_0$. This means that if we observe or estimate the effective reproduction number in the early stages of an epidemic and use this to calculate the final size $z$ using (@eq-final-size), the actual size of the epidemic will be $zS(0)$. 
 
-This has an important implication. Reducing the size of the susceptible population has two compounding effects effects: it reduces the number of people at risk, and it also $\Reff$, which reduces the fraction of the people at risk that will get infected.
+This has an important implication. Pre-existing immunity in the population has two compounding effects effects: (1) it reduces the number of people who are susceptible; and (2) because some fraction of contacts will now be with immune people, it also reduces $\Reff$, which reduces the fraction of the susceptible population that will get infected. 
 
 
 
